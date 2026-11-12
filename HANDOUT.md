@@ -66,6 +66,7 @@ Turn the description into layers (each line is one layer type):
 | speed lines, a dash, lines flying out of an impact | `speedlines` (`count`, `length`, `width`; `radial: true` + `r0` fly out from the centre, otherwise parallel lines with `angle`, `spread`, `travel`; they grow, move and shrink away) |
 | a paint or slime splat with droplets and drips | `splat` (`radius`, `drops`, `reach`, `drips`, `drip_len`; bursts out, runs, then dries away) |
 | comic dots, a spatter or burst of dots that shrink away | `halftone` (`size`, `cell`, `angle`, `tone` = dot size, `fade` + `fade_dir`) |
+| a trail of sparkles, snowflakes or embers left behind a flying bolt, orb or arrow | `particles` `mode: stream` with `drop: true` on the same `at` path as the thing that flies (a one-shot): each particle stays where the layer was when it was born; `speed` small, `life` 0.2-0.4 |
 | wisps that fly from A to B, energy sucked into a portal | `particles` with `target` (and `curve`, one number of px, to bow them) |
 | crystals, rocks, shards, spikes | `poly` (`shape: crystal | shard | rock | diamond | arrow | heart`, or `points`; animate `scale` and `rotate`) |
 | the user's own small sprite (a coin, a leaf) | `stamp` (a PNG of at most 32x32 next to the recipe file; `scale` 1 to 4) |

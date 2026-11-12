@@ -70,4 +70,8 @@ def run():
         sp = os.path.join(d, "big.json"); json.dump({"id": "test/big", "duration": 0.5, "size": [250, 250], "pivot": [5, 5], "layers": [{"type": "ring", "radius": [0, 80], "thick": [3, 0]}]}, open(sp, "w"))
         from .fix import fix
         _, problems, _, _ = fix(sp, out=os.path.join(d, "o"), scale=1); assert any("256" in x for x in problems), problems       # the canvas limit is reported, not crashed on
+    with tempfile.TemporaryDirectory() as d:                                                       # drop: a trail stays behind a moving layer
+        tp = os.path.join(d, "t.json"); json.dump({"id": "test/t", "duration": 1.0, "size": [120, 40], "pivot": [10, 20], "layers": [{"type": "particles", "mode": "stream", "count": 30, "at": [[0, 0], [90, 0]], "drop": True, "life": [0.3, 0.4], "speed": [0, 1], "size": [3, 2], "t": [0, 0.9]}]}, open(tp, "w"))
+        fr = engine.render(tp, {"colors": 0}); xs = [np.nonzero(np.array(fr[6])[..., 3])[1]]
+        assert xs[0].size and xs[0].max() - xs[0].min() > 20, "particles should be spread along the path the layer flew"
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0
