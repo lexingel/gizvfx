@@ -116,4 +116,14 @@ def run():
     with tempfile.TemporaryDirectory() as d:                                                       # check names the layer that keeps drawing at the end of a one-shot
         lp_ = os.path.join(d, "l.json"); json.dump({"id": "test/l", "duration": 0.8, "size": [60, 60], "layers": [{"type": "ring", "radius": [0, 15], "thick": [3, 0]}, {"type": "glow", "radius": 10}]}, open(lp_, "w"))
         assert any("layers still drawing at t=1: 1 glow" in b for b in engine.check(lp_))
+    with tempfile.TemporaryDirectory() as d:                                                       # flash flares a layer white at a hit; clip keeps a layer inside another layer's pixels
+        fp_ = os.path.join(d, "f.json"); json.dump({"id": "test/f", "duration": 1.0, "size": [80, 80], "pivot": [40, 60], "palette": "ice", "layers": [
+            {"id": "col", "type": "beam", "from": [0, 0], "to": [0, -40], "width": 10},
+            {"type": "poly", "shape": "diamond", "scale": 4, "at": [0, -20], "color": "#202040", "clip": "col"},
+            {"type": "ring", "radius": 20, "thick": 3, "at": [0, -20], "color": "#2040a0", "flash": [0.0]}]}, open(fp_, "w"))
+        fr_ = engine.render(fp_, {"colors": 0}); f0_ = np.array(fr_[0]); cols_ = f0_[f0_[..., 3] > 0][:, :3]
+        assert (cols_.min(1) > 200).any() and not (np.array(fr_[-2])[..., :3][np.array(fr_[-2])[..., 3] > 0].min(1) > 200).all()    # white at the hit
+        bad_ = dict(json.load(open(fp_)), layers=[{"type": "ring", "radius": 5, "clip": "nope"}]); json.dump(bad_, open(fp_, "w"))
+        try: engine.render(fp_, {"colors": 0}); raise SystemExit("clip to a missing id must fail")
+        except (KeyError, ValueError) as ex_: assert "no layer has" in str(ex_)
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

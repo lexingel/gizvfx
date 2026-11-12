@@ -25,6 +25,8 @@ COMMON = {"id": "a name for the layer (a `wave` can be named so other layers sit
           "color": "one fixed colour '#rrggbb' instead of a palette", "v": "ramp position 0..1 (dark..bright), number or [from, to] over the layer's life",
           "ease": "linear | out | expo | in | smooth: how [from, to] values move; or a list, one name per key step: [\"out\", \"linear\", \"in\"]", "spin": "[radius, turns]: circles around its path (a spiral when it also moves)", "hold": "true = keep drawing the end state after the window", "wobble": "[ax, ay, cycles]: the layer sways around its path (whole cycles close a loop): snaking wisps, swaying columns", "smear": "[length, taper]: a trail of fading, shrinking copies of the layer along its own path (length = fraction of the window, taper = size of the oldest copy 0..1). Sword smears, comet tails, wisp tails",
           "erode": "(all layers except blob has its own) px eaten from the edge, animatable: the clean dissolve", "outline": "'#rrggbb' or 'auto' (darkest palette colour): a 1 px outline around the drawn layer", "rim": "[dx, dy] light direction, e.g. [-1, -1]: the edge facing the light takes a bright rim colour",
+          "flash": "[t, t, ...] or [[t, strength], ...]: the layer flares white at these moments (t 0..1 of the whole effect) and fades over about 8% of it: the reaction to a hit",
+          "clip": "another layer's \"id\": this layer is drawn only where that layer has pixels at the same moment (a silhouette inside a pillar of light)",
           "seed": "layers with the same number draw the same random shape (give it to the second layer when one body continues in another layer)"}
 SCHEMA = {
     "glow": {"v": "ramp position 0..1 of the glow colour, animatable (also `color`)", "radius": "px, animatable", "strength": "0..1+, animatable (try {wave:[0.4,0.8,3]})", "steps": "brightness bands (default 4)", "squash": "0.1..1: flat light on the floor (1 = round)"},
@@ -675,7 +677,30 @@ def _one(spec, g, d, i, t, px, py, main, o, sc, vs):
     c.at_fn = _atf; c.tilt = tilt; c.rng = Rng(c.seed); LAYERS[d["type"]](g, d, c)
 
 
-def _post(f, g, d, main, e, roles=None):
+def flash_amt(d, t):
+    """0..1+ how strongly a layer flares at time t: each hit decays linearly over 8% of the effect"""
+    a = 0.0
+    for h in d.get("flash") or []:
+        th, k = (h if isinstance(h, (list, tuple)) else (h, 1.0))
+        if t >= th: a = max(a, k * (1 - (t - th) / 0.08))
+    return max(a, 0.0)
+
+
+def _target_layer(spec, d):
+    tid = d["clip"]; j = next((j for j, l in enumerate(spec["layers"]) if l.get("id") == tid), None)
+    if j is None: raise ValueError(f'clip: no layer has "id": "{tid}"')
+    if tid == d.get("id") or spec["layers"][j].get("clip") == d.get("id") and d.get("id"): raise ValueError("clip: a layer cannot be clipped to itself")
+    return j, spec["layers"][j]
+
+
+def clip_mask(spec, d, t, px, py, main, o):
+    """bool mask: where the layer named by `clip` has pixels at time t"""
+    j, tl = _target_layer(spec, d); tl = sub(tl, o); t0, t1 = tl.get("t", [0, 1]); h, w = spec["size"][1], spec["size"][0]
+    if t < t0 or (t > t1 and not tl.get("hold")): return np.zeros((h, w), bool)
+    g = Frame(w, h); _one(spec, g, tl, j, t, px, py, main, o, 1.0, 0.0); return g.a > 0
+
+
+def _post(f, g, d, main, e, roles=None, fl=0.0):
     """erode / outline / rim on what one layer drew (into the scratch frame g), then lay it on the real frame"""
     from scipy.ndimage import distance_transform_edt, binary_dilation
     m = g.a > 0; er = val(d.get("erode", 0), e) if d["type"] != "blob" else 0; ramp = _ramp(d, main, roles)
@@ -685,6 +710,8 @@ def _post(f, g, d, main, e, roles=None):
         dx, dy = d["rim"]; rm = m & ~np.roll(m, (-int(np.sign(dy)), -int(np.sign(dx))), (0, 1)); g.rgb[rm] = ramp[-2] if len(ramp) > 2 else ramp[-1]
     if d.get("outline"):
         oc = ramp[0] if d["outline"] == "auto" else hex2rgb(d["outline"]); ol = binary_dilation(m) & ~m; g.rgb[ol] = oc; g.a[ol] = 255
+    if fl > 0 and m.any():                                                              # a hit: toward white, plus a little light on the same pixels
+        k = min(1.0, fl) * 0.85; g.rgb[m] = (g.rgb[m].astype(np.float32) * (1 - k) + 255 * k).astype(np.uint8); g.light[m] += 0.5 * fl
     mk = g.a > 0; f.rgb[mk] = g.rgb[mk]; f.a[mk] = 255; f.light += g.light
 
 
@@ -706,7 +733,7 @@ def draw_spec(spec, f, t, o):
     for i, d in enumerate(spec["layers"]):
         try:
             d = sub(d, o); t0, t1 = d.get("t", [0, 1]); sm = d.get("smear"); S = 7 if sm else 0
-            post = ("outline" in d) or isinstance(d.get("rim"), (list, tuple)) or ("erode" in d and d["type"] != "blob"); g = Frame(f.w, f.h) if post else f
+            post = ("outline" in d) or isinstance(d.get("rim"), (list, tuple)) or ("erode" in d and d["type"] != "blob") or bool(d.get("flash")) or bool(d.get("clip")); g = Frame(f.w, f.h) if post else f
             for k in range(S, -1, -1):                                                 # the oldest copy of a smear first, the real layer last
                 tk = t
                 if k:
@@ -714,7 +741,9 @@ def draw_spec(spec, f, t, o):
                     dt = k / S * sm[0] * (t1 - t0); tk = (t - dt) % 1.0 if spec["loop"] else t - dt
                 if tk < t0 or (tk > t1 and not d.get("hold")): continue
                 _one(spec, g, d, i, tk, px, py, main, o, 1 - (1 - sm[1]) * k / S if k else 1.0, -0.45 * k / S if k else 0.0)
-            if post: _post(f, g, d, main, _efn(d)(seg(t, t0, t1)), _roles(spec, o))
+            if d.get("clip"):
+                mk_ = clip_mask(spec, d, t, px, py, main, o); g.a[~mk_] = 0; g.light[~mk_] = 0
+            if post: _post(f, g, d, main, _efn(d)(seg(t, t0, t1)), _roles(spec, o), flash_amt(d, t))
         except (TypeError, KeyError, IndexError, ValueError, ZeroDivisionError) as ex:
             raise ValueError(f"layer {i} ({d.get('type')}): {type(ex).__name__}: {ex}") from None
     if spec.get("style"): _style(f, spec["style"], main)

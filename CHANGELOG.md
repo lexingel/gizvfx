@@ -25,6 +25,8 @@ GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, pa
 
 - Eighth blind test: `check` and `fix` name the layers that still draw at the end of a one-shot (`layers still drawing at t=1: 1 glow ...`), `fix` says its fade only patches the GIF and the recipe still needs fixing, `fix --painted` says when the painted check ran clean; docs: painted file names per style.
 
+- Layer keys `flash` (flares white at given moments: the reaction to a hit) and `clip` (a layer is drawn only inside another layer's pixels), in the pixel and painted renderers.
+
 History carried over from Gizpix 0.2.0:
 - Painted: glows fall off in the pixel renderer's bands (soft edges), watercolor has more body and colour on dark grounds. Beam colours across the width match the pixel beam.
 - Painted, the last small differences from the pixel frames: `rim`, a true gradient across a `beam` with a white-hot line, core-shaded dots (coin-burst is gold again), thicker speed lines, a glow with the pixel renderer's flat first step (shield-bubble, bomb-fuse), crossing-line sparkles for `star`, more body in watercolor.

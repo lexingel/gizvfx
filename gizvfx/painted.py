@@ -422,7 +422,7 @@ def _include(meta, d, c, S, style, opts, tick, o):
     finally: _DEPTH[0] -= 1
 
 
-def _post(lay, d, c, S):
+def _post(lay, d, c, S):  # flash is applied here too
     """erode / outline on one layer, as in the pixel renderer (rim is pixel-only)"""
     if lay is None: return lay
     from scipy.ndimage import distance_transform_edt, binary_dilation
@@ -430,6 +430,9 @@ def _post(lay, d, c, S):
     er = sp.val(d.get("erode", 0), c.e) if d["type"] != "blob" else 0
     if er > 0:
         dist = distance_transform_edt(np.pad(a > 0.5, 1))[1:-1, 1:-1]; a = a * np.clip((dist - er * S) / (0.6 * S) + 0.5, 0, 1); arr = np.asarray(lay).copy(); arr[..., 3] = (a * 255).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
+    fl = sp.flash_amt(d, c.t)
+    if fl > 0:                                                                                                        # a hit: toward white
+        arr = np.asarray(lay).copy(); k = min(1.0, fl) * 0.85; arr[..., :3] = (arr[..., :3].astype(np.float32) * (1 - k) + 255 * k).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
     if isinstance(d.get("rim"), (list, tuple)):                                                                       # a lighter edge on the side facing the light, as in the pixel renderer
         dx, dy = d["rim"]; sdx, sdy = int(np.sign(dx)), int(np.sign(dy)); kk = max(1, int(round(0.6 * S))); m = a > 0.4; Hh, Ww = m.shape; sh = np.zeros_like(m)
         ys, xs = np.nonzero(m); ys2, xs2 = ys - sdy * kk, xs - sdx * kk; ok = (ys2 >= 0) & (ys2 < Hh) & (xs2 >= 0) & (xs2 < Ww); sh[ys2[ok], xs2[ok]] = True      # the mask moved the way the pixel rim looks: what is not covered after the move is the lit edge
@@ -480,6 +483,16 @@ def _bridge(meta, d, i, t, o, S, main, vs=0.0):
     return Image.fromarray(glow, "RGBA"), Image.fromarray(solid, "RGBA")
 
 
+def _clip_alpha(meta, d, t, o, S, main, style, opts, tick):
+    """0..1 mask at painted size: where the layer named by `clip` has body at time t"""
+    spec = meta["recipe"]; W, H = meta["size"]; j, tl = sp._target_layer(spec, d); tl = sp.sub(tl, o); t0, t1 = tl.get("t", [0, 1]); m = np.zeros((H * S, W * S), np.float32)
+    if t < t0 or (t > t1 and not tl.get("hold")): return m
+    tl = sp.resolve_pts(spec, tl, t, o)
+    for kind, lay in (_layers(meta, tl, j, t, o, S, main, style, opts, tick) if tl["type"] != "include" else []):
+        if kind == "solid": m = np.maximum(m, np.asarray(lay.getchannel("A"), np.float32) / 255)
+    return m
+
+
 def render_frame(meta, o, t, S, style="ink", opts=None, tick=0, inner=False):
     spec = meta["recipe"]; W, H = meta["size"]; img = Image.new("RGBA", (W * S, H * S), (0, 0, 0, 0)); main = resolve(o.palette, spec["palette"]); light = np.zeros((H * S, W * S, 3), np.float32)
     for i, d in enumerate(spec["layers"]):
@@ -490,9 +503,10 @@ def render_frame(meta, o, t, S, style="ink", opts=None, tick=0, inner=False):
                 if not spec["loop"] and t >= t1: continue
                 tk = (t - k / n * sm[0] * (t1 - t0)) % 1.0 if spec["loop"] else t - k / n * sm[0] * (t1 - t0); alpha = 1 - (1 - sm[1]) * k / n; vs = -0.45 * k / n
             if tk < t0 or (tk > t1 and not d.get("hold")): continue
-            dk = sp.resolve_pts(spec, d, tk, o)
+            dk = sp.resolve_pts(spec, d, tk, o); cm = _clip_alpha(meta, dk, tk, o, S, main, style, opts, tick) if d.get("clip") else None
             for kind, lay in (_layers(meta, dk, i, tk, o, S, main, ("ink" if k and style in ("comic", "linocut", "stencil") else style), opts, tick, vs) if d["type"] != "include" else [("solid", _include(meta, dk, _ctx(meta, dk, i, tk, o, S, main, vs), S, style, opts, tick, o))]):
                 arr = np.asarray(lay)
+                if cm is not None: arr = arr.copy(); arr[..., 3] = (arr[..., 3] * cm).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
                 if kind == "light": light += arr[..., :3].astype(np.float32) / 255 * (arr[..., 3:4].astype(np.float32) / 255) * alpha                         # light is added to everything under it at the end, as in the pixel renderer
                 else:
                     if alpha < 1: arr = arr.copy(); arr[..., 3] = (arr[..., 3] * alpha).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
