@@ -5,285 +5,383 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GizVFX</title>
 <style>
-:root{--bg:#13151b;--panel:#1a1d25;--panel2:#20242e;--line:#2b303c;--text:#e7e9ef;--mut:#8b93a5;--accent:#ffb454;--accent2:#3a2c14;--ok:#7bd88f;--bad:#ff6b6b;--warn:#f2cc60;--r:7px}
+:root{--bg:#13151b;--panel:#1a1d25;--panel2:#20242e;--line:#2b303c;--edge:#6a7490;--text:#e7e9ef;--mut:#9aa2b5;--accent:#8fb0ff;--accent2:#222c4d;--accentline:#3d4f86;--ink:#0d1630;--ok:#7bd88f;--bad:#ff7b7b;--warn:#f2cc60;--r:7px}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button,input,select,textarea{font:inherit;color:inherit}
-button{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:5px 10px;cursor:pointer}
-button:hover{border-color:#44495a}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-button.primary{background:var(--accent);border-color:var(--accent);color:#1b1306;font-weight:600}
-button.ghost{background:transparent}
-button.icon{padding:3px 7px;line-height:1}
-input,select,textarea{background:#12141a;border:1px solid var(--line);border-radius:6px;padding:5px 7px;min-width:0}
-input[type=checkbox]{accent-color:var(--accent)}
-input[type=range]{accent-color:var(--accent);padding:0}
+button{background:var(--panel2);border:1px solid var(--edge);border-radius:var(--r);padding:5px 10px;cursor:pointer;min-height:28px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:600}
+button.ghost{background:transparent;border-color:transparent}
+button.ghost:hover:not(:disabled){border-color:var(--edge)}
+button.icon{padding:0;width:30px;height:30px;display:inline-grid;place-items:center}
+button.icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+button.chip{padding:3px 9px;border-radius:99px;min-height:28px}
+input,select,textarea{background:#12141a;border:1px solid var(--edge);border-radius:6px;padding:5px 7px;min-width:0;min-height:28px}
+input::placeholder{color:var(--mut);opacity:1}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;min-height:0}
+input[type=range]{accent-color:var(--accent);padding:0;border:0;background:transparent}
 label{color:var(--mut)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 #app{display:grid;grid-template-rows:auto 1fr;height:100%}
-header{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+header{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
 header h1{font-size:15px;margin:0 6px 0 0;letter-spacing:.3px}
 header h1 span{color:var(--accent)}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.seg{display:inline-flex;border:1px solid var(--edge);border-radius:var(--r);overflow:hidden}
 .seg button{border:0;border-radius:0;background:transparent}
-.seg button.on{background:var(--accent2);color:var(--accent)}
+.seg button[aria-pressed=true]{background:var(--accent2);color:var(--accent)}
 .sp{flex:1}
+.grp{display:inline-flex;gap:6px;align-items:center}
+#viewSeg{display:none}
 main{display:grid;grid-template-columns:250px minmax(0,1fr) 400px;min-height:0}
 aside,section{min-height:0;overflow:auto}
 #list{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
-#list .top{padding:8px;display:flex;gap:6px;position:sticky;top:0;background:var(--panel);z-index:1}
-#list .top input{flex:1}
-#items{overflow:auto;padding:0 6px 12px}
+#list .top{padding:8px;display:grid;gap:6px;position:sticky;top:0;background:var(--panel);z-index:1}
+#list .top .row2{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:12px}
+#items{overflow:auto;padding:0 6px 12px;outline:0}
 .cat{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.8px;margin:12px 6px 4px}
-.item{display:block;width:100%;text-align:left;border:1px solid transparent;background:transparent;padding:5px 8px;border-radius:6px}
+.item{display:block;border:1px solid transparent;padding:5px 8px;border-radius:6px;cursor:pointer}
 .item:hover{background:var(--panel2)}
-.item.on{background:var(--accent2);border-color:#5a4220}
-.item small{color:var(--mut);display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tag{font-size:10px;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--mut);margin-left:4px}
+.item[aria-selected=true]{background:var(--accent2);border-color:var(--accentline)}
+.item small{color:var(--mut);display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item[aria-selected=true] small,.item[aria-selected=true] .tag{color:#c3cadb}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--mut);margin-left:4px}
+.empty{padding:18px 10px;color:var(--mut)}
 #stagewrap{display:flex;flex-direction:column;min-width:0;min-height:0}
 #stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#1b1d24}
-#stage.checker{background:conic-gradient(#2a2d36 25%,#1f2128 0 50%,#2a2d36 0 75%,#1f2128 0) 0 0/24px 24px}
+#stage.checker{background:conic-gradient(#363b4a 25%,#262a35 0 50%,#363b4a 0 75%,#262a35 0) 0 0/24px 24px}
 #cv{image-rendering:pixelated;max-width:none}
 #cv.smooth{image-rendering:auto}
-#busy{position:absolute;top:10px;right:12px;color:var(--mut);font-size:12px;opacity:0;transition:opacity .15s}
+#busy{position:absolute;top:10px;right:12px;display:flex;gap:7px;align-items:center;font-size:13px;opacity:0;transition:opacity .15s;background:#12141acc;padding:3px 9px;border-radius:99px}
 #busy.on{opacity:1}
-#err{position:absolute;left:12px;right:12px;bottom:10px;background:#3a1618;border:1px solid #7a2b30;color:#ffc9c9;border-radius:var(--r);padding:8px 10px;display:none;white-space:pre-wrap;max-height:35%;overflow:auto}
+#err{position:absolute;left:12px;right:12px;bottom:10px;background:#3a1618;border:1px solid #7a2b30;color:#ffd5d5;border-radius:var(--r);padding:8px 10px;display:none;max-height:40%;overflow:auto}
+#err small{display:block;color:#ffb4b4;opacity:.85;margin-top:3px;word-break:break-word}
 #bar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);background:var(--panel)}
-#bar input[type=range]{flex:1}
+#bar input[type=range]{flex:1;min-height:28px}
+#bPlay{min-width:64px}
 #fc{min-width:64px;text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
 #strip{display:flex;gap:4px;padding:6px 12px;overflow-x:auto;border-top:1px solid var(--line);background:var(--panel);min-height:78px}
 #strip canvas{height:64px;flex:none;border:1px solid var(--line);border-radius:4px;cursor:pointer;background:#1b1d24;image-rendering:pixelated}
 #strip canvas.on{border-color:var(--accent)}
 #editor{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
 .tabs{display:flex;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
-.tabs button{flex:1;border:0;border-radius:0;background:transparent;border-bottom:2px solid transparent;padding:9px 4px;color:var(--mut)}
-.tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
-.tabs .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:5px;background:var(--mut)}
-.tabs .dot.ok{background:var(--ok)}.tabs .dot.bad{background:var(--bad)}.tabs .dot.warn{background:var(--warn)}
+.tabs button{flex:1;border:0;border-radius:0;background:transparent;border-bottom:2px solid transparent;padding:9px 4px;color:var(--mut);min-height:38px}
+.tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
+.badge{display:inline-block;min-width:20px;padding:0 5px;margin-left:5px;border-radius:99px;font-size:12px;text-align:center;background:#2f3442;color:var(--text)}
+.badge.ok{background:#1d3a28;color:#aef0bd}.badge.bad{background:#4a1d20;color:#ffc4c4}.badge.warn{background:#463d17;color:#f7de8a}
 .pane{padding:12px;overflow:auto;display:none}
 .pane.on{display:block}
-.grid2{display:grid;grid-template-columns:88px 1fr;gap:6px 10px;align-items:center}
+.grid2{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;align-items:center}
 .row{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap}
 h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin:16px 0 6px;font-weight:600}
 h3:first-child{margin-top:0}
+details.help{border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;margin-bottom:10px;background:var(--panel2)}
+details.help summary{cursor:pointer;color:var(--accent)}
+details.help p{margin:6px 0;color:var(--mut)}
 .card{border:1px solid var(--line);border-radius:var(--r);margin:8px 0;background:var(--panel2)}
-.card.sel{border-color:#6b4d22}
-.card .hd{display:flex;gap:6px;align-items:center;padding:6px 8px;cursor:pointer}
-.card .hd b{font-weight:600}
-.card .hd .s{color:var(--mut);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card textarea{width:calc(100% - 16px);margin:0 8px 8px;font:12px/1.4 ui-monospace,Consolas,monospace;resize:vertical;min-height:70px;white-space:pre-wrap}
-.card textarea.bad{border-color:var(--bad)}
+.card.sel{border-color:var(--accentline)}
+.card .hd{display:flex;gap:4px;align-items:center;padding:3px 6px 3px 3px}
+.card .hd .title{flex:1;min-width:0;text-align:left;display:flex;gap:8px;border:0;background:transparent;overflow:hidden}
+.card .hd .title b{font-weight:600;flex:none}
+.card .hd .title .s{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card textarea{display:block;width:calc(100% - 16px);margin:0 8px 6px;font:12px/1.4 ui-monospace,Consolas,monospace;resize:vertical;min-height:70px;white-space:pre-wrap}
+.card textarea[aria-invalid=true],#json[aria-invalid=true]{border-color:var(--bad)}
+.fmsg{margin:0 8px 8px;color:#ffb4b4;font-size:12px}
 .keys{margin:0 8px 8px;font-size:12px;color:var(--mut)}
-.keys code{color:var(--accent);cursor:pointer}
+.keys button.key{padding:0 4px;min-height:22px;color:var(--accent);border-color:transparent;background:transparent;font:12px ui-monospace,Consolas,monospace}
+.keys button.key:hover{border-color:var(--edge)}
 .keys p{margin:2px 0}
-#json{width:100%;height:calc(100vh - 190px);font:12px/1.4 ui-monospace,Consolas,monospace;white-space:pre;resize:none}
-#json.bad{border-color:var(--bad)}
+#json{width:100%;height:calc(100vh - 230px);min-height:200px;font:12px/1.4 ui-monospace,Consolas,monospace;white-space:pre;resize:none}
 .msg{margin:6px 0;padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel2)}
 .msg.bad{border-color:#7a2b30;background:#2a1517}.msg.ok{border-color:#2c5a38;background:#14231a}.msg.warn{border-color:#6a5a22;background:#262211}
+.msg small{display:block;color:var(--mut);margin-top:2px;word-break:break-word}
+.msg button{margin-top:4px}
 .hint{color:var(--mut);font-size:12px;margin:4px 0}
-#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:80vw;z-index:9}
-#toast.on{opacity:1}
-.sw{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);padding:0}
-.sw.on{outline:2px solid var(--accent)}
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--edge);border-radius:var(--r);padding:6px 8px 6px 12px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:86vw;z-index:9;display:flex;gap:10px;align-items:center}
+#toast.on{opacity:1;pointer-events:auto}
+.sw{width:28px;height:28px;border-radius:6px;padding:0}
+.sw[aria-pressed=true]{outline:2px solid var(--accent);outline-offset:1px}
 @media(max-width:1100px){main{grid-template-columns:200px minmax(0,1fr) 340px}}
-@media(max-width:820px){main{grid-template-columns:1fr;overflow:auto}#list,#editor{border:0;max-height:60vh}#stage{min-height:50vh}}
+@media(max-width:820px){
+  #app{height:100dvh}
+  #viewSeg{display:inline-flex}
+  main{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+  #stagewrap{grid-row:1;grid-column:1;height:44vh;border-bottom:1px solid var(--line)}
+  #list,#editor{grid-row:2;grid-column:1;border:0}
+  #strip{display:none}
+  main[data-view=list] #editor,main[data-view=edit] #list{display:none}
+  #json{height:50vh}
+}
+@media(prefers-reduced-motion:reduce){#busy,#toast{transition:none}}
 </style>
 </head>
 <body>
 <div id="app">
 <header>
   <h1><span>Giz</span>VFX</h1>
-  <div class="seg" id="modeSeg" role="group" aria-label="Look"><button data-m="pixel" class="on">Pixel</button><button data-m="painted">Painted</button></div>
+  <div class="seg" id="modeSeg" role="group" aria-label="Look"><button data-m="pixel" aria-pressed="true">Pixel</button><button data-m="painted" aria-pressed="false">Painted</button></div>
   <select id="style" aria-label="Painted style" hidden></select>
   <select id="quality" aria-label="Painted quality" hidden><option value="2">draft 2x</option><option value="3" selected>3x</option><option value="4">final 4x</option></select>
+  <div class="seg" id="viewSeg" role="group" aria-label="Show"><button data-v="list" aria-pressed="false">Effects</button><button data-v="edit" aria-pressed="true">Edit</button></div>
   <span class="sp"></span>
-  <span id="grounds" role="group" aria-label="Ground"></span>
-  <label>zoom <select id="zoom"><option value="0">fit</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="6">6x</option><option value="8">8x</option></select></label>
-  <button id="bNew">New</button>
+  <div class="grp" id="grounds" role="group" aria-label="Ground behind the effect"></div>
+  <label class="grp">zoom <select id="zoom"><option value="0">fit</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="6">6x</option><option value="8">8x</option></select></label>
+  <button id="bUndo" class="icon" aria-label="Undo (Ctrl+Z)" title="Undo (Ctrl+Z)" disabled></button>
+  <button id="bRedo" class="icon" aria-label="Redo (Ctrl+Shift+Z)" title="Redo (Ctrl+Shift+Z)" disabled></button>
+  <button id="bNew" class="primary" title="Start a new effect from a glow and a ring">New effect</button>
   <button id="bOpen">Open file</button><input type="file" id="file" accept=".json,application/json" hidden>
 </header>
-<main>
-  <aside id="list">
-    <div class="top"><input id="q" type="search" placeholder="Search effects" aria-label="Search effects"></div>
-    <div id="items"></div>
+<main data-view="edit">
+  <aside id="list" aria-label="Effects">
+    <div class="top">
+      <input id="q" type="search" placeholder="Search effects" aria-label="Search effects">
+      <div class="row2"><label><input type="checkbox" id="onlyRecipes"> Editable only</label><span id="count" aria-live="polite"></span></div>
+    </div>
+    <div id="items" role="listbox" aria-label="Effects"></div>
   </aside>
-  <section id="stagewrap">
-    <div id="stage"><canvas id="cv" width="96" height="96"></canvas><div id="busy">drawing</div><div id="err" role="alert"></div></div>
+  <section id="stagewrap" aria-label="Preview">
+    <div id="stage"><canvas id="cv" width="96" height="96" role="img" aria-label="Effect preview"></canvas><div id="busy" role="status">Drawing&hellip;</div><div id="err" role="alert"></div></div>
     <div id="bar">
-      <button id="bPlay" class="icon" aria-label="Play or pause (space)">Pause</button>
-      <button id="bPrev" class="icon" aria-label="Previous frame">&#8592;</button>
+      <button id="bPlay" title="Play or pause (Space)">Pause</button>
+      <button id="bPrev" class="icon" aria-label="Previous frame (Left arrow)" title="Previous frame"></button>
       <input id="scrub" type="range" min="0" max="0" value="0" aria-label="Frame">
-      <button id="bNext" class="icon" aria-label="Next frame">&#8594;</button>
+      <button id="bNext" class="icon" aria-label="Next frame (Right arrow)" title="Next frame"></button>
       <span id="fc">0 / 0</span>
       <span id="kind" class="tag"></span>
     </div>
     <div id="strip" aria-label="All frames"></div>
   </section>
-  <aside id="editor">
-    <div class="tabs" role="tablist">
-      <button data-t="effect" class="on">Effect</button><button data-t="layers">Layers</button><button data-t="json">JSON</button><button data-t="check">Check <i class="dot" id="dot"></i></button>
+  <aside id="editor" aria-label="Editor">
+    <div class="tabs" role="tablist" aria-label="Editor sections">
+      <button role="tab" id="tab-effect" aria-controls="p-effect" data-t="effect" aria-selected="true">Effect</button>
+      <button role="tab" id="tab-layers" aria-controls="p-layers" data-t="layers" aria-selected="false" tabindex="-1">Layers</button>
+      <button role="tab" id="tab-json" aria-controls="p-json" data-t="json" aria-selected="false" tabindex="-1">JSON</button>
+      <button role="tab" id="tab-check" aria-controls="p-check" data-t="check" aria-selected="false" tabindex="-1">Check<span class="badge" id="badge" aria-label="Check result: not run">&hellip;</span></button>
     </div>
-    <div class="pane on" id="p-effect"></div>
-    <div class="pane" id="p-layers"></div>
-    <div class="pane" id="p-json"><textarea id="json" spellcheck="false" aria-label="Recipe JSON"></textarea><div class="row"><button id="bFmt">Format</button><button id="bDl">Download JSON</button></div></div>
-    <div class="pane" id="p-check"></div>
+    <div class="pane on" id="p-effect" role="tabpanel" aria-labelledby="tab-effect"></div>
+    <div class="pane" id="p-layers" role="tabpanel" aria-labelledby="tab-layers"></div>
+    <div class="pane" id="p-json" role="tabpanel" aria-labelledby="tab-json"><textarea id="json" spellcheck="false" aria-label="Recipe JSON" aria-describedby="jsonmsg"></textarea><div id="jsonmsg" class="fmsg" role="alert" hidden></div><div class="row"><button id="bFmt">Format</button><button id="bDl">Download JSON</button></div></div>
+    <div class="pane" id="p-check" role="tabpanel" aria-labelledby="tab-check"></div>
   </aside>
 </main>
 </div>
 <div id="toast" role="status"></div>
 <script>
 const $=(s,r=document)=>r.querySelector(s);
-function h(tag,props={},...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(props||{})){if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(k==='value'||k==='checked'||k==='disabled'||k==='hidden')e[k]=v;else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v)}for(const c of kids.flat())if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(String(c)));return e}
+function h(tag,props={},...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(props||{})){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(k==='value'||k==='checked'||k==='disabled'||k==='hidden')e[k]=v;else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v)}for(const c of kids.flat())if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(String(c)));return e}
 async function api(path,body){const r=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()}
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),3200)}
 const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
+let uidN=0;const uid=p=>p+(++uidN);
+const IC={up:'<path d="M3 9l4-4 4 4"/>',down:'<path d="M3 5l4 4 4-4"/>',dup:'<rect x="5" y="5" width="7" height="7" rx="1.2"/><path d="M9 3H3.5A.5.5 0 003 3.5V9"/>',del:'<path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/>',prev:'<path d="M9 3L5 7l4 4"/>',next:'<path d="M5 3l4 4-4 4"/>',undo:'<path d="M5 3.5L2.5 6 5 8.5"/><path d="M3 6h5a3 3 0 010 6H6"/>',redo:'<path d="M9 3.5L11.5 6 9 8.5"/><path d="M11 6H6a3 3 0 000 6h2"/>'};
+const icon=n=>h('span',{html:'<svg viewBox="0 0 14 14" aria-hidden="true">'+IC[n]+'</svg>'}).firstChild;
+function setIcon(btn,n){btn.replaceChildren(icon(n))}
+function toast(t,act){const e=$('#toast');e.replaceChildren(t);if(act)e.append(h('button',{onclick:()=>{act.fn();e.classList.remove('on')}},act.label));e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),act?7000:3500)}
 
-const S={recipe:null,id:null,options:{},mode:'pixel',style:'ink',scale:3,ground:'#1b1d24',zoom:0,frames:[],idx:0,fps:12,loop:true,base:[96,96],playing:true,hold:0,meta:null,effects:[],tab:'effect',sel:-1,optsSig:'',res:null,check:null,fixed:null};
+const S={recipe:null,id:null,code:false,options:{},mode:'pixel',style:'ink',scale:3,ground:'#1b1d24',zoom:0,frames:[],idx:0,fps:12,loop:true,base:[96,96],playing:!matchMedia('(prefers-reduced-motion: reduce)').matches,hold:0,meta:null,effects:[],tab:'effect',sel:-1,optsSig:'',res:null,check:null,renderErr:null,fixed:null,dirty:false,last:'',name:''};
+const HI={stack:[],redo:[]};
 const GROUNDS=[['#1b1d24','dark'],['#a08c64','mid'],['#f4efe4','light'],['checker','checker']];
 const TEMPL={glow:{type:'glow',radius:[8,30]},ring:{type:'ring',radius:[2,30],thick:[4,0]},particles:{type:'particles',count:20,life:[0.5,0.8],speed:[10,30],size:[3,3]},burst:{type:'burst',radius:[4,24]},beam:{type:'beam',from:[0,0],to:[0,-40],width:6},bolt:{type:'bolt',from:[-20,0],to:[20,0],width:3},rays:{type:'rays',count:8,inner:4,length:14,width:3},orbit:{type:'orbit',count:3,radius:14,size:3},poly:{type:'poly',shape:'crystal'}};
+const COMMON_TYPES=['glow','ring','particles','burst','beam','bolt'];
+
+// ---------- history (undo/redo) and title
+const snap=()=>JSON.stringify({recipe:S.recipe,id:S.id,options:S.options});
+function updHist(){$('#bUndo').disabled=!HI.stack.length;$('#bRedo').disabled=!HI.redo.length}
+function checkpoint(){S.last=snap();S.dirty=false;setTitle()}
+function setTitle(){document.title=(S.dirty?'* ':'')+(S.name?S.name+' - ':'')+'GizVFX'}
+let editT=null;
+function edit(){if(!editT){HI.stack.push(S.last);if(HI.stack.length>80)HI.stack.shift();HI.redo.length=0;updHist()}clearTimeout(editT);editT=setTimeout(()=>{editT=null},800);S.last=snap();S.dirty=true;setTitle();touch();syncJson();renderSummaries()}
+function restore(str){const s=JSON.parse(str);S.recipe=s.recipe;S.id=s.id;S.options=s.options||{};S.code=!S.recipe;S.optsSig='';S.sel=-1;S.fixed=null;S.idx=0;editT=null;S.last=snap();afterLoad();updHist()}
+function undo(){if(!HI.stack.length)return;HI.redo.push(snap());restore(HI.stack.pop())}
+function redo(){if(!HI.redo.length)return;HI.stack.push(snap());restore(HI.redo.pop())}
+$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;setIcon($('#bUndo'),'undo');setIcon($('#bRedo'),'redo');setIcon($('#bPrev'),'prev');setIcon($('#bNext'),'next');
+function replaceWith(state,msg){const wasDirty=S.dirty&&(S.recipe||S.id);if(S.recipe||S.id){HI.stack.push(snap());if(HI.stack.length>80)HI.stack.shift()}HI.redo.length=0;
+  S.recipe=state.recipe||null;S.id=state.id||null;S.code=!S.recipe;S.options=state.options||{};S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.renderErr=null;S.idx=0;editT=null;checkpoint();afterLoad();updHist();
+  if(S.code&&S.mode==='painted'){setMode('pixel');toast('Painted needs a recipe. This effect is drawn by Python, so it is shown as Pixel.')}
+  else if(wasDirty)toast((msg||'Effect replaced')+'. Your earlier edits are one undo away.',{label:'Undo',fn:undo})}
+function afterLoad(){S.name=S.recipe?(S.recipe.name||S.recipe.id||''):(S.effects.find(e=>e.id===S.id)?.name||'');setTitle();$('#modeSeg [data-m=painted]').disabled=S.code;$('#modeSeg [data-m=painted]').title=S.code?'Painted needs a recipe; this effect is drawn by Python':'';buildList();renderEditor();touch()}
+
+// ---------- errors in plain words
+function friendly(raw){let m=String(raw),where='',layer=null;const L=m.match(/^layer (\d+) \((\w+)\): ([\s\S]*)$/);if(L){layer=+L[1];where='Layer '+(layer+1)+' ('+L[2]+'): ';m=L[3]}
+  m=m.replace(/^(TypeError|ValueError|KeyError|IndexError|ZeroDivisionError|AttributeError): /,'');
+  if(/not supported between instances|can't multiply|must be real number|unsupported operand|can only concatenate|could not convert|object is not (iterable|subscriptable)/.test(m))m='a value that should be a number is text, or a list sits where one number goes. Check the numbers in this layer.';
+  else if(/drawn by Python code; only recipes/.test(m))m='this effect is drawn by Python code, so it has no painted look.';
+  return{text:where+m,layer,raw:String(raw)}}
+function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';e.append(f.text);if(f.text!==f.raw)e.append(h('small',{},f.raw))}
 
 // ---------- rendering pipeline
 let seq=0,tR,tC;
 function payload(extra){const b={mode:S.mode,style:S.style,scale:S.scale,options:S.options,...extra};if(S.recipe)b.recipe=S.recipe;else b.id=S.id;return b}
 function touch(){clearTimeout(tR);$('#busy').classList.add('on');tR=setTimeout(doRender,200)}
+function clearStage(){S.frames=[];S.idx=0;const cv=$('#cv');cv.getContext('2d').clearRect(0,0,cv.width,cv.height);$('#strip').replaceChildren();$('#scrub').max=0;$('#fc').textContent='0 / 0'}
 async function doRender(){
   if(!S.recipe&&!S.id)return;const my=++seq;let res;
   try{res=await api('/api/render',payload())}catch(e){res={error:String(e)}}
   if(my!==seq)return;$('#busy').classList.remove('on');
-  if(res.error){showErr(res.error);return}
-  showErr('');const imgs=await Promise.all(res.frames.map(b=>loadImg('data:image/png;base64,'+b)));if(my!==seq)return;
+  if(res.error){const f=friendly(res.error);S.renderErr=f;clearStage();showErr(f);setBadge('bad',1);renderCheck();return}
+  S.renderErr=null;showErr(null);const imgs=await Promise.all(res.frames.map(b=>loadImg('data:image/png;base64,'+b)));if(my!==seq)return;
   S.frames=imgs;S.fps=res.fps;S.loop=res.loop;S.base=res.base;S.res=res;S.idx=Math.min(S.idx,imgs.length-1);
   $('#cv').classList.toggle('smooth',S.mode==='painted');
   $('#scrub').max=imgs.length-1;$('#kind').textContent=res.loop?'loop':'one-shot';
   buildStrip();fit();draw();buildOptions();scheduleCheck();
 }
-function showErr(t){const e=$('#err');e.textContent=t;e.style.display=t?'block':'none'}
 
 // ---------- stage
-function fit(){const st=$('#stage'),[bw,bh]=S.base;let z=+S.zoom;if(!z)z=Math.max(1,Math.floor(Math.min((st.clientWidth-30)/bw,(st.clientHeight-30)/bh)));const cv=$('#cv');cv.style.width=bw*z+'px';cv.style.height=bh*z+'px'}
+function fit(){const st=$('#stage'),[bw,bh]=S.base;let z=+S.zoom;if(!z)z=Math.max(1,Math.floor(Math.min((st.clientWidth-30)/bw,(st.clientHeight-30)/bh)));const cv=$('#cv');cv.style.width=bw*z+'px';cv.style.height=bh*z+'px';$('#zoom').options[0].textContent=+S.zoom?'fit':'fit ('+z+'x)'}
 function draw(){const im=S.frames[S.idx];if(!im)return;const cv=$('#cv');if(cv.width!==im.width||cv.height!==im.height){cv.width=im.width;cv.height=im.height}const c=cv.getContext('2d');c.imageSmoothingEnabled=S.mode==='painted';c.clearRect(0,0,cv.width,cv.height);c.drawImage(im,0,0);
-  $('#scrub').value=S.idx;$('#fc').textContent=(S.idx+1)+' / '+S.frames.length;[...$('#strip').children].forEach((c,i)=>c.classList.toggle('on',i===S.idx))}
-function buildStrip(){const s=$('#strip');s.replaceChildren();S.frames.forEach((im,i)=>{const c=h('canvas',{width:im.width,height:im.height,title:'frame '+(i+1),onclick:()=>{S.idx=i;S.playing=false;$('#bPlay').textContent='Play';draw()}});c.getContext('2d').drawImage(im,0,0);s.append(c)})}
-function setGround(g){S.ground=g;const st=$('#stage');st.classList.toggle('checker',g==='checker');st.style.background=g==='checker'?'':g;[...$('#grounds').children].forEach(b=>b.classList.toggle('on',b.dataset.g===g));if(S.mode==='painted'&&false)touch()}
+  $('#scrub').value=S.idx;$('#fc').textContent=(S.idx+1)+' / '+S.frames.length;cv.setAttribute('aria-label',(S.name||'Effect')+' preview, frame '+(S.idx+1)+' of '+S.frames.length);[...$('#strip').children].forEach((c,i)=>c.classList.toggle('on',i===S.idx))}
+function buildStrip(){const s=$('#strip');s.replaceChildren();S.frames.forEach((im,i)=>{const c=h('canvas',{width:im.width,height:im.height,title:'frame '+(i+1),role:'button','aria-label':'Show frame '+(i+1),onclick:()=>{S.idx=i;play(false);draw()}});c.getContext('2d').drawImage(im,0,0);s.append(c)})}
+function setGround(g){S.ground=g;const st=$('#stage');st.classList.toggle('checker',g==='checker');st.style.background=g==='checker'?'':g;[...$('#grounds').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===g))}
 let last=0;function loop(ts){requestAnimationFrame(loop);if(!S.playing||S.frames.length<2)return;if(ts-last<1000/S.fps)return;last=ts;
   if(S.idx>=S.frames.length-1){if(S.loop){S.idx=0}else{if(++S.hold>4){S.hold=0;S.idx=0}else{draw();return}}}else S.idx++;draw()}
 requestAnimationFrame(loop);
 function play(on){S.playing=on;$('#bPlay').textContent=on?'Pause':'Play'}
+$('#bPlay').textContent=S.playing?'Pause':'Play';
 $('#bPlay').onclick=()=>play(!S.playing);
-$('#bPrev').onclick=()=>{play(false);S.idx=(S.idx-1+S.frames.length)%S.frames.length;draw()};
-$('#bNext').onclick=()=>{play(false);S.idx=(S.idx+1)%S.frames.length;draw()};
+const step=d=>{if(!S.frames.length)return;play(false);S.idx=(S.idx+d+S.frames.length)%S.frames.length;draw()};
+$('#bPrev').onclick=()=>step(-1);$('#bNext').onclick=()=>step(1);
 $('#scrub').oninput=e=>{play(false);S.idx=+e.target.value;draw()};
-addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)&&e.target.type!=='range')return;if(e.code==='Space'){e.preventDefault();play(!S.playing)}else if(e.key==='ArrowLeft')$('#bPrev').click();else if(e.key==='ArrowRight')$('#bNext').click()});
+addEventListener('keydown',e=>{const t=e.target,tag=t.tagName,typing=/INPUT|TEXTAREA|SELECT/.test(tag)&&t.type!=='range'&&t.type!=='checkbox';
+  if((e.ctrlKey||e.metaKey)&&!typing){const k=e.key.toLowerCase();if(k==='z'){e.preventDefault();e.shiftKey?redo():undo();return}if(k==='y'){e.preventDefault();redo();return}if(k==='s'&&S.recipe){e.preventDefault();save();return}}
+  if(typing||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.code==='Space'&&!t.closest('button,summary,a,[role=option],[role=tab],input')){e.preventDefault();play(!S.playing)}
+  else if(e.key==='ArrowLeft'&&!t.closest('[role=tab],input[type=range]')){step(-1)}else if(e.key==='ArrowRight'&&!t.closest('[role=tab],input[type=range]')){step(1)}});
 addEventListener('resize',fit);
 $('#zoom').onchange=e=>{S.zoom=e.target.value;fit()};
 
 // ---------- header
-function setMode(m){S.mode=m;[...$('#modeSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.m===m));$('#style').hidden=$('#quality').hidden=m!=='painted';touch()}
-$('#modeSeg').onclick=e=>{if(e.target.dataset.m)setMode(e.target.dataset.m)};
+function setMode(m){if(m==='painted'&&S.code){toast('Painted needs a recipe. This effect is drawn by Python code.');return}S.mode=m;[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));$('#style').hidden=$('#quality').hidden=m!=='painted';S.optsSig='';touch()}
+$('#modeSeg').onclick=e=>{const b=e.target.closest('button');if(b&&!b.disabled)setMode(b.dataset.m)};
 $('#style').onchange=e=>{S.style=e.target.value;touch()};
 $('#quality').onchange=e=>{S.scale=+e.target.value;touch()};
-GROUNDS.forEach(([g,n])=>$('#grounds').append(h('button',{class:'sw',title:n,'data-g':g,style:g==='checker'?'background:conic-gradient(#555 25%,#333 0 50%,#555 0 75%,#333 0) 0 0/8px 8px':'background:'+g,onclick:()=>setGround(g)})));
+GROUNDS.forEach(([g,n])=>$('#grounds').append(h('button',{class:'sw',title:n+' ground','aria-label':n+' ground','aria-pressed':'false','data-g':g,style:g==='checker'?'background:conic-gradient(#666 25%,#333 0 50%,#666 0 75%,#333 0) 0 0/8px 8px':'background:'+g,onclick:()=>setGround(g)})));
+function setView(v){$('main').dataset.view=v;[...$('#viewSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));fit()}
+$('#viewSeg').onclick=e=>{const b=e.target.closest('button');if(b)setView(b.dataset.v)};
 
-// ---------- effect list
+// ---------- effect list (a listbox with one tab stop)
+let shown=[];
 function buildList(){
-  const q=$('#q').value.toLowerCase(),box=$('#items');box.replaceChildren();let cat=null;
-  for(const e of S.effects){if(q&&!(e.id+' '+e.name+' '+e.about+' '+e.tags.join(' ')).toLowerCase().includes(q))continue;const c=e.id.split('/')[0];
-    if(c!==cat){cat=c;box.append(h('div',{class:'cat'},c))}
-    box.append(h('button',{class:'item'+(e.id===S.id?' on':''),'data-id':e.id,onclick:()=>openEffect(e.id)},h('span',{},e.id.split('/')[1]),h('span',{class:'tag'},e.loop?'loop':'once'),e.recipe?null:h('span',{class:'tag'},'code'),h('small',{},e.about||e.name)))}}
-$('#q').oninput=buildList;
+  const q=$('#q').value.toLowerCase().trim(),only=$('#onlyRecipes').checked,box=$('#items');box.replaceChildren();let cat=null;shown=[];
+  for(const e of S.effects){if(only&&!e.recipe)continue;if(q&&!(e.id+' '+e.name+' '+e.about+' '+e.tags.join(' ')).toLowerCase().includes(q))continue;shown.push(e);const c=e.id.split('/')[0];
+    if(c!==cat){cat=c;box.append(h('div',{class:'cat',role:'presentation'},c))}
+    const sel=e.id===(S.openedId||S.id);box.append(h('div',{class:'item',role:'option',tabindex:'-1','aria-selected':String(sel),'data-id':e.id,onclick:()=>openEffect(e.id)},h('span',{},e.id.split('/')[1]),h('span',{class:'tag'},e.loop?'loop':'once'),e.recipe?null:h('span',{class:'tag',title:'drawn by Python: can be recoloured but not edited'},'code'),h('small',{},e.about||e.name)))}
+  const items=[...box.querySelectorAll('.item')];(items.find(i=>i.getAttribute('aria-selected')==='true')||items[0])?.setAttribute('tabindex','0');
+  $('#count').textContent=shown.length+' of '+S.effects.length;
+  if(!shown.length)box.append(h('div',{class:'empty'},q?'No effect matches "'+q+'". ':'No effects. ',h('button',{onclick:()=>{$('#q').value='';$('#onlyRecipes').checked=false;buildList()}},'Clear search')));
+  box.querySelector('[aria-selected=true]')?.scrollIntoView({block:'nearest'})}
+$('#q').oninput=buildList;$('#onlyRecipes').onchange=buildList;
+$('#items').addEventListener('keydown',e=>{const items=[...$('#items').querySelectorAll('.item')],i=items.indexOf(document.activeElement);if(i<0)return;let n=null;
+  if(e.key==='ArrowDown')n=Math.min(items.length-1,i+1);else if(e.key==='ArrowUp')n=Math.max(0,i-1);else if(e.key==='Home')n=0;else if(e.key==='End')n=items.length-1;
+  else if(e.key==='Enter'||e.key===' '){e.preventDefault();items[i].click();return}
+  if(n!=null){e.preventDefault();items.forEach(x=>x.tabIndex=-1);items[n].tabIndex=0;items[n].focus();items[n].scrollIntoView({block:'nearest'})}});
 async function openEffect(id){
   const r=await api('/api/recipe?id='+encodeURIComponent(id));if(r.error){toast(r.error);return}
-  S.id=id;S.recipe=r.recipe||null;S.options={};S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.idx=0;buildList();renderEditor();touch()}
-function setRecipe(r,keepOptions){S.recipe=r;S.id=null;if(!keepOptions){S.options={};S.optsSig=''}S.fixed=null;S.idx=0;buildList();renderEditor();touch()}
-$('#bNew').onclick=()=>setRecipe(JSON.parse(JSON.stringify(S.meta.new)));
+  S.openedId=id;replaceWith({recipe:r.recipe||null,id:r.recipe?null:id},'Opened '+id);if(r.recipe){S.name=r.recipe.name||id;setTitle()}
+  buildList();if(matchMedia('(max-width:820px)').matches)setView('edit')}
+function newRecipe(){S.openedId=null;replaceWith({recipe:JSON.parse(JSON.stringify(S.meta.new))},'New effect started');tab('layers')}
+$('#bNew').onclick=newRecipe;
 $('#bOpen').onclick=()=>$('#file').click();
-$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{setRecipe(JSON.parse(await f.text()))}catch(x){toast('Not valid JSON: '+x.message)}e.target.value=''};
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{S.openedId=null;replaceWith({recipe:JSON.parse(await f.text())},'File opened')}catch(x){toast('That file is not valid JSON: '+x.message)}e.target.value=''};
 
 // ---------- editor
-function edit(){touch();syncJson();renderSummaries()}
-function tab(t){S.tab=t;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t))}
-$('.tabs').onclick=e=>{if(e.target.dataset.t)tab(e.target.dataset.t)};
+function tab(t,focus){S.tab=t;document.querySelectorAll('.tabs button').forEach(b=>{const on=b.dataset.t===t;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;if(on&&focus)b.focus()});document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t))}
+$('.tabs').onclick=e=>{const b=e.target.closest('button');if(b)tab(b.dataset.t)};
+$('.tabs').addEventListener('keydown',e=>{const ts=[...document.querySelectorAll('.tabs button')],i=ts.findIndex(b=>b.dataset.t===S.tab);if(e.key==='ArrowRight'){e.preventDefault();tab(ts[(i+1)%ts.length].dataset.t,true)}else if(e.key==='ArrowLeft'){e.preventDefault();tab(ts[(i+ts.length-1)%ts.length].dataset.t,true)}});
 const num=(v,d)=>{const n=parseFloat(v);return isFinite(n)?n:d};
 function renderEditor(){renderEffect();renderLayers();syncJson();renderCheck()}
+function fld(label,input,title){const id=uid('f');input.id=id;return[h('label',{for:id,title},label),input]}
 
 function renderEffect(){
   const p=$('#p-effect');p.replaceChildren();const r=S.recipe;
-  if(!r){p.append(h('div',{class:'msg'},'This effect is drawn by Python code, so there is no recipe to edit. You can recolour it and change its options below, and watch it in every look.'),h('div',{id:'optsBox'}));buildOptions(true);return}
-  const f=(k,type='text',attrs={})=>h('input',{type,value:r[k]??'',...attrs,oninput:e=>{r[k]=type==='number'?num(e.target.value,r[k]):e.target.value;edit()}});
-  const sz=i=>h('input',{type:'number',min:8,max:256,value:r.size?.[i]??96,style:'width:70px',oninput:e=>{r.size=r.size||[96,96];r.size[i]=Math.round(num(e.target.value,96));edit()}});
-  const pv=i=>h('input',{type:'number',value:r.pivot?.[i]??'',placeholder:'centre',style:'width:70px',oninput:e=>{const v=e.target.value;if(v===''){delete r.pivot}else{r.pivot=r.pivot||[Math.floor((r.size?.[0]||96)/2),Math.floor((r.size?.[1]||96)/2)];r.pivot[i]=Math.round(num(v,0))}edit()}});
+  const help=h('details',{class:'help'},h('summary',{},'How this works'),h('p',{},'An effect is a recipe: a list of layers (glow, ring, particles, beam...) drawn in order, plus a size, a pivot (the point it stands on) and a palette.'),h('p',{},'Open the Layers tab, change a layer, and the preview redraws as you type. Check tells you if the effect loops cleanly, ends empty and stays inside its canvas.'));
+  try{if(!localStorage.getItem('gizvfx_ui_seen'))help.open=true;localStorage.setItem('gizvfx_ui_seen','1')}catch(_){help.open=true}
+  if(!r){p.append(help,h('div',{class:'msg'},'This effect is drawn by Python code, so its layers are not available. You can recolour it and change its options below, and watch it in Pixel. To make an effect of your own, press New effect, or tick Editable only in the list.'),h('div',{class:'row'},h('button',{class:'primary',onclick:newRecipe},'New effect')),h('h3',{},'Preview options'),h('div',{id:'optsBox'}));buildOptions(true);return}
+  const f=(k,type='text',attrs={})=>h('input',{type,value:r[k]??'',...attrs,oninput:e=>{r[k]=type==='number'?num(e.target.value,r[k]):e.target.value;if(k==='name'||k==='id'){S.name=r.name||r.id||''}edit()}});
+  const sz=i=>h('input',{type:'number',min:8,max:256,value:r.size?.[i]??96,style:'width:76px',oninput:e=>{r.size=r.size||[96,96];r.size[i]=Math.round(num(e.target.value,96));edit()}});
+  const pv=i=>h('input',{type:'number',value:r.pivot?.[i]??'',placeholder:'centre',style:'width:76px',oninput:e=>{const v=e.target.value;if(v===''){delete r.pivot}else{r.pivot=r.pivot||[Math.floor((r.size?.[0]||96)/2),Math.floor((r.size?.[1]||96)/2)];r.pivot[i]=Math.round(num(v,0))}edit()}});
   const pal=h('select',{onchange:e=>{r.palette=e.target.value;edit()}},...S.meta.palettes.map(n=>h('option',{value:n,selected:r.palette===n},n)));
   if(typeof r.palette!=='string'||!S.meta.palettes.includes(r.palette))pal.prepend(h('option',{value:r.palette,selected:true},'custom'));
-  p.append(h('h3',{},'Effect'),h('div',{class:'grid2'},h('label',{},'name'),f('name'),h('label',{},'id'),f('id'),h('label',{},'about'),f('about'),
-    h('label',{},'duration s'),f('duration','number',{step:0.1,min:0.1}),h('label',{},'fps'),f('fps','number',{min:1,max:60}),h('label',{},'size w x h'),h('div',{class:'row',style:'margin:0'},sz(0),sz(1)),
-    h('label',{},'pivot x, y'),h('div',{class:'row',style:'margin:0'},pv(0),pv(1)),h('label',{},'palette'),pal,h('label',{},'loop'),h('input',{type:'checkbox',checked:!!r.loop,onchange:e=>{r.loop=e.target.checked;edit()}})),
-    h('div',{class:'hint'},'The pivot is where the effect stands (feet, centre of a blast); layers are placed relative to it.'),
-    h('h3',{},'Try options (do not change the recipe)'),h('div',{id:'optsBox'}),
-    h('h3',{},'Save and export'),h('div',{class:'row'},h('input',{id:'saveName',placeholder:'file name',value:(r.id||'effect').split('/').pop(),style:'flex:1'}),h('button',{onclick:save},'Save recipe')),
+  const g=h('div',{class:'grid2'});
+  const add=(l,i,t)=>g.append(...fld(l,i,t));
+  add('name',f('name'));add('id',f('id'),'category/name: also the file name of exports');add('about',f('about'));add('duration (s)',f('duration','number',{step:0.1,min:0.1}));add('fps',f('fps','number',{min:1,max:60}));
+  add('width',sz(0));add('height',sz(1));add('pivot x',pv(0),'where the effect stands: layers are placed relative to it');add('pivot y',pv(1),'where the effect stands: layers are placed relative to it');add('palette',pal);
+  add('loop',h('input',{type:'checkbox',checked:!!r.loop,onchange:e=>{r.loop=e.target.checked;edit()}}));
+  p.append(help,h('h3',{},'Effect'),g,
+    h('h3',{},'Preview options'),h('div',{class:'hint'},'Only for this preview: the recipe is not changed.'),h('div',{id:'optsBox'}),
+    h('h3',{},'Save and export'),h('div',{class:'row'},h('label',{for:'saveName',class:'sr'},'File name'),h('input',{id:'saveName',placeholder:'file name',value:(r.id||'effect').split('/').pop(),style:'flex:1'}),h('button',{onclick:save},'Save recipe')),
     h('div',{class:'row'},h('button',{class:'primary',onclick:()=>exportFx()},'Export GIF + sheet'),h('span',{class:'hint'},'current look: '+S.mode+(S.mode==='painted'?' '+S.style:''))));
   buildOptions(true)}
 
 function buildOptions(force){
-  const box=$('#optsBox');if(!box||!S.res)return;const o=S.res.options,ro=S.res.recipe_options||{};const sig=JSON.stringify([Object.keys(o),S.id||S.recipe?.id]);if(!force&&sig===S.optsSig&&box.children.length)return;S.optsSig=sig;box.replaceChildren();
+  const box=$('#optsBox');if(!box||!S.res)return;const o=S.res.options,ro=S.res.recipe_options||{};const sig=JSON.stringify([Object.keys(o),S.id||S.recipe?.id,S.mode]);if(!force&&sig===S.optsSig&&box.children.length)return;S.optsSig=sig;box.replaceChildren();
   const set=(k,v)=>{if(v===''||v==null)delete S.options[k];else S.options[k]=v;touch()};
-  const palSel=h('select',{onchange:e=>set('palette',e.target.value||null)},h('option',{value:''},'(recipe default)'),...S.meta.palettes.map(n=>h('option',{value:n,selected:S.options.palette===n},n)));
-  const g=h('div',{class:'grid2'},h('label',{},'palette'),palSel,h('label',{},'seed'),h('input',{type:'number',value:S.options.seed??o.seed??1,oninput:e=>set('seed',num(e.target.value,1))}),
-    h('label',{},'light'),h('input',{type:'number',step:0.1,value:S.options.light??o.light??1,oninput:e=>set('light',num(e.target.value,1))}),
-    h('label',{},'flip'),h('input',{type:'checkbox',checked:!!S.options.flip,onchange:e=>set('flip',e.target.checked||null)}),
-    h('label',{},'colours'),h('input',{type:'number',min:0,max:64,value:S.options.colors??o.colors??24,title:'pixel look: one shared palette of at most N colours, 0 = off',oninput:e=>set('colors',Math.round(num(e.target.value,24)))}));
-  for(const k of Object.keys(ro)){const cur=S.options[k]??o[k]??ro[k];g.append(h('label',{title:'recipe option'},k),h('input',{value:typeof cur==='string'?cur:JSON.stringify(cur),oninput:e=>{let v=e.target.value;try{v=JSON.parse(v)}catch(_){}set(k,v)}}))}
+  const g=h('div',{class:'grid2'});const add=(l,i,t)=>g.append(...fld(l,i,t));
+  add('palette',h('select',{onchange:e=>set('palette',e.target.value||null)},h('option',{value:''},'(effect default)'),...S.meta.palettes.map(n=>h('option',{value:n,selected:S.options.palette===n},n))));
+  add('seed',h('input',{type:'number',value:S.options.seed??o.seed??1,oninput:e=>set('seed',num(e.target.value,1))}));
+  add('light',h('input',{type:'number',step:0.1,value:S.options.light??o.light??1,oninput:e=>set('light',num(e.target.value,1))}));
+  add('flip',h('input',{type:'checkbox',checked:!!S.options.flip,onchange:e=>set('flip',e.target.checked||null)}));
+  if(S.mode==='pixel')add('colours',h('input',{type:'number',min:0,max:64,value:S.options.colors??o.colors??24,oninput:e=>set('colors',Math.round(num(e.target.value,24)))}),'one shared palette of at most N colours; 0 = off');
+  for(const k of Object.keys(ro)){const cur=S.options[k]??o[k]??ro[k];add(k,h('input',{value:typeof cur==='string'?cur:JSON.stringify(cur),oninput:e=>{let v=e.target.value;try{v=JSON.parse(v)}catch(_){}set(k,v)}}),'option of this recipe')}
   box.append(g)}
 
 function fmtLayer(l){return '{'+String.fromCharCode(10)+Object.entries(l).map(([k,v])=>' '+JSON.stringify(k)+': '+JSON.stringify(v)).join(','+String.fromCharCode(10))+String.fromCharCode(10)+'}'}
-function summary(l){const k=Object.keys(l).filter(x=>x!=='type').slice(0,3).map(x=>x+': '+JSON.stringify(l[x])).join('  ');return k}
+function summary(l){return Object.keys(l).filter(x=>x!=='type').slice(0,3).map(x=>x+': '+JSON.stringify(l[x])).join('  ')}
 function renderSummaries(){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const l=S.recipe?.layers?.[i];if(l)c.querySelector('.s').textContent=summary(l)})}
+function addLayer(type){const r=S.recipe;r.layers.push(JSON.parse(JSON.stringify(TEMPL[type]||{type})));S.sel=r.layers.length-1;renderLayers();edit();const cards=document.querySelectorAll('#p-layers .card');cards[cards.length-1]?.scrollIntoView({block:'nearest'});cards[cards.length-1]?.querySelector('textarea').focus()}
 function renderLayers(){
-  const p=$('#p-layers');p.replaceChildren();const r=S.recipe;if(!r){p.append(h('div',{class:'msg'},'No layers: this effect is drawn by Python code.'));return}
-  const add=h('select',{'aria-label':'Layer type'},...S.meta.layers.map(t=>h('option',{value:t},t)));
-  p.append(h('div',{class:'row'},add,h('button',{class:'primary',onclick:()=>{r.layers.push(JSON.parse(JSON.stringify(TEMPL[add.value]||{type:add.value})));S.sel=r.layers.length-1;renderLayers();edit()}},'Add layer')),h('div',{class:'hint'},'Layers draw in this order: the last one is on top. Edit a layer as JSON; a click on a key name below it adds the key.'));
+  const p=$('#p-layers');p.replaceChildren();const r=S.recipe;if(!r){p.append(h('div',{class:'msg'},'No layers to edit: this effect is drawn by Python code.'),h('div',{class:'row'},h('button',{class:'primary',onclick:newRecipe},'New effect')));return}
+  const more=h('select',{'aria-label':'Another layer type',onchange:e=>{if(e.target.value){addLayer(e.target.value);e.target.value=''}}},h('option',{value:''},'Other type...'),...S.meta.layers.filter(t=>!COMMON_TYPES.includes(t)).sort().map(t=>h('option',{value:t},t)));
+  p.append(h('div',{class:'row',role:'group','aria-label':'Add a layer'},...COMMON_TYPES.map(t=>h('button',{class:'chip',onclick:()=>addLayer(t)},'+ '+t)),more),
+    h('div',{class:'hint'},r.layers.length?'Layers draw in this order: the last one is on top. Edit a layer as JSON; the key list under it shows what it accepts.':'No layers yet. Add one above: a glow or a ring is a good start.'));
   r.layers.forEach((l,i)=>{
-    const ta=h('textarea',{spellcheck:'false',rows:Math.min(10,Math.max(3,JSON.stringify(l,null,1).split('\n').length)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw 0;r.layers[i]=v;e.target.classList.remove('bad');edit()}catch(_){e.target.classList.add('bad')}}});
+    const msgId=uid('lm');const msg=h('div',{class:'fmsg',id:msgId,role:'alert',hidden:true});
+    const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' ('+l.type+') JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');msg.hidden=true;edit()}catch(x){e.target.setAttribute('aria-invalid','true');msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
     ta.value=fmtLayer(l);
     const sc=S.meta.schema[l.type]||{};
-    const keys=h('div',{class:'keys'},h('details',{},h('summary',{},'keys of '+l.type),...Object.entries({...sc}).map(([k,v])=>h('p',{},h('code',{onclick:()=>{try{const cur=JSON.parse(ta.value);if(!(k in cur)){cur[k]=0;ta.value=JSON.stringify(cur);ta.dispatchEvent(new Event('input'))}}catch(_){}}},k),' '+v)),h('p',{},h('b',{},'every layer: '),Object.keys(S.meta.common).join(', '))));
-    const card=h('div',{class:'card'+(i===S.sel?' sel':'')},
-      h('div',{class:'hd',onclick:()=>{S.sel=i;document.querySelectorAll('#p-layers .card').forEach((c,j)=>c.classList.toggle('sel',j===i))}},h('b',{},(i+1)+' '+l.type),h('span',{class:'s'},summary(l)),
-        h('button',{class:'icon ghost',title:'Move up',disabled:i===0,onclick:ev=>{ev.stopPropagation();[r.layers[i-1],r.layers[i]]=[r.layers[i],r.layers[i-1]];renderLayers();edit()}},'↑'),
-        h('button',{class:'icon ghost',title:'Move down',disabled:i===r.layers.length-1,onclick:ev=>{ev.stopPropagation();[r.layers[i+1],r.layers[i]]=[r.layers[i],r.layers[i+1]];renderLayers();edit()}},'↓'),
-        h('button',{class:'icon ghost',title:'Duplicate',onclick:ev=>{ev.stopPropagation();r.layers.splice(i+1,0,JSON.parse(JSON.stringify(l)));renderLayers();edit()}},'+'),
-        h('button',{class:'icon ghost',title:'Delete',onclick:ev=>{ev.stopPropagation();r.layers.splice(i,1);renderLayers();edit()}},'×')),ta,keys);
-    p.append(card)})}
+    const keys=h('div',{class:'keys'},h('details',{},h('summary',{},'keys of '+l.type+' ('+Object.keys(sc).length+')'),...Object.entries(sc).map(([k,v])=>h('p',{},h('button',{class:'key',title:'add this key to the layer',onclick:()=>{try{const cur=JSON.parse(ta.value);if(!(k in cur)){cur[k]=0;ta.value=fmtLayer(cur);ta.dispatchEvent(new Event('input'))}}catch(_){}}},k),' '+v)),h('p',{},h('b',{},'every layer: '),Object.keys(S.meta.common).join(', '))));
+    const ib=(n,label,fn,dis)=>{const b=h('button',{class:'icon ghost',title:label,'aria-label':label+' (layer '+(i+1)+')',disabled:dis,onclick:fn});setIcon(b,n);return b};
+    p.append(h('div',{class:'card'+(i===S.sel?' sel':'')},
+      h('div',{class:'hd'},h('button',{class:'title',onclick:()=>{S.sel=i;document.querySelectorAll('#p-layers .card').forEach((c,j)=>c.classList.toggle('sel',j===i));ta.focus()}},h('b',{},(i+1)+' '+l.type),h('span',{class:'s'},summary(l))),
+        ib('up','Move up',()=>{[r.layers[i-1],r.layers[i]]=[r.layers[i],r.layers[i-1]];renderLayers();edit()},i===0),
+        ib('down','Move down',()=>{[r.layers[i+1],r.layers[i]]=[r.layers[i],r.layers[i+1]];renderLayers();edit()},i===r.layers.length-1),
+        ib('dup','Duplicate',()=>{r.layers.splice(i+1,0,JSON.parse(JSON.stringify(l)));renderLayers();edit()}),
+        ib('del','Delete',()=>{r.layers.splice(i,1);renderLayers();edit();toast('Layer '+(i+1)+' deleted.',{label:'Undo',fn:undo})})),ta,msg,keys))})}
 
-function syncJson(){const j=$('#json');if(document.activeElement===j||!S.recipe)return;j.value=JSON.stringify(S.recipe,null,1);j.classList.remove('bad')}
-$('#json').oninput=e=>{try{S.recipe=JSON.parse(e.target.value);e.target.classList.remove('bad');renderEffect();renderLayers();touch()}catch(_){e.target.classList.add('bad')}};
-$('#json').onblur=()=>syncJson();
-$('#bFmt').onclick=()=>{if(S.recipe){$('#json').blur();syncJson()}};
+function syncJson(){const j=$('#json');if(document.activeElement===j||!S.recipe)return;j.value=JSON.stringify(S.recipe,null,1);j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true}
+$('#json').oninput=e=>{const m=$('#jsonmsg');try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object')throw new Error('a recipe is an object');S.recipe=v;S.code=false;e.target.removeAttribute('aria-invalid');m.hidden=true;renderEffect();renderLayers();edit()}catch(x){e.target.setAttribute('aria-invalid','true');m.hidden=false;m.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version; your text stays as you typed it.'}};
+$('#json').onblur=()=>{if(!$('#json').getAttribute('aria-invalid'))syncJson()};
+$('#bFmt').onclick=()=>{if(S.recipe&&!$('#json').getAttribute('aria-invalid')){$('#json').blur();syncJson()}};
 $('#bDl').onclick=()=>{if(!S.recipe)return;download((S.recipe.id||'effect').split('/').pop()+'.json',new Blob([JSON.stringify(S.recipe,null,1)],{type:'application/json'}))};
 function download(name,blob){const a=h('a',{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();a.remove()}
-async function save(){const r=await api('/api/save',{name:$('#saveName').value,recipe:S.recipe});toast(r.error||('Saved '+r.path))}
-async function exportFx(){toast('Exporting');const r=await api('/api/export',payload({name:S.recipe?($('#saveName')?.value||''):''}));if(r.error){toast(r.error);return}
-  for(const[n,b64]of Object.entries(r.files)){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);download(n,new Blob([u]))}toast('Exported (also in '+r.folder+')')}
+async function save(){if(!S.recipe)return;const r=await api('/api/save',{name:$('#saveName')?.value||(S.recipe.id||'effect').split('/').pop(),recipe:S.recipe});if(r.error){toast(r.error);return}S.dirty=false;setTitle();toast('Saved to '+r.path)}
+async function exportFx(){toast('Exporting...');const r=await api('/api/export',payload({name:S.recipe?($('#saveName')?.value||''):''}));if(r.error){toast(friendly(r.error).text);return}
+  for(const[n,b64]of Object.entries(r.files)){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);download(n,new Blob([u]))}toast('Exported. A copy is also in '+r.folder)}
 
 // ---------- check and fix
-function scheduleCheck(){clearTimeout(tC);S.check=null;setDot('');tC=setTimeout(runCheck,500)}
-function setDot(c){$('#dot').className='dot '+c}
-async function runCheck(){const my=seq;const r=await api('/api/check',payload());if(my!==seq)return;S.check=r;setDot(r.error?'bad':r.problems?.length?'bad':r.flags?.length?'warn':'ok');renderCheck()}
+function setBadge(cls,n){const b=$('#badge');b.className='badge '+cls;b.textContent=cls==='ok'?'ok':n==null?'...':String(n);b.setAttribute('aria-label','Check result: '+(cls==='ok'?'clean':cls==='bad'?n+' problem(s)':cls==='warn'?n+' note(s)':'running'))}
+function scheduleCheck(){clearTimeout(tC);S.check=null;setBadge('',null);tC=setTimeout(runCheck,500)}
+async function runCheck(){if(S.renderErr)return;const my=seq;const r=await api('/api/check',payload());if(my!==seq)return;S.check=r;if(r.error)setBadge('bad',1);else setBadge(r.problems.length?'bad':r.flags.length?'warn':'ok',r.problems.length||r.flags.length);renderCheck()}
+function msg(cls,text,raw){return h('div',{class:'msg '+cls,role:cls==='bad'?'alert':null},text,raw&&raw!==text?h('small',{},raw):null)}
 function renderCheck(){
   const p=$('#p-check');p.replaceChildren();const c=S.check;
-  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:'primary',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. It never changes your recipe unless you press Use.')));
-  if(!c)p.append(h('div',{class:'hint'},'Checking...'));
-  else if(c.error)p.append(h('div',{class:'msg bad'},c.error));
-  else{if(!c.problems.length)p.append(h('div',{class:'msg ok'},'Clean: deterministic, '+(S.loop?'the loop closes':'ends empty')+', nothing touches the edge.'));
-    c.problems.forEach(x=>p.append(h('div',{class:'msg bad'},x)));c.flags.forEach(x=>p.append(h('div',{class:'msg warn'},x)))}
-  const f=S.fixed;if(f){p.append(h('h3',{},'Fix result'));if(f.error)p.append(h('div',{class:'msg bad'},f.error));else{
-    (f.done.length?f.done:['nothing needed fixing']).forEach(x=>p.append(h('div',{class:'msg ok'},x)));f.problems.forEach(x=>p.append(h('div',{class:'msg bad'},'To fix by hand: '+x)));f.notes.forEach(x=>p.append(h('div',{class:'msg'},x)));
-    if(f.fixed_recipe)p.append(h('div',{class:'row'},h('button',{class:'primary',onclick:()=>{setRecipe(f.fixed_recipe,true);S.fixed=null;toast('Using the fixed recipe (canvas resized)')}},'Use the fixed recipe'),h('span',{class:'hint'},'the canvas was changed')))}}}
+  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:'primary',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. Your recipe changes only if you press Use.')));
+  if(S.renderErr){const f=S.renderErr,d=msg('bad','The effect cannot be drawn. '+f.text,f.raw);if(f.layer!=null&&S.recipe)d.append(h('button',{onclick:()=>{tab('layers');S.sel=f.layer;renderLayers();document.querySelectorAll('#p-layers .card')[f.layer]?.scrollIntoView({block:'nearest'});document.querySelectorAll('#p-layers textarea')[f.layer]?.focus()}},'Go to layer '+(f.layer+1)));p.append(d)}
+  else if(!c)p.append(h('div',{class:'hint'},'Checking...'));
+  else if(c.error)p.append(msg('bad',friendly(c.error).text,c.error));
+  else{if(!c.problems.length)p.append(msg('ok','Clean: deterministic, '+(S.loop?'the loop closes':'ends empty')+', nothing touches the edge.'));
+    c.problems.forEach(x=>p.append(msg('bad',x)));c.flags.forEach(x=>p.append(msg('warn',x)))}
+  const f=S.fixed;if(f){p.append(h('h3',{},'Fix result'));if(f.error)p.append(msg('bad',friendly(f.error).text,f.error));else{
+    (f.done.length?f.done:['nothing needed fixing']).forEach(x=>p.append(msg('ok',x)));f.problems.forEach(x=>p.append(msg('bad','Still to fix by hand: '+x)));f.notes.forEach(x=>p.append(msg('',x)));
+    if(f.fixed_recipe)p.append(h('div',{class:'row'},h('button',{class:'primary',onclick:()=>{replaceWith({recipe:f.fixed_recipe,options:S.options},'Fixed recipe in use (canvas resized)')}},f.problems.length?'Use the fixed recipe ('+f.problems.length+' left)':'Use the fixed recipe'),h('span',{class:'hint'},'The canvas size changes; Undo brings the old one back.')))}}}
 async function runFix(){S.fixed=null;const r=await api('/api/fix',payload());S.fixed=r;tab('check');renderCheck()}
 
 // ---------- start
 (async()=>{
   S.meta=await api('/api/meta');$('#style').append(...S.meta.styles.map(s=>h('option',{value:s},s)));
-  S.effects=(await api('/api/list')).effects;setGround(S.ground);buildList();tab('effect');
-  const first=S.effects.find(e=>e.id==='fire/torch')||S.effects[0];if(first)openEffect(first.id)})();
+  S.effects=(await api('/api/list')).effects;setGround(S.ground);setBadge('',null);tab('effect');updHist();
+  const first=['buff/level-up','holy/smite'].map(id=>S.effects.find(e=>e.id===id&&e.recipe)).find(Boolean)||S.effects.find(e=>e.recipe)||S.effects[0];if(first)await openEffect(first.id);
+  buildList()})();
 </script>
 </body>
 </html>
