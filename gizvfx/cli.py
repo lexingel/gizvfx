@@ -114,9 +114,9 @@ def main(argv=None):
             ap.add_argument("--scale", type=int, default=4); ap.add_argument("--out", default="gizvfx_out"); ap.add_argument("--name"); ap.add_argument("--bg"); ap.add_argument("--intensity", type=float, default=1.0); ap.add_argument("--hold", type=int, default=2); ap.add_argument("--style", default="ink", choices=["ink", "watercolor", "comic", "chalk", "linocut", "stencil", "glitch", "lineart"]); a = ap.parse_args(rest)
             from . import painted
             m, meta = engine.get(a.id); given = _opts(a.opt); o = engine.options(meta, given); fps = a.fps or meta.get("fps", 12)
-            frames = painted.render(a.id, given, frames=a.frames, fps=fps, scale=a.scale, style=a.style, opts={"intensity": a.intensity, "hold": a.hold}); name = (a.name or meta["id"].split("/")[-1]) + "_" + ("painted" if a.style == "ink" else a.style)
+            frames = painted.render(a.id, given, frames=a.frames, fps=fps, scale=a.scale, style=a.style, opts={"intensity": a.intensity, "hold": a.hold}); name = a.name or (meta["id"].split("/")[-1] + "_" + ("painted" if a.style == "ink" else a.style))                      # --name is the whole file name
             m2 = dict(meta); m2["pivot"] = tuple(v * a.scale for v in meta["pivot"])
-            for pth in write_all(frames, a.out, name, m2, dict(o), fps, scale=1, contact=True, contact_scale=1, contact_bg=(232, 228, 218), bg=_bg(a.bg)): print(pth)
+            for pth in write_all(frames, a.out, name, m2, dict(o), fps, scale=1, contact=True, contact_scale=1, contact_bg=(_bg(a.bg) if a.bg else (232, 228, 218)), bg=_bg(a.bg)): print(pth)
             return 0
     except (KeyError, ValueError) as e:                                                          # recipe errors arrive as ValueError from the draw call too
         print(f"gizvfx: {e.args[0] if e.args else e}", file=sys.stderr); return 2

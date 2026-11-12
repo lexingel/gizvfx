@@ -13,6 +13,8 @@ GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, pa
 
 - `particles` `drop: true`: particles stay where the layer was when they were born, so a layer moving along `at` leaves a trail with one layer (a blind test had to build it from 16 layers). Works in both renderers.
 
+- Fourth blind test: `squash` can be animated on `ring`, `glow`, `orbit` and `rays` (a spinning coin in one layer; it was a raw numpy error); `painted --name` is the whole file name and `painted --bg` also sets the contact sheet ground; `check --report` flags options no layer uses; docs: options inside paths, a path runs over its own `t` window, a thick ring is a filled ellipse.
+
 History carried over from Gizpix 0.2.0:
 - Painted: glows fall off in the pixel renderer's bands (soft edges), watercolor has more body and colour on dark grounds. Beam colours across the width match the pixel beam.
 - Painted, the last small differences from the pixel frames: `rim`, a true gradient across a `beam` with a white-hot line, core-shaded dots (coin-burst is gold again), thicker speed lines, a glow with the pixel renderer's flat first step (shield-bubble, bomb-fuse), crossing-line sparkles for `star`, more body in watercolor.

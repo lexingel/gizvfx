@@ -29,7 +29,7 @@ COMMON = {"t": "time window [start, end] in 0..1 (default [0, 1]); the layer dra
 SCHEMA = {
     "glow": {"radius": "px, animatable", "strength": "0..1+, animatable (try {wave:[0.4,0.8,3]})", "steps": "brightness bands (default 4)", "squash": "0.1..1: flat light on the floor (1 = round)"},
     "disc": {"radius": "px", "mode": "core (bright middle) | lit (lit from top-left, smoke/stone)", "bias": "shifts shading dark(-)..bright(+)", "cover": "0..1 dithered translucency"},
-    "ring": {"radius": "px", "thick": "px", "squash": "1 = circle, 0.4 = flat ellipse on the floor", "cover": "0..1 dither", "arc": "[a0, a1] degrees: only part of the ring"},
+    "ring": {"radius": "px", "thick": "px", "squash": "1 = circle, 0.4 = flat ellipse on the floor; animatable, e.g. [1, 0.15, 1] for a spinning coin", "cover": "0..1 dither", "arc": "[a0, a1] degrees: only part of the ring"},
     "star": {"size": "px (spike length)", "arms": "4 | 6 | 8", "thin": "0.05..0.4 body width"},
     "particles": {"mode": "burst (all fly out from the window start) | stream (endless, loop-safe)", "count": "int", "area": "[w, h] spawn box", "angle": "[a0, a1] degrees, 0 = right, 90 = down, -90 = up",
                   "speed": "[lo, hi] px travelled over a particle's life", "life": "[lo, hi] fraction of the window (burst) or of the cycle (stream)", "cycles": "stream: repeats per loop (whole number)",
@@ -127,7 +127,7 @@ def _ramp(d, main, roles=None):
 # ---- layers --------------------------------------------------------------------------------------------------------------
 def L_glow(f, d, c):
     r = val(d.get("radius", 20), c.e); k = val(d.get("strength", 0.6), c.e, c.t)
-    if r > 0 and k > 0: f.glow(c.ox, c.oy, r, ramp_at(c.ramp, c.v(0.6)), k, steps=int(d.get("steps", 4)), sq=d.get("squash", 1))
+    if r > 0 and k > 0: f.glow(c.ox, c.oy, r, ramp_at(c.ramp, c.v(0.6)), k, steps=int(d.get("steps", 4)), sq=val(d.get("squash", 1), c.e))
 
 
 def L_disc(f, d, c):
@@ -136,7 +136,7 @@ def L_disc(f, d, c):
 
 
 def L_ring(f, d, c):
-    r = val(d.get("radius", 20), c.e); th = val(d.get("thick", 2), c.e) * c.sc; sq = d.get("squash", 1); cv = val(d.get("cover", 1), c.e)
+    r = val(d.get("radius", 20), c.e); th = val(d.get("thick", 2), c.e) * c.sc; sq = val(d.get("squash", 1), c.e); cv = val(d.get("cover", 1), c.e)
     if r <= 0 or th < 0.5: return
     th = max(th, 1.0)                                                                  # a ring thinner than a pixel would draw as dots
     if sq == 1:
@@ -261,12 +261,12 @@ def L_rays(f, d, c):
     n = int(d.get("count", 8)); r0 = val(d.get("inner", 4), c.e); ln = val(d.get("length", 12), c.e); rot = math.radians(val(d.get("rotate", 0), c.e)); jit = d.get("jitter", 0); wd = d.get("width", 2)
     if ln <= 0.5: return
     for i in range(n):
-        a = TAU * i / n + rot; L = ln * (1 - jit * c.rng.u(0, 1)); sq = d.get("squash", 1); x0, y0 = c.ox + math.cos(a) * r0, c.oy + math.sin(a) * r0 * sq
+        a = TAU * i / n + rot; L = ln * (1 - jit * c.rng.u(0, 1)); sq = val(d.get("squash", 1), c.e); x0, y0 = c.ox + math.cos(a) * r0, c.oy + math.sin(a) * r0 * sq
         f.tapered(x0, y0, x0 + math.cos(a) * L, y0 + math.sin(a) * L * sq, wd, 1, c.ramp, v=c.v(0.8))
 
 
 def L_orbit(f, d, c):
-    n = int(d.get("count", 5)); R = val(d.get("radius", 20), c.e); sq = d.get("squash", 1); turns = d.get("turns", 1); size = val(d.get("size", 3), c.e) * c.sc; trail = int(d.get("trail", 0))
+    n = int(d.get("count", 5)); R = val(d.get("radius", 20), c.e); sq = val(d.get("squash", 1), c.e); turns = d.get("turns", 1); size = val(d.get("size", 3), c.e) * c.sc; trail = int(d.get("trail", 0))
     if size <= 0.2 or R < 0: return
     for i in range(n):
         for j in range(trail + 1):

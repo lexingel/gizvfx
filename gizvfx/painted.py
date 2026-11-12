@@ -156,14 +156,14 @@ def _halftone(img, d, c, S):
 def _glow(img, d, c, S):
     r = sp.val(d.get("radius", 20), c.e) * S; k = sp.val(d.get("strength", 0.6), c.e, c.t)
     if r < 2 or k <= 0.02: return
-    h, w = img.size[1], img.size[0]; yy, xx = np.mgrid[0:h, 0:w]; dd = np.hypot(xx - c.ox, (yy - c.oy) / min(max(d.get("squash", 1), 0.1), 1.0)) / r; fo = np.clip(1 - dd, 0, 1); st_ = max(int(d.get("steps", 4)), 1); nn = fo * st_; fr_ = nn - np.floor(nn); sm_ = np.clip(fr_ / 0.14, 0, 1); sm_ = sm_ * sm_ * (3 - 2 * sm_)
+    h, w = img.size[1], img.size[0]; yy, xx = np.mgrid[0:h, 0:w]; dd = np.hypot(xx - c.ox, (yy - c.oy) / min(max(sp.val(d.get("squash", 1), c.e), 0.1), 1.0)) / r; fo = np.clip(1 - dd, 0, 1); st_ = max(int(d.get("steps", 4)), 1); nn = fo * st_; fr_ = nn - np.floor(nn); sm_ = np.clip(fr_ / 0.14, 0, 1); sm_ = sm_ * sm_ * (3 - 2 * sm_)
     a = k * np.where(nn > 0, (np.floor(nn) + sm_) / st_, 0) * np.clip((1 - dd) / 0.1, 0, 1)                      # the pixel glow falls off in steps (ceil(f * steps) / steps): the same bands, with soft edges
     rgb = np.array(_col(c.ramp, c.v(0.6)), np.uint8); lay = np.zeros((h, w, 4), np.uint8); lay[..., :3] = rgb; lay[..., 3] = (np.where(a < 0.06, 0, a) * 255).astype(np.uint8)
     return Image.fromarray(lay, "RGBA")
 
 
 def _disc(img, d, c, S, ring=False):
-    r = sp.val(d.get("radius", 8 if not ring else 20), c.e) * S; th = sp.val(d.get("thick", 2), c.e) * S if ring else 0; sq = d.get("squash", 1)
+    r = sp.val(d.get("radius", 8 if not ring else 20), c.e) * S; th = sp.val(d.get("thick", 2), c.e) * S if ring else 0; sq = sp.val(d.get("squash", 1), c.e)
     if r < 1 or (ring and th < 0.5 * S): return                                                                   # a ring thinner than half a recipe pixel is gone, as in the pixel renderer
     lay = Image.new("RGBA", img.size, (0, 0, 0, 0)); dr = ImageDraw.Draw(lay); col = _col(c.ramp, c.v(0.7 if not ring else 0.8)) + (255,)
     if ring:
@@ -286,7 +286,7 @@ def _blob(img, d, c, S):
 
 
 def _orbit(img, d, c, S):
-    n = int(d.get("count", 5)); R = sp.val(d.get("radius", 20), c.e) * S; sq = d.get("squash", 1); turns = d.get("turns", 1); size = sp.val(d.get("size", 3), c.e) * S; trail = int(d.get("trail", 0))
+    n = int(d.get("count", 5)); R = sp.val(d.get("radius", 20), c.e) * S; sq = sp.val(d.get("squash", 1), c.e); turns = d.get("turns", 1); size = sp.val(d.get("size", 3), c.e) * S; trail = int(d.get("trail", 0))
     if size <= 0.2 * S or R < 0: return
     lay = Image.new("RGBA", img.size, (0, 0, 0, 0)); dr = ImageDraw.Draw(lay)
     for i in range(n):
@@ -346,7 +346,7 @@ def _bolt(img, d, c, S):
 
 
 def _rays(img, d, c, S):
-    n = int(d.get("count", 8)); r0 = sp.val(d.get("inner", 4), c.e) * S; ln = sp.val(d.get("length", 12), c.e) * S; rot = math.radians(sp.val(d.get("rotate", 0), c.e)); jit = d.get("jitter", 0); wd = d.get("width", 2) * S; sq = d.get("squash", 1)
+    n = int(d.get("count", 8)); r0 = sp.val(d.get("inner", 4), c.e) * S; ln = sp.val(d.get("length", 12), c.e) * S; rot = math.radians(sp.val(d.get("rotate", 0), c.e)); jit = d.get("jitter", 0); wd = d.get("width", 2) * S; sq = sp.val(d.get("squash", 1), c.e)
     if ln <= 0.5 * S: return
     lay = Image.new("RGBA", img.size, (0, 0, 0, 0)); dr = ImageDraw.Draw(lay); rg = c.u.rng; col = _col(c.ramp, c.v(0.8)) + (255,)
     for i in range(n):

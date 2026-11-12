@@ -74,4 +74,7 @@ def run():
         tp = os.path.join(d, "t.json"); json.dump({"id": "test/t", "duration": 1.0, "size": [120, 40], "pivot": [10, 20], "layers": [{"type": "particles", "mode": "stream", "count": 30, "at": [[0, 0], [90, 0]], "drop": True, "life": [0.3, 0.4], "speed": [0, 1], "size": [3, 2], "t": [0, 0.9]}]}, open(tp, "w"))
         fr = engine.render(tp, {"colors": 0}); xs = [np.nonzero(np.array(fr[6])[..., 3])[1]]
         assert xs[0].size and xs[0].max() - xs[0].min() > 20, "particles should be spread along the path the layer flew"
+    with tempfile.TemporaryDirectory() as d:                                                       # an animated squash, options inside paths, an unused option is flagged
+        qp = os.path.join(d, "q.json"); json.dump({"id": "test/q", "duration": 0.5, "size": [60, 60], "options": {"h": 20, "foam": 1}, "layers": [{"type": "ring", "radius": 14, "thick": 5, "squash": [1, 0.15, 1], "at": [[0, 0], [0, "-$h"], [0, 0]]}]}, open(qp, "w"))
+        assert len(engine.render(qp)) > 1 and any("'foam' is never used" in x for x in engine.report(qp)[1])
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0
