@@ -72,6 +72,10 @@ def _pad_recipe(meta, out, name, padx=8, pady=8):
 def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=None):
     """returns (done, problems, notes, written paths): problems are what a user must fix (cropping, does not end empty, loop seam, painted check); notes are advisory (mesh, flat colour, motion pops, empty frames, lone pixels)"""
     m, meta = engine.get(eid); name = name or meta["id"].split("/")[-1]; path = eid; done = []; capped = False
+    stale = os.path.join(out, name + ".fixed.json")
+    if os.path.exists(stale) and os.path.abspath(stale) != os.path.abspath(eid):
+        try: os.remove(stale)                                                                  # an old fix of an older version of this recipe
+        except OSError: pass
     if "recipe" in meta and not meta.get("tile") and any("canvas edge" in x for x in _frame_problems(engine.render(path, given), meta)):
         w0, h0 = meta["size"]; px0, py0 = meta["pivot"]; padx, pady = min(64, (256 - w0) // 2), min(64, (256 - h0) // 2)    # draw it once on a big canvas, measure what it really covers, cut the canvas to that
         if padx > 0 or pady > 0:
@@ -103,7 +107,7 @@ def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=Non
     if len(np.unique(px, axis=0)) > 40: frames = engine.limit_colors(frames, 24); done.append("colours limited to 24")
     if not meta["loop"] and np.array(frames[-1])[..., 3].any(): frames = _fade_out(frames); done.append("faded out over the last 3 frames (it did not end empty)")
     mt, fl = engine.report(path, given, frames)
-    problems = (["the canvas is already at the 256 px limit and the effect still touches the edge: make the effect smaller, or move the pivot away from that edge"] if capped else []) + _frame_problems(frames, meta) + ["seam: " + b for b in engine.check(path, given) if "loop does not close" in b or "deterministic" in b]; notes = list(fl)
+    problems = (["the canvas is already at the 256 px limit and the effect still touches the edge: make the effect smaller, or move the pivot or `at` away from that edge (a `wave` reaches `length` px behind its crest)"] if capped else []) + _frame_problems(frames, meta) + ["seam: " + b for b in engine.check(path, given) if "loop does not close" in b or "deterministic" in b]; notes = list(fl)
     if painted_style and "recipe" not in meta: notes.append(f"painted {painted_style}: skipped, this effect is drawn by Python code, not a recipe")
     elif painted_style:
         from . import painted

@@ -9,7 +9,7 @@ from . import engine, spec as sp
 from .core import Rng, seg, lerp, clamp
 from .ramps import resolve
 
-PAINTED = ("wave", "brush", "hatch", "halftone", "glow", "disc", "ring", "burst", "speedlines", "splat", "particles", "blob", "star", "orbit", "beam", "funnel", "bolt", "rays", "poly")
+PAINTED = ("water", "wave", "brush", "hatch", "halftone", "glow", "disc", "ring", "burst", "speedlines", "splat", "particles", "blob", "star", "orbit", "beam", "funnel", "bolt", "rays", "poly")
 STYLES = ("ink", "watercolor", "comic", "chalk", "linocut", "stencil", "glitch", "lineart")
 
 
@@ -212,7 +212,7 @@ def _splat(img, d, c, S):
     return lay.filter(ImageFilter.GaussianBlur(0.35 * S / 2))
 
 
-DRAW = {"wave": lambda i, d, c, S: _wave(i, d, c, S), "funnel": lambda i, d, c, S: _funnel(i, d, c, S), "bolt": lambda i, d, c, S: _bolt(i, d, c, S), "rays": lambda i, d, c, S: _rays(i, d, c, S), "poly": lambda i, d, c, S: _poly(i, d, c, S), "orbit": lambda i, d, c, S: _orbit(i, d, c, S), "beam": lambda i, d, c, S: _beam(i, d, c, S), "particles": lambda i, d, c, S: _particles(i, d, c, S), "blob": lambda i, d, c, S: _blob(i, d, c, S), "star": lambda i, d, c, S: _star(i, d, c, S), "burst": _burst, "speedlines": _speed, "splat": _splat, "brush": _brush, "hatch": _hatch, "halftone": _halftone, "glow": _glow, "disc": _disc, "ring": lambda i, d, c, S: _disc(i, d, c, S, True)}
+DRAW = {"water": lambda i, d, c, S: _water(i, d, c, S), "wave": lambda i, d, c, S: _wave(i, d, c, S), "funnel": lambda i, d, c, S: _funnel(i, d, c, S), "bolt": lambda i, d, c, S: _bolt(i, d, c, S), "rays": lambda i, d, c, S: _rays(i, d, c, S), "poly": lambda i, d, c, S: _poly(i, d, c, S), "orbit": lambda i, d, c, S: _orbit(i, d, c, S), "beam": lambda i, d, c, S: _beam(i, d, c, S), "particles": lambda i, d, c, S: _particles(i, d, c, S), "blob": lambda i, d, c, S: _blob(i, d, c, S), "star": lambda i, d, c, S: _star(i, d, c, S), "burst": _burst, "speedlines": _speed, "splat": _splat, "brush": _brush, "hatch": _hatch, "halftone": _halftone, "glow": _glow, "disc": _disc, "ring": lambda i, d, c, S: _disc(i, d, c, S, True)}
 
 
 def _ramp_rgb(v, ramp):
@@ -357,7 +357,7 @@ def _rays(img, d, c, S):
 
 
 def _wave(img, d, c, S):
-    body, crest = sp.wave_geometry(d, c.e)
+    body, crest, streaks = sp.wave_geometry(d, c.e)
     if not body: return
     P = [(c.ox + x * S, c.oy + y * S) for x, y in body]
     m = Image.new("L", img.size, 0); ImageDraw.Draw(m).polygon(P, fill=255); mk = np.asarray(m) > 127
@@ -370,12 +370,30 @@ def _wave(img, d, c, S):
     lay = Image.fromarray(np.dstack([rgb, al * 255]).astype(np.uint8), "RGBA"); fo = sp.val(d.get("foam", 2), c.e)
     if fo >= 0.5:                                                                                  # foam along the crest and the lip
         dr = ImageDraw.Draw(lay); col = tuple(int(q) for q in c.ramp[-1]) + (255,); pts = [(c.ox + x * S, c.oy + y * S) for x, y in crest]
-        dr.line(pts, fill=col, width=max(1, int(fo * S * 0.8)), joint="curve"); lay = lay.filter(ImageFilter.GaussianBlur(0.3 * S / 2))
+        dr.line(pts, fill=col, width=max(1, int(fo * S * 0.8)), joint="curve")
+        for (x0, y0), (x1, y1) in streaks: dr.line([(c.ox + x0 * S, c.oy + y0 * S), (c.ox + x1 * S, c.oy + y1 * S)], fill=col, width=max(1, int(S * 0.7)))
+        lay = lay.filter(ImageFilter.GaussianBlur(0.3 * S / 2))
+    return lay
+
+
+def _water(img, d, c, S):
+    poly, top = sp.water_geometry(d, c.e, c.t)
+    if not poly: return
+    P = [(c.ox + x * S, c.oy + y * S) for x, y in poly]
+    m = Image.new("L", img.size, 0); ImageDraw.Draw(m).polygon(P, fill=255); mk = np.asarray(m) > 127
+    if not mk.any(): return
+    from scipy.ndimage import distance_transform_edt
+    h, w = mk.shape; dist = distance_transform_edt(np.pad(mk, 1))[1:-1, 1:-1]; yy = np.mgrid[0:h, 0:w][0]; Dc = max(sp.val(d.get("depth", 10), c.e) * S, 1.0)
+    v = np.clip(dist / max(d.get("edge", 1.5) * S, 1e-6), 0, 1) * 0.999 + 0.6 * (c.oy - yy - 0.5) / Dc + 0.1 + sp.val(d.get("bias", -0.35), c.e)
+    rgb = _ramp_rgb(v, c.ramp); al = np.asarray(m.filter(ImageFilter.GaussianBlur(0.35 * S / 2)), np.float32) / 255 * float(sp.val(d.get("cover", 1), c.e))
+    lay = Image.fromarray(np.dstack([rgb, al * 255]).astype(np.uint8), "RGBA"); fo = sp.val(d.get("foam", 1), c.e)
+    if fo >= 0.5:
+        dr = ImageDraw.Draw(lay); dr.line([(c.ox + x * S, c.oy + y * S) for x, y in top], fill=tuple(int(q) for q in c.ramp[-1]) + (255,), width=max(1, int(fo * S * 0.8)), joint="curve"); lay = lay.filter(ImageFilter.GaussianBlur(0.3 * S / 2))
     return lay
 
 
 def _poly(img, d, c, S):
-    pts = d.get("points") or sp.POLYS[d.get("shape", "crystal")]; sc = sp.val(d.get("scale", 1), c.e); a = math.radians(sp.val(d.get("rotate", 0), c.e)); ca, sa = math.cos(a), math.sin(a)
+    pts = d.get("points") or sp.POLYS[d.get("shape", "crystal")]; sc = sp.val(d.get("scale", 1), c.e); a = math.radians(sp.val(d.get("rotate", 0), c.e) + getattr(c, "tilt", 0.0)); ca, sa = math.cos(a), math.sin(a)
     if sc <= 0.05: return
     ay = -max(y for x, y in pts) if d.get("anchor") == "base" else 0.0
     P = [(c.ox + (x * ca - (y + ay) * sa) * sc * S, c.oy + (x * sa + (y + ay) * ca) * sc * S) for x, y in pts]
@@ -423,12 +441,17 @@ def _post(lay, d, c, S):
 
 
 def _ctx(meta, d, i, t, o, S, main, vs=0.0):
-    spec = meta["recipe"]; px, py = spec["pivot"]; t0, t1 = d.get("t", [0, 1]); p = seg(t, t0, t1); sp._SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None; e = sp._efn(d)(p); ox, oy = sp.pt(d.get("at", [0, 0]), e)
+    spec = meta["recipe"]; px, py = spec["pivot"]; t0, t1 = d.get("t", [0, 1]); p = seg(t, t0, t1); sp._SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None; e = sp._efn(d)(p); (ox, oy), tilt = sp.at_xy(spec, d, t, e, o)
     if d.get("spin"): ox += d["spin"][0] * math.cos(sp.TAU * d["spin"][1] * p); oy += d["spin"][0] * math.sin(sp.TAU * d["spin"][1] * p)
     if d.get("wobble"): w_ = d["wobble"]; ox += w_[0] * math.sin(sp.TAU * (t * w_[2])); oy += w_[1] * math.sin(sp.TAU * (t * w_[2] + 0.25))
     vv = d.get("v"); seed = int(o.seed) * 131 + int(d.get("seed", i)) * 17; ramp = sp._ramp(d, main, spec.get("palettes")); vf = lambda default, vv=vv, e=e: sp.val(default if vv is None else vv, e) + vs
     u = type("C", (), {})(); u.t, u.p, u.e = t, p, e; u.ox, u.oy = px + ox, py + oy; u.px0, u.py0 = px, py; u.ramp, u.seed, u.sc, u.v, u.loop, u.dir = ramp, seed, 1.0, vf, bool(spec.get("loop")), spec.get("_dir"); u.rng = Rng(seed)
-    c = type("C", (), {})(); c.t, c.p, c.e = t, p, e; c.ox, c.oy = u.ox * S, u.oy * S; c.ramp, c.seed, c.v, c.u = ramp, seed, vf, u
+    def _atf(tt):                                                                                                       # where this layer is at another moment (a `drop` of particles asks)
+        sv = sp._SEG[0]; sp._SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None
+        try: return sp.at_xy(spec, d, tt, sp._efn(d)(seg(tt, t0, t1)), o)[0]
+        finally: sp._SEG[0] = sv
+    u.at_fn = _atf
+    c = type("C", (), {})(); c.t, c.p, c.e = t, p, e; c.tilt = tilt; c.ox, c.oy = u.ox * S, u.oy * S; c.ramp, c.seed, c.v, c.u = ramp, seed, vf, u
     return c
 
 

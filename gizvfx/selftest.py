@@ -78,6 +78,16 @@ def run():
         qp = os.path.join(d, "q.json"); json.dump({"id": "test/q", "duration": 0.5, "size": [60, 60], "options": {"h": 20, "foam": 1}, "layers": [{"type": "ring", "radius": 14, "thick": 5, "squash": [1, 0.15, 1], "at": [[0, 0], [0, "-$h"], [0, 0]]}]}, open(qp, "w"))
         assert len(engine.render(qp)) > 1 and any("'foam' is never used" in x for x in engine.report(qp)[1])
     from .spec import wave_geometry                                                              # the wave layer: a body and a crest, a curl makes the outline longer, dir mirrors it
-    b0, c0 = wave_geometry({"height": 30, "curl": 0}, 0.5); b1, c1 = wave_geometry({"height": 30, "curl": 1}, 0.5); bm, _ = wave_geometry({"height": 30, "curl": 1, "dir": -1}, 0.5)
+    b0, c0, _ = wave_geometry({"height": 30, "curl": 0}, 0.5); b1, c1, _ = wave_geometry({"height": 30, "curl": 1}, 0.5); bm, _, _ = wave_geometry({"height": 30, "curl": 1, "dir": -1}, 0.5)
     assert b0 and c0 and len(b1) > len(b0) and not wave_geometry({"height": 0}, 0.5)[0] and sorted(x for x, _ in bm) == sorted(-x for x, _ in b1)
+    from .spec import wave_anchor, water_geometry, sub as _sub                                   # surface points, the sea, chained option arithmetic
+    d_ = {"height": 30, "curl": 1}; cx_, cy_, _a = wave_anchor(d_, 0.5, "crest"); lx_, ly_, _a = wave_anchor(d_, 0.5, "lip"); sx_, sy_, sa_ = wave_anchor(d_, 0.5, "slope", 0.5)
+    assert (cx_, cy_) == (0.0, -30.0) and lx_ > 5 and -90 <= sa_ <= 0 and abs(wave_anchor({**d_, "dir": -1}, 0.5, "lip")[0] + lx_) < 1e-9 and abs(wave_anchor({**d_, "dir": -1}, 0.5, "slope", 0.5)[2] + sa_) < 1e-6
+    assert water_geometry({"width": 60, "depth": 8}, 0.5, 0.3)[0] and not water_geometry({"width": 60, "depth": 0}, 0.5, 0.3)[0] and _sub("$w*2+4", {"w": 10}) == 24
+    with tempfile.TemporaryDirectory() as d:                                                       # a layer sits on a wave and turns with it
+        wp = os.path.join(d, "w.json"); json.dump({"id": "test/w", "duration": 0.6, "size": [120, 80], "pivot": [60, 60], "layers": [{"id": "w", "type": "wave", "height": 30, "curl": 0.5}, {"type": "poly", "shape": "arrow", "at": {"on": "w", "point": "slope", "u": 0.6, "tilt": True}, "scale": 0.5}]}, open(wp, "w"))
+        assert len(engine.render(wp, {"colors": 0})) > 1
+        json.dump({"id": "test/w2", "duration": 0.6, "size": [120, 80], "layers": [{"type": "poly", "at": {"on": "nope"}}]}, open(os.path.join(d, "w2.json"), "w"))
+        try: engine.render(os.path.join(d, "w2.json")); raise AssertionError("an unknown id should be an error")
+        except ValueError: pass
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

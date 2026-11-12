@@ -17,6 +17,8 @@ GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, pa
 
 - New layer `wave` (a breaking wave: back slope, crest, a lip that curls over a hollow barrel, foam along the crest; `height` and `curl` animatable) in both renderers, and the recipe `water/breaking-wave` (spray, droplets, ripple). Asked for by the fourth blind test, where a wave built from blobs and brushes did not read as a wave.
 
+- Fifth blind test: layers can sit on a wave's surface (`id` on the `wave`, then `at: {on, point, u, dx, dy, tilt}` with points crest, lip, foot, trough, slope, face, barrel; `drop` particles follow it too), new layer `water` (a rippling stretch of sea that tapers away), the wave gets a pointed lip, an uneven back slope and foam streaks, option values can be chained (`$h*0.25+3`), `check` and `fix` hints mention `at` and the wave's back slope, `fix` removes the stale `.fixed.json` of an older recipe, glow `v` is in the schema; new recipe `water/surfer-wave`.
+
 History carried over from Gizpix 0.2.0:
 - Painted: glows fall off in the pixel renderer's bands (soft edges), watercolor has more body and colour on dark grounds. Beam colours across the width match the pixel beam.
 - Painted, the last small differences from the pixel frames: `rim`, a true gradient across a `beam` with a white-hot line, core-shaded dots (coin-burst is gold again), thicker speed lines, a glow with the pixel renderer's flat first step (shield-bubble, bomb-fuse), crossing-line sparkles for `star`, more body in watercolor.

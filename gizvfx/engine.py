@@ -110,7 +110,7 @@ def check(eid, given=None):
         s = {"top": int((f.a[0] > 0).sum()), "bottom": int((f.a[-1] > 0).sum()), "left": int((f.a[:, 0] > 0).sum()), "right": int((f.a[:, -1] > 0).sum())}
         if sum(s.values()) and first is None: first = i
         edge += sum(s.values()); sides |= {k for k, v in s.items() if v}
-    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation: {', '.join(sorted(sides))} edge, first at frame {first} of {n} (cropped? make the canvas bigger, or move the pivot away from that edge)")
+    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation: {', '.join(sorted(sides))} edge, first at frame {first} of {n} (cropped? make the canvas bigger, or move the pivot or `at` away from that edge; a `wave` reaches `length` px behind its crest)")
     return bad
 
 

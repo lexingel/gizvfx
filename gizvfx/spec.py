@@ -20,14 +20,14 @@ EASE = {"linear": lambda p: p, "out": out_quart, "expo": out_expo, "in": in_quad
 DEFAULTS = {"name": "Custom effect", "about": "", "loop": False, "duration": 1.0, "fps": 12, "size": [96, 96], "palette": "fire", "options": {}, "tags": [], "layers": [], "style": {}, "palettes": {}}
 ALLOWED_TOP = set(DEFAULTS) | {"id", "pivot", "_dir"}
 STYLE_KEYS = {"outline": "'auto' or '#rrggbb': 1 px outline around everything drawn", "rim": "[dx, dy] light direction: lit edge", "shadow": "[dx, dy] offset: a hard shadow in the darkest palette colour"}
-COMMON = {"t": "time window [start, end] in 0..1 (default [0, 1]); the layer draws only inside it", "at": "[x, y] from the pivot; [[x0,y0],[x1,y1]] to move on a line; three or more points = a smooth curve through them",
+COMMON = {"id": "a name for the layer (a `wave` can be named so other layers sit on it)", "t": "time window [start, end] in 0..1 (default [0, 1]); the layer draws only inside it", "at": "[x, y] from the pivot; [[x0,y0],[x1,y1]] to move on a line; three or more points = a smooth curve through them",
           "palette": "ramp name or hex list for this layer (default: the recipe palette; 'main' = the recipe palette, which -o palette= changes)",
           "color": "one fixed colour '#rrggbb' instead of a palette", "v": "ramp position 0..1 (dark..bright), number or [from, to] over the layer's life",
           "ease": "linear | out | expo | in | smooth: how [from, to] values move; or a list, one name per key step: [\"out\", \"linear\", \"in\"]", "spin": "[radius, turns]: circles around its path (a spiral when it also moves)", "hold": "true = keep drawing the end state after the window", "wobble": "[ax, ay, cycles]: the layer sways around its path (whole cycles close a loop): snaking wisps, swaying columns", "smear": "[length, taper]: a trail of fading, shrinking copies of the layer along its own path (length = fraction of the window, taper = size of the oldest copy 0..1). Sword smears, comet tails, wisp tails",
           "erode": "(all layers except blob has its own) px eaten from the edge, animatable: the clean dissolve", "outline": "'#rrggbb' or 'auto' (darkest palette colour): a 1 px outline around the drawn layer", "rim": "[dx, dy] light direction, e.g. [-1, -1]: the edge facing the light takes a bright rim colour",
           "seed": "layers with the same number draw the same random shape (give it to the second layer when one body continues in another layer)"}
 SCHEMA = {
-    "glow": {"radius": "px, animatable", "strength": "0..1+, animatable (try {wave:[0.4,0.8,3]})", "steps": "brightness bands (default 4)", "squash": "0.1..1: flat light on the floor (1 = round)"},
+    "glow": {"v": "ramp position 0..1 of the glow colour, animatable (also `color`)", "radius": "px, animatable", "strength": "0..1+, animatable (try {wave:[0.4,0.8,3]})", "steps": "brightness bands (default 4)", "squash": "0.1..1: flat light on the floor (1 = round)"},
     "disc": {"radius": "px", "mode": "core (bright middle) | lit (lit from top-left, smoke/stone)", "bias": "shifts shading dark(-)..bright(+)", "cover": "0..1 dithered translucency"},
     "ring": {"radius": "px", "thick": "px", "squash": "1 = circle, 0.4 = flat ellipse on the floor; animatable, e.g. [1, 0.15, 1] for a spinning coin", "cover": "0..1 dither", "arc": "[a0, a1] degrees: only part of the ring"},
     "star": {"size": "px (spike length)", "arms": "4 | 6 | 8", "thin": "0.05..0.4 body width"},
@@ -42,7 +42,8 @@ SCHEMA = {
     "rays": {"count": "int", "inner": "px from centre, animatable", "length": "px, animatable", "width": "px at the root", "rotate": "degrees over the window", "jitter": "0..1 random length", "squash": "0.1..1: rays lying on the floor (1 = round)"},
     "orbit": {"count": "int", "radius": "px, animatable", "squash": "1 = circle", "turns": "whole turns over the window (whole number for loops)", "size": "px, animatable", "trail": "dots behind each one", "shade": "flat | core"},
     "beam": {"from": "[x, y]", "to": "[x, y]", "width": "px, animatable", "tip": "width at the far end", "extend": "fraction of the window spent growing from `from` to `to`", "shade": "flat = one colour, no stripes", "core": "0..0.9 share of the width at the brightest step (default 0.45)"},
-    "wave": {"height": "px of the crest above the water line, animatable (the wave rises)", "curl": "0..1, animatable: 0 = a steep face, 1 = the lip curls over a hollow barrel", "length": "px of the back slope behind the crest (default 1.5 x height)", "dir": "1 = breaks to the right, -1 = to the left", "foam": "px of bright foam along the crest and lip (default 2, 0 = none)", "deep": "px of water below `at` (default 4)", "depth": "px of the dark edge line (default 2)", "lit": "[x, y] light direction (default [-1, -1])", "bias": "shift the colour, animatable (default -0.35: a mid-blue body, light crest)", "cover": "0..1 dither"},
+    "wave": {"height": "px of the crest above the water line, animatable (the wave rises)", "curl": "0..1, animatable: 0 = a steep face, 1 = the lip curls over a hollow barrel", "length": "px of the back slope behind the crest (default 1.5 x height)", "dir": "1 = breaks to the right, -1 = to the left", "foam": "px of bright foam along the crest and lip (default 2, 0 = none)", "streaks": "short foam dashes on the back slope under the crest (default 4, 0 = none)", "id": "give the layer a name, then another layer can sit on its surface: \"at\": {\"on\": \"w\", \"point\": \"slope\", \"u\": 0.7, \"dy\": -2, \"tilt\": true}; points: crest, lip, foot, trough, slope (u 0..1), face, barrel", "deep": "px of water below `at` (default 4)", "depth": "px of the dark edge line (default 2)", "lit": "[x, y] light direction (default [-1, -1])", "bias": "shift the colour, animatable (default -0.35: a mid-blue body, light crest)", "cover": "0..1 dither"},
+    "water": {"width": "px of sea along the water line, animatable (default 80)", "depth": "px of water below the line, animatable: [10, 10, 0] lets it drain away (default 10)", "ripple": "px height of the surface ripples (default 1.2)", "wavelength": "px between ripples (default 14)", "flow": "whole number of ripple cycles over the effect (default 1; keeps a loop closed)", "taper": "px at each end where it thins to nothing (default 10)", "foam": "px of bright line on the surface (default 1)", "edge": "px of the dark edge line (default 1.5)", "bias": "colour shift (default -0.35)", "cover": "0..1 dither"},
     "poly": {"shape": "crystal | shard | rock | diamond | arrow | heart (ready-made outlines)", "points": "[[x, y], ...] your own outline, px from `at` (3 to 24 points)", "rotate": "degrees, animatable (a full turn [0, 360] over a loop closes it)", "scale": "animatable", "anchor": "center (default) | base: the lowest point sits on `at`",
              "depth": "band width px (default 4)", "lit": "[dx, dy] light direction (default [-1, -1])", "lit_strength": "0..1, default 0.35", "bias": "dark(-)..bright(+)", "cover": "0..1 dither"},
     "stamp": {"image": "a PNG next to the recipe file, at most 32x32 px (your own sprite: a coin, a leaf)", "scale": "whole number 1 to 4", "flip": "true = mirror", "rotate": "0 | 90 | 180 | 270"},
@@ -64,20 +65,21 @@ SCHEMA = {
 }
 
 
-_OPT = re.compile(r"^(-?)\$(\w+)(?:([*+\-/])(-?[0-9]*\.?[0-9]+))?$")
+_OPT = re.compile(r"^(-?)\$(\w+)((?:[*+\-/]-?[0-9]*\.?[0-9]+)*)$")
+_OPS = re.compile(r"([*+\-/])(-?[0-9]*\.?[0-9]+)")
 
 
 def sub(x, o):
     """replace "$name" strings by the option's value, recursively"""
     if isinstance(x, str) and x.lstrip("-").startswith("$"):
-        m = _OPT.match(x)                                                              # "$reach", "$reach*0.55", "-$height", "$cloud+4", "$w-6", "$w/2"
-        if not m: raise ValueError(f"'{x}': an option is written $name, optionally with a sign in front and one of * + - / and a number after: \"$w*0.5\", \"-$h\", \"$w+4\"")
-        sign, name, op, num = m.groups()
+        m = _OPT.match(x)                                                              # "$reach", "$reach*0.55", "-$height", "$cloud+4", "$w*2+4" (left to right, no precedence)
+        if not m: raise ValueError(f"'{x}': an option is written $name, optionally with a sign in front and operators * + - / with numbers after, without spaces: \"$w*0.5\", \"-$h\", \"$w*2+4\" (calculated left to right)")
+        sign, name, tail = m.groups()
         if name not in o: raise KeyError(f"'{x}' is not an option of this recipe (options: {', '.join(sorted(o))})")
         v = o[name]
-        if (sign or op) and not isinstance(v, (int, float)) or isinstance(v, bool) and (sign or op): raise ValueError(f"'{x}': option '{name}' is {v!r}, not a number, so it cannot be negated or calculated with")
+        if (sign or tail) and (not isinstance(v, (int, float)) or isinstance(v, bool)): raise ValueError(f"'{x}': option '{name}' is {v!r}, not a number, so it cannot be negated or calculated with")
         if sign: v = -v
-        if op:
+        for op, num in _OPS.findall(tail):
             n = float(num)
             if op == "/" and n == 0: raise ValueError(f"'{x}': division by zero")
             v = v * n if op == "*" else v + n if op == "+" else v - n if op == "-" else v / n
@@ -162,14 +164,14 @@ def particles_live(d, c):
     s0, s1 = rng2(d.get("speed"), [10, 30]); l0, l1 = rng2(d.get("life"), [0.5, 1.0]); z0, z1 = rng2(d.get("size"), [2, 0]); grav = d.get("gravity", 0); sway = d.get("sway", 0)
     cyc = d.get("cycles", 1); stag = clamp(d.get("stagger", 0.3), 0, 0.9); ease = EASE[d.get("travel", "out")]; shape = d.get("shape", "dot"); streak = d.get("streak", 6)
     v0, v1 = rng2(d.get("v"), [0.9, 0.3]); c0, c1 = rng2(d.get("cover"), [1, 1]); r = c.rng; live = []; tgt = d.get("target"); curve = d.get("curve", 0); px0, py0 = c.px0, c.py0
-    drop = d.get("drop"); t0_, t1_ = d.get("t", [0, 1])
-    if drop: at_, ef_ = d.get("at", [0, 0]), _efn(d); cur = pt(at_, ef_(c.p))                # `drop`: a particle stays where the layer was when it was born (a trail behind something that moves along `at`)
+    drop = d.get("drop"); t0_, t1_ = d.get("t", [0, 1]); fn = getattr(c, "at_fn", None)
+    if drop: cur = fn(c.t)                # `drop`: a particle stays where the layer was when it was born (a trail behind something that moves along `at`)
     for i in range(n):
         ang = math.radians(r.u(a0, a1)); sp = r.u(s0, s1); lf = max(r.u(l0, l1), 1e-3); ph = r.u(0, 1); bx = r.u(-0.5, 0.5) * ax; by = r.u(-0.5, 0.5) * ay; sw = r.u(0, TAU)
         age = ((c.t * cyc + (i + ph * 0.5) / n) % 1.0) / lf if stream else (c.p - ph * stag) / (lf * (1 - stag))     # (1 - stag): every burst particle is over by p = 1
         if age < 0 or age >= 1: continue
         if drop:
-            pb = seg(c.t - ((c.t * cyc + (i + ph * 0.5) / n) % 1.0) / cyc, t0_, t1_) if stream else ph * stag; bp = pt(at_, ef_(pb)); bx += bp[0] - cur[0]; by += bp[1] - cur[1]
+            tb = c.t - ((c.t * cyc + (i + ph * 0.5) / n) % 1.0) / cyc if stream else t0_ + ph * stag * (t1_ - t0_); bp = fn(tb); bx += bp[0] - cur[0]; by += bp[1] - cur[1]
         if d.get("lob"): x = c.ox + bx + math.cos(ang) * sp * age; y = c.oy + by + math.sin(ang) * sp * age * (1 - age)
         elif tgt:                                                                      # fly from the spawn point to the target, bowing sideways by `curve`
             sx0, sy0 = c.ox + bx, c.oy + by; tx, ty = c.ox + tgt[0] - (c.ox - px0), c.oy + tgt[1] - (c.oy - py0); ang = math.atan2(ty - sy0, tx - sx0); L = math.hypot(tx - sx0, ty - sy0) or 1.0; e2 = ease(age)
@@ -439,7 +441,7 @@ def L_poly(f, d, c):
     from PIL import Image, ImageDraw
     pts = d.get("points") or POLYS[d.get("shape", "crystal")]
     if not 3 <= len(pts) <= 24: raise ValueError("poly needs 3 to 24 points")
-    sc = val(d.get("scale", 1), c.e) * c.sc; a = math.radians(val(d.get("rotate", 0), c.e)); ca, sa = math.cos(a), math.sin(a)
+    sc = val(d.get("scale", 1), c.e) * c.sc; a = math.radians(val(d.get("rotate", 0), c.e) + getattr(c, "tilt", 0.0)); ca, sa = math.cos(a), math.sin(a)
     if sc <= 0.05: return
     ay = -max(y for x, y in pts) if d.get("anchor") == "base" else 0.0                  # base: the lowest point sits on `at` (things that stand on the floor)
     P = [(round(c.ox + (x * ca - (y + ay) * sa) * sc, 2), round(c.oy + (x * sa + (y + ay) * ca) * sc, 2)) for x, y in pts]
@@ -451,29 +453,100 @@ def L_poly(f, d, c):
     f.fill(m, c.ramp, depth=d.get("depth", 4), grad=grad, bias=val(d.get("bias", 0), c.e), cover=val(d.get("cover", 1), c.e))
 
 
-def wave_geometry(d, e):
-    """one frame of a breaking wave: (body outline, crest line), both [(x, y)] in px from `at` (the water line under the crest, y down).
-    A back slope rises to the crest, the lip curls forward and down over a hollow barrel, the face drops to the trough; shared by the pixel and the painted renderer"""
+def _wave_parts(d, e):
+    """the pieces of one frame of a breaking wave (y down, x to the right before `dir` mirrors it): the back slope, the outer arc of the lip, the inner arc round the hollow barrel, the front foot"""
     H = val(d.get("height", 24), e); curl = clamp(val(d.get("curl", 0.6), e)); L = val(d.get("length", max(H * 1.5, 1)), e); deep = d.get("deep", 4); sgn = -1 if d.get("dir", 1) < 0 else 1
-    if H < 1: return [], []
-    r = curl * H / 1.55; ri = 0.55 * r; cx, cy = 0.0, -H + r                                       # the barrel circle: top of the outer arc is the crest, r + ri reaches the water at full curl
-    back = [(-L * (1 - u), -H * (u ** 1.8)) for u in [i / 14 for i in range(15)]]                   # gentle at the foot, steep at the crest
-    if r < 0.8:                                                                                    # no curl: a steep face straight down
-        outer, inner, foot = [], [], (0.28 * H, 0.0)
+    r = curl * H / 1.55; ri = 0.55 * r; cx, cy = 0.0, -H + r                                     # the barrel circle: r + ri reaches the water at full curl
+    back = [(-L * (1 - u), -H * (u ** 1.8) - 0.03 * H * math.sin(u * 10) * math.sin(math.pi * u)) for u in [i / 14 for i in range(15)]]   # gentle at the foot, steep at the crest, a little uneven
+    if r < 0.8: outer, inner, foot, te = [], [], (0.28 * H, 0.0), None                         # no curl: a steep face straight down
     else:
-        te = math.radians(-90 + 120 * curl)                                                        # how far round the lip goes (more curl: further, down and back under)
-        outer = [(cx + r * math.cos(a), cy + r * math.sin(a)) for a in [math.radians(-90) + (te - math.radians(-90)) * i / 14 for i in range(1, 15)]]
+        te = math.radians(-90 + 120 * curl)                                                    # how far round the lip goes
+        a0 = math.radians(-90); outer = []
+        for i in range(1, 15):
+            q = i / 14; a = a0 + (te - a0) * q; rr = r + (ri * 1.1 - r) * q ** 1.5              # the outer arc closes in on the inner one: a pointed lip
+            outer.append((cx + rr * math.cos(a), cy + rr * math.sin(a)))
         inner = [(cx + ri * math.cos(a), cy + ri * math.sin(a)) for a in [te + (math.radians(-270) - te) * i / 14 for i in range(0, 15)]]
         foot = (ri + 0.25 * H, 0.0)
+    return dict(H=H, L=L, deep=deep, sgn=sgn, r=r, ri=ri, cx=cx, cy=cy, back=back, outer=outer, inner=inner, foot=foot)
+
+
+def wave_geometry(d, e):
+    """one frame of a breaking wave: (body outline, crest line, foam streaks), x/y in px from `at` (the water line under the crest, y down); shared by the pixel and the painted renderer"""
+    P = _wave_parts(d, e)
+    if P["H"] < 1: return [], [], []
+    back, outer, inner, foot, L, deep = P["back"], P["outer"], P["inner"], P["foot"], P["L"], P["deep"]
     body = back + outer + inner + [foot, (foot[0], deep), (-L, deep)]
     crest = back[-5:] + outer
-    if sgn < 0: body = [(-x, y) for x, y in body]; crest = [(-x, y) for x, y in crest]
-    return body, crest
+    n = int(d.get("streaks", 4)); streaks = []
+    for k in range(max(n, 0)):                                                                 # short bright dashes on the back slope just under the crest
+        i = min(13, 8 + int(5 * k / max(n, 1)) + (1 if k % 2 else 0)); streaks.append(((back[i][0], back[i][1] + 2.0), (back[i + 1][0], back[i + 1][1] + 2.0)))
+    if P["sgn"] < 0:
+        body = [(-x, y) for x, y in body]; crest = [(-x, y) for x, y in crest]; streaks = [((-x0, y0), (-x1, y1)) for (x0, y0), (x1, y1) in streaks]
+    return body, crest, streaks
+
+
+def wave_anchor(d, e, point="crest", u=0.75):
+    """a point on the wave surface, in px from `at`: (x, y, angle). Points: crest, lip (the tip of the curl), foot (front), trough (back foot), slope (along the back slope, u 0 = foot .. 1 = crest), face (the inner wall of the barrel), barrel (its middle). The angle is the slope of the surface in degrees, upright (-90..90): a poly gets `rotate` of that to lie on it."""
+    P = _wave_parts(d, e); back, outer = P["back"], P["outer"]; H = P["H"]
+    def ang(p0, p1):
+        a = math.degrees(math.atan2(p1[1] - p0[1], (p1[0] - p0[0]) * P["sgn"]))
+        return a + 180 if a < -90 else a - 180 if a > 90 else a
+    if point == "crest": x, y, a = 0.0, -H, 0.0
+    elif point == "lip":
+        x, y = (outer[-1] if outer else (0.0, -H)); a = ang(outer[-2], outer[-1]) if len(outer) > 1 else 0.0
+    elif point == "foot": x, y, a = P["foot"][0], 0.0, 0.0
+    elif point == "trough": x, y, a = -P["L"], 0.0, 0.0
+    elif point == "slope":
+        q = clamp(u) * 14; i = min(int(q), 13); fr = q - i; x = back[i][0] + (back[i + 1][0] - back[i][0]) * fr; y = back[i][1] + (back[i + 1][1] - back[i][1]) * fr; a = ang(back[i], back[i + 1])
+    elif point == "face":
+        if P["r"] >= 0.8: x, y, a = P["cx"] - P["ri"], P["cy"], 80.0
+        else: x, y, a = 0.14 * H, -H / 2, 75.0
+    elif point == "barrel": x, y, a = P["cx"], P["cy"], 0.0
+    else: raise ValueError(f"wave anchor '{point}' is unknown. Points: crest, lip, foot, trough, slope, face, barrel")
+    return x * P["sgn"], y, a
+
+
+def at_xy(spec, d, t, e, o):
+    """((x, y), tilt): where a layer is. `at` is a point or a path; or {"on": "<id of a wave layer>", "point": "slope", "u": 0.7, "dx": 0, "dy": 0, "tilt": true}: a point on that wave's surface at this moment"""
+    a = d.get("at", [0, 0])
+    if not isinstance(a, dict): return pt(a, e), 0.0
+    tid = a.get("on"); tgt = next((l for l in spec["layers"] if l.get("id") == tid), None)
+    if tgt is None: raise ValueError(f"at: no layer has \"id\": \"{tid}\"")
+    if tgt.get("type") != "wave": raise ValueError("at.on: only a wave layer has surface points")
+    d2 = sub(tgt, o); t0, t1 = d2.get("t", [0, 1]); p2 = seg(t, t0, t1); saved = _SEG[0]; _SEG[0] = d2["ease"] if isinstance(d2.get("ease"), list) else None
+    e2 = _efn(d2)(p2); bx, by = pt(d2.get("at", [0, 0]), e2); _SEG[0] = saved
+    x, y, ang = wave_anchor(d2, e2, a.get("point", "crest"), a.get("u", 0.75))
+    return (bx + x + a.get("dx", 0), by + y + a.get("dy", 0)), (ang if a.get("tilt") else 0.0)
+
+
+def water_geometry(d, e, t):
+    """(outline, top line) of a stretch of sea: a rippling surface over `width` px, tapering to nothing at both ends; x/y in px from `at` (the water line)"""
+    W = val(d.get("width", 80), e); D = val(d.get("depth", 10), e); amp = val(d.get("ripple", 1.2), e); wl = max(d.get("wavelength", 14), 2); ph = TAU * d.get("flow", 1) * t; tp = max(d.get("taper", 10), 1)
+    if W < 4 or D < 0.5: return [], []
+    xs = [-W / 2 + W * i / 40 for i in range(41)]; top = []; bot = []
+    for x in xs:
+        k = smooth(min(x + W / 2, W / 2 - x) / tp); top.append((x, -amp * math.sin(TAU * x / wl - ph) * k)); bot.append((x, D * k))
+    return top + bot[::-1], top
+
+
+def L_water(f, d, c):
+    from PIL import Image, ImageDraw
+    poly, top = water_geometry(d, c.e, c.t)
+    if not poly: return
+    P = [(c.ox + x * c.sc, c.oy + y * c.sc) for x, y in poly]
+    im = Image.new("L", (f.w, f.h), 0); ImageDraw.Draw(im).polygon(P, fill=255); m = np.array(im) > 0
+    if not m.any(): return
+    Dc = max(val(d.get("depth", 10), c.e) * c.sc, 1.0); yy = np.mgrid[0:f.h, 0:f.w][0]
+    grad = 0.6 * (c.oy - yy - 0.5) / Dc + 0.1
+    f.fill(m, c.ramp, depth=d.get("edge", 1.5), grad=grad, bias=val(d.get("bias", -0.35), c.e), cover=val(d.get("cover", 1), c.e))
+    fo = val(d.get("foam", 1), c.e) * c.sc
+    if fo >= 0.5:
+        for (x0, y0), (x1, y1) in zip(top, top[1:]): f.line(c.ox + x0 * c.sc, c.oy + y0 * c.sc, c.ox + x1 * c.sc, c.oy + y1 * c.sc, c.ramp[-1], max(1, int(round(fo))))
 
 
 def L_wave(f, d, c):
     from PIL import Image, ImageDraw
-    body, crest = wave_geometry(d, c.e)
+    body, crest, streaks = wave_geometry(d, c.e)
     if not body: return
     P = [(c.ox + x * c.sc, c.oy + y * c.sc) for x, y in body]
     im = Image.new("L", (f.w, f.h), 0); ImageDraw.Draw(im).polygon(P, fill=255); m = np.array(im) > 0
@@ -486,6 +559,7 @@ def L_wave(f, d, c):
     if fo >= 0.5:                                                                                  # foam: a bright line along the crest and the lip
         col = c.ramp[-1]
         for (x0, y0), (x1, y1) in zip(crest, crest[1:]): f.line(c.ox + x0 * c.sc, c.oy + y0 * c.sc, c.ox + x1 * c.sc, c.oy + y1 * c.sc, col, max(1, int(round(fo))))
+        for (x0, y0), (x1, y1) in streaks: f.line(c.ox + x0 * c.sc, c.oy + y0 * c.sc, c.ox + x1 * c.sc, c.oy + y1 * c.sc, col, 1)
 
 
 _IMG = {}
@@ -524,7 +598,7 @@ def L_include(f, d, c):
     finally: _DEPTH[0] -= 1
 
 
-LAYERS = {"wave": L_wave, "glow": L_glow, "disc": L_disc, "ring": L_ring, "star": L_star, "particles": L_particles, "blob": L_blob, "bolt": L_bolt, "rays": L_rays, "orbit": L_orbit, "funnel": L_funnel, "brush": L_brush, "hatch": L_hatch, "halftone": L_halftone, "burst": L_burst, "speedlines": L_speedlines, "splat": L_splat, "poly": L_poly, "stamp": L_stamp, "include": L_include, "beam": L_beam, "arc": L_arc}
+LAYERS = {"water": L_water, "wave": L_wave, "glow": L_glow, "disc": L_disc, "ring": L_ring, "star": L_star, "particles": L_particles, "blob": L_blob, "bolt": L_bolt, "rays": L_rays, "orbit": L_orbit, "funnel": L_funnel, "brush": L_brush, "hatch": L_hatch, "halftone": L_halftone, "burst": L_burst, "speedlines": L_speedlines, "splat": L_splat, "poly": L_poly, "stamp": L_stamp, "include": L_include, "beam": L_beam, "arc": L_arc}
 
 
 # ---- validation, drawing, loading ---------------------------------------------------------------------------------------
@@ -557,13 +631,17 @@ def _near(k, pool):
 
 
 def _one(spec, g, d, i, t, px, py, main, o, sc, vs):
-    t0, t1 = d.get("t", [0, 1]); p = seg(t, t0, t1); _SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None; e = _efn(d)(p); ox, oy = pt(d.get("at", [0, 0]), e); wob = d.get("wobble")
+    t0, t1 = d.get("t", [0, 1]); p = seg(t, t0, t1); _SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None; e = _efn(d)(p); (ox, oy), tilt = at_xy(spec, d, t, e, o); wob = d.get("wobble")
     if d.get("spin"): ox += d["spin"][0] * math.cos(TAU * d["spin"][1] * p); oy += d["spin"][0] * math.sin(TAU * d["spin"][1] * p)
     if wob: ox += wob[0] * math.sin(TAU * (t * wob[2])); oy += wob[1] * math.sin(TAU * (t * wob[2] + 0.25))
     vv = d.get("v")
     c = SimpleNamespace(f=g, t=t, p=p, e=e, px0=px, py0=py, ox=px + ox, oy=py + oy, ramp=_ramp(d, main, spec.get("palettes")), seed=int(o.seed) * 131 + int(d.get("seed", i)) * 17, rng=None, sc=sc, dir=spec.get("_dir"), loop=bool(spec.get("loop")),
                         v=lambda default, vv=vv, e=e: val(default if vv is None else vv, e) + vs)
-    c.rng = Rng(c.seed); LAYERS[d["type"]](g, d, c)
+    def _atf(tt):                                                                                 # where this layer is at another moment (a `drop` of particles asks)
+        sv = _SEG[0]; _SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None
+        try: return at_xy(spec, d, tt, _efn(d)(seg(tt, t0, t1)), o)[0]
+        finally: _SEG[0] = sv
+    c.at_fn = _atf; c.tilt = tilt; c.rng = Rng(c.seed); LAYERS[d["type"]](g, d, c)
 
 
 def _post(f, g, d, main, e, roles=None):
