@@ -1,5 +1,7 @@
 # Changelog
 
+- UI: layers are edited with typed controls (numbers, sliders, from/to pairs, selects, colour, add/remove a setting; raw JSON stays under each layer), a layer timeline you can drag (when each layer is drawn), numbered layer handles on the stage you can drag to move a layer, Check findings link to the layers they name, layer errors live on the card with a one-click type suggestion.
+
 - UI: one load path for undo and open (undo no longer crosses into a broken state), labelled undo steps, errors named once with the layer card marked, Check/Fix no longer contradict each other, pivot and ground marker on the stage, preview-option reset, sticky Save/Export footer, JSON tab locked for Python effects, cross-site POST guard.
 
 ## 0.1.0 - GizVFX split out of Gizpix
