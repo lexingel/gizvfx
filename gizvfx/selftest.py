@@ -101,4 +101,9 @@ def run():
         fa = engine.render(rp, {"colors": 0}); assert len(fa) > 1 and np.array(fa[3])[..., 3].any()
         from . import painted
         assert len(painted.render(rp, {}, scale=2)) > 1                                         # the painted renderer resolves the same anchors
+    with tempfile.TemporaryDirectory() as d:                                                       # fix --apply replaces the recipe and keeps a backup
+        ap_ = os.path.join(d, "a.json"); json.dump({"id": "test/a", "duration": 0.8, "size": [40, 40], "layers": [{"type": "ring", "radius": [0, 40], "thick": [3, 0]}]}, open(ap_, "w"))
+        from .fix import fix as _fix
+        _, pr_, _, _ = _fix(ap_, out=os.path.join(d, "o"), scale=1, apply=True)
+        assert not pr_ and os.path.exists(ap_ + ".bak") and json.load(open(ap_))["size"][0] > 40 and json.load(open(ap_ + ".bak"))["size"] == [40, 40]
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

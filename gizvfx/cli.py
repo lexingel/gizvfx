@@ -10,7 +10,7 @@
   python gizvfx.py recipe ID                         print a shipped recipe as JSON: copy it, change it, render the file
   (ID can also be the path of your own recipe, e.g. my_effect.json)
   python gizvfx.py check [ID ...] [--report]   (--report adds numbers + flags: mesh dithering, flat colour, lone pixels, empty frames, motion pops)                  quality checks (deterministic, loops close, one-shots end empty, nothing cropped)
-  python gizvfx.py fix ID|FILE.json ...|--all [--out DIR] [--painted STYLE]   check, repair what can be repaired (cropped canvas, pinholes, lone pixels, too many colours, a one-shot that does not end empty), write the files + NAME_fix.txt, list what is left
+  python gizvfx.py fix ID|FILE.json ...|--all [--out DIR] [--painted STYLE]   check, repair what can be repaired (--apply: write the fixed recipe over yours, the old one kept as .bak) (cropped canvas, pinholes, lone pixels, too many colours, a one-shot that does not end empty), write the files + NAME_fix.txt, list what is left
   python gizvfx.py gallery out.png [--scale S]       one picture with a mid-animation frame of every effect
 Options (-o): palette=ice (a ramp name, or hex colours dark to bright: '#102,#215,#43a'), seed=7, light=0.6, flip=true, plus the effect's own (see `show`)."""
 import argparse, json, os, sys
@@ -82,12 +82,12 @@ def main(argv=None):
             return 1 if bad else 0
         if cmd == "fix":                                                                         # check, repair what can be repaired, write the files, list what is left
             ap = argparse.ArgumentParser(prog="gizvfx fix"); ap.add_argument("ids", nargs="*"); ap.add_argument("--all", action="store_true"); ap.add_argument("-o", "--opt", action="append")
-            ap.add_argument("--out", default="gizvfx_fix"); ap.add_argument("--name"); ap.add_argument("--scale", type=int, default=4); ap.add_argument("--painted", choices=["ink", "watercolor", "comic", "chalk", "linocut", "stencil", "glitch", "lineart"]); a = ap.parse_args(rest)
+            ap.add_argument("--out", default="gizvfx_fix"); ap.add_argument("--name"); ap.add_argument("--apply", action="store_true"); ap.add_argument("--scale", type=int, default=4); ap.add_argument("--painted", choices=["ink", "watercolor", "comic", "chalk", "linocut", "stencil", "glitch", "lineart"]); a = ap.parse_args(rest)
             from .fix import fix
             ids = sorted(engine.registry()) if a.all else a.ids; left_n = 0
             if not ids: raise ValueError("fix: give an effect id, a recipe .json, or --all")
             for eid in ids:
-                done, problems, notes, paths = fix(eid, _opts(a.opt), out=a.out, name=(a.name if len(ids) == 1 else None), scale=a.scale, painted_style=a.painted); left_n += bool(problems)
+                done, problems, notes, paths = fix(eid, _opts(a.opt), out=a.out, name=(a.name if len(ids) == 1 else None), scale=a.scale, painted_style=a.painted, apply=a.apply); left_n += bool(problems)
                 print(f"{eid}: " + ("; ".join(done) if done else "nothing to fix") + (f"  | TO FIX: {len(problems)}" if problems else "  | clean") + (f" ({len(notes)} notes)" if notes else ""))
                 for x in problems: print("   - " + x)
                 for x in notes: print("   note: " + x)

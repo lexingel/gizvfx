@@ -69,7 +69,7 @@ def _pad_recipe(meta, out, name, padx=8, pady=8):
     return dest
 
 
-def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=None):
+def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=None, apply=False):
     """returns (done, problems, notes, written paths): problems are what a user must fix (cropping, does not end empty, loop seam, painted check); notes are advisory (mesh, flat colour, motion pops, empty frames, lone pixels)"""
     m, meta = engine.get(eid); name = name or meta["id"].split("/")[-1]; path = eid; done = []; capped = False
     stale = os.path.join(out, name + ".fixed.json")
@@ -112,6 +112,10 @@ def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=Non
     elif painted_style:
         from . import painted
         problems += [f"painted {painted_style}: {b}" for b in painted.check(path, scale, painted_style)]
+    if path != eid and path.endswith(".fixed.json"):
+        if apply and eid.lower().endswith(".json") and os.path.isfile(eid):                  # --apply: the fixed recipe replaces yours (the old one is kept as .bak)
+            shutil.copy(eid, eid + ".bak"); shutil.copy(path, eid); done.append(f"your recipe was replaced by the fixed one (the old one is {os.path.basename(eid)}.bak)")
+        else: done.append(f"your recipe is unchanged: copy {os.path.basename(path)} over it, set its size and pivot by hand, or run `fix --apply`")
     o = engine.options(meta, given or {}); fps = meta.get("fps", 12)
     paths = write_all(frames, out, name, meta, dict(o), fps, scale=scale, bg=DARK)
     rp = os.path.join(out, name + "_fix.txt")
