@@ -504,7 +504,7 @@ def render_frame(meta, o, t, S, style="ink", opts=None, tick=0, inner=False):
                 tk = (t - k / n * sm[0] * (t1 - t0)) % 1.0 if spec["loop"] else t - k / n * sm[0] * (t1 - t0); alpha = 1 - (1 - sm[1]) * k / n; vs = -0.45 * k / n
             if tk < t0 or (tk > t1 and not d.get("hold")): continue
             dk = sp.resolve_pts(spec, d, tk, o); cm = _clip_alpha(meta, dk, tk, o, S, main, style, opts, tick) if d.get("clip") else None
-            for kind, lay in (_layers(meta, dk, i, tk, o, S, main, ("ink" if k and style in ("comic", "linocut", "stencil") else style), opts, tick, vs) if d["type"] != "include" else [("solid", _include(meta, dk, _ctx(meta, dk, i, tk, o, S, main, vs), S, style, opts, tick, o))]):
+            for kind, lay in (_layers(meta, dk, i, tk, o, S, main, ("ink" if k and style in ("comic", "linocut", "stencil") else style), opts, tick, vs) if d["type"] != "include" else [("solid", (lambda cx: _post(_include(meta, dk, cx, S, style, opts, tick, o), dk, cx, S))(_ctx(meta, dk, i, tk, o, S, main, vs)))]):
                 arr = np.asarray(lay)
                 if cm is not None: arr = arr.copy(); arr[..., 3] = (arr[..., 3] * cm).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
                 if kind == "light": light += arr[..., :3].astype(np.float32) / 255 * (arr[..., 3:4].astype(np.float32) / 255) * alpha                         # light is added to everything under it at the end, as in the pixel renderer

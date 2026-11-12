@@ -111,6 +111,23 @@ def _leftover_layers(meta, o):
     return f" (layers still drawing at t=1: {', '.join(out)})" if out else ""
 
 
+def _edge_layers(meta, o, n):
+    """' (touching layers: 0 glow 12px, 3 particles 40px)': each layer of a recipe drawn alone over the animation, edge pixels counted"""
+    rec = meta.get("recipe")
+    if not rec: return ""
+    from .spec import load as spec_load
+    out = []
+    for i, l in enumerate(rec["layers"]):
+        try:
+            m2, _ = spec_load(dict(rec, layers=[l])); tot = 0
+            for k in range(n):
+                t = k / n if meta["loop"] else k / (n - 1); fr = Frame(*meta["size"]); m2.draw(fr, t, o); a_ = fr.a
+                tot += int((a_[0] > 0).sum() + (a_[-1] > 0).sum() + (a_[:, 0] > 0).sum() + (a_[:, -1] > 0).sum())
+        except Exception: continue
+        if tot: out.append(f"{i} {l.get('type')} {tot}px")
+    return f" (layers touching the edge: {', '.join(out)})" if out else ""
+
+
 def check(eid, given=None):
     """quality checks; returns a list of problems (empty = clean)"""
     mod, meta = get(eid); o = options(meta, given); n = n_frames(meta); bad = []; w, h = meta["size"]
@@ -138,7 +155,7 @@ def check(eid, given=None):
             lft, rgt = meta["pivot"][0] + ax - W2, meta["pivot"][0] + ax + W2
             if lft <= 0: hint += f"; layer {li} (water) reaches {-lft:.0f} px past the left edge: `at` is its MIDDLE, `width` is the whole width"
             if rgt >= w_: hint += f"; layer {li} (water) reaches {rgt - w_:.0f} px past the right edge: `at` is its MIDDLE, `width` is the whole width"
-    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation: {', '.join(sorted(sides))} edge, first at frame {first} of {n} (cropped? make the canvas bigger, or move the pivot or `at` away from that edge; a `wave` reaches `length` px behind its crest)" + hint)
+    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation: {', '.join(sorted(sides))} edge, first at frame {first} of {n} (cropped? make the canvas bigger, or move the pivot or `at` away from that edge; a `wave` reaches `length` px behind its crest)" + hint + _edge_layers(meta, o, n))
     return bad
 
 

@@ -131,4 +131,11 @@ def run():
         json.dump({"id": "test/rel", "duration": 2, "size": [60, 60], "layers": [{"type": "include", "recipe": "idle.json", "repeat": 2, "t": [0, 0.5]}]}, open(os.path.join(d, "rel.json"), "w"))
         fr_ = engine.render(os.path.join(d, "rel.json"), {"colors": 0}); n_ = len(fr_); assert n_ > 8 and np.array(fr_[0])[..., 3].any() and not np.array(fr_[-1])[..., 3].any()
         i1_, i2_ = int(0.25 * (n_ - 1)), int(0.5 * (n_ - 1)); assert np.array_equal(np.array(fr_[0]), np.array(fr_[min(i2_, n_ - 1)])) or np.array(fr_[i1_])[..., 3].any()   # it plays and loops inside the window
+    with tempfile.TemporaryDirectory() as d:                                                       # erode on an include layer works in the pixel and the painted renderer; check names the layers at the edge
+        json.dump({"id": "test/i2", "loop": True, "duration": 1, "size": [60, 60], "layers": [{"type": "ring", "radius": 15, "thick": 4}]}, open(os.path.join(d, "i.json"), "w"))
+        json.dump({"id": "test/r2", "duration": 2, "size": [60, 60], "layers": [{"type": "include", "recipe": "i.json", "t": [0, 1], "erode": [0, 4]}]}, open(os.path.join(d, "r.json"), "w"))
+        from . import painted as _pt
+        pf_ = _pt.render(os.path.join(d, "r.json"), {}, scale=2); assert int((np.array(pf_[0])[..., 3] > 40).sum()) > 2 * int((np.array(pf_[-2])[..., 3] > 40).sum())
+        json.dump({"id": "test/e", "duration": 1, "size": [40, 40], "pivot": [20, 30], "layers": [{"type": "ring", "radius": 8, "thick": 2}, {"type": "beam", "from": [0, 0], "to": [0, -40], "width": 4}]}, open(os.path.join(d, "e.json"), "w"))
+        assert any("layers touching the edge: 1 beam" in b for b in engine.check(os.path.join(d, "e.json")))
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0
