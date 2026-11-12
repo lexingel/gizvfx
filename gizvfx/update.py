@@ -91,7 +91,7 @@ def install_skill(base=None, quiet=False):
 
 def refresh_skill_if_installed(base=None):
     p = skill_path(base)
-    if MARK in _read(p) or "gizvfx.py update" in _read(p): install_skill(base, quiet=True); return p
+    if ROOT.replace("\\", "/") in _read(p): install_skill(base, quiet=True); return p                  # only the skill that points at THIS install (another install keeps its own)
     return None
 
 
