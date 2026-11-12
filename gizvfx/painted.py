@@ -495,23 +495,28 @@ def _clip_alpha(meta, d, t, o, S, main, style, opts, tick):
 
 def render_frame(meta, o, t, S, style="ink", opts=None, tick=0, inner=False):
     spec = meta["recipe"]; W, H = meta["size"]; img = Image.new("RGBA", (W * S, H * S), (0, 0, 0, 0)); main = resolve(o.palette, spec["palette"]); light = np.zeros((H * S, W * S, 3), np.float32)
-    for i, d in enumerate(spec["layers"]):
-        d = sp.sub(d, o); t0, t1 = d.get("t", [0, 1]); sm = d.get("smear"); n = 24 if sm else 0                                                                          # twice the copies of the pixel trail: smooth, not stair steps
-        for k in range(n, -1, -1):                                                                                 # a smear: older copies first, fainter and darker, then the real layer
-            tk = t; alpha = 1.0; vs = 0.0
-            if k:
-                if not spec["loop"] and t >= t1: continue
-                tk = (t - k / n * sm[0] * (t1 - t0)) % 1.0 if spec["loop"] else t - k / n * sm[0] * (t1 - t0); alpha = 1 - (1 - sm[1]) * k / n; vs = -0.45 * k / n
-            if tk < t0 or (tk > t1 and not d.get("hold")): continue
-            dk = sp.resolve_pts(spec, d, tk, o); cm = _clip_alpha(meta, dk, tk, o, S, main, style, opts, tick) if d.get("clip") else None
-            for kind, lay in (_layers(meta, dk, i, tk, o, S, main, ("ink" if k and style in ("comic", "linocut", "stencil") else style), opts, tick, vs) if d["type"] != "include" else [("solid", (lambda cx: _post(_include(meta, dk, cx, S, style, opts, tick, o), dk, cx, S))(_ctx(meta, dk, i, tk, o, S, main, vs)))]):
-                arr = np.asarray(lay)
-                if cm is not None: arr = arr.copy(); arr[..., 3] = (arr[..., 3] * cm).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
-                if kind == "light": light += arr[..., :3].astype(np.float32) / 255 * (arr[..., 3:4].astype(np.float32) / 255) * alpha                         # light is added to everything under it at the end, as in the pixel renderer
-                else:
-                    if alpha < 1: arr = arr.copy(); arr[..., 3] = (arr[..., 3] * alpha).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
-                    if k: lay = lay.filter(ImageFilter.GaussianBlur(0.7 * S))                                                  # a trail copy is softened: the stacked bands of a disc melt into one streak
-                    img.alpha_composite(lay)
+    i = -1
+    try:
+        for i, d in enumerate(spec["layers"]):
+            d = sp.sub(d, o); t0, t1 = d.get("t", [0, 1]); sm = d.get("smear"); n = 24 if sm else 0                                                                          # twice the copies of the pixel trail: smooth, not stair steps
+            for k in range(n, -1, -1):                                                                                 # a smear: older copies first, fainter and darker, then the real layer
+                tk = t; alpha = 1.0; vs = 0.0
+                if k:
+                    if not spec["loop"] and t >= t1: continue
+                    tk = (t - k / n * sm[0] * (t1 - t0)) % 1.0 if spec["loop"] else t - k / n * sm[0] * (t1 - t0); alpha = 1 - (1 - sm[1]) * k / n; vs = -0.45 * k / n
+                if tk < t0 or (tk > t1 and not d.get("hold")): continue
+                dk = sp.resolve_pts(spec, d, tk, o); cm = _clip_alpha(meta, dk, tk, o, S, main, style, opts, tick) if d.get("clip") else None
+                for kind, lay in (_layers(meta, dk, i, tk, o, S, main, ("ink" if k and style in ("comic", "linocut", "stencil") else style), opts, tick, vs) if d["type"] != "include" else [("solid", (lambda cx: _post(_include(meta, dk, cx, S, style, opts, tick, o), dk, cx, S))(_ctx(meta, dk, i, tk, o, S, main, vs)))]):
+                    arr = np.asarray(lay)
+                    if cm is not None: arr = arr.copy(); arr[..., 3] = (arr[..., 3] * cm).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
+                    if kind == "light": light += arr[..., :3].astype(np.float32) / 255 * (arr[..., 3:4].astype(np.float32) / 255) * alpha                         # light is added to everything under it at the end, as in the pixel renderer
+                    else:
+                        if alpha < 1: arr = arr.copy(); arr[..., 3] = (arr[..., 3] * alpha).astype(np.uint8); lay = Image.fromarray(arr, "RGBA")
+                        if k: lay = lay.filter(ImageFilter.GaussianBlur(0.7 * S))                                                  # a trail copy is softened: the stacked bands of a disc melt into one streak
+                        img.alpha_composite(lay)
+    except (TypeError, KeyError, IndexError, ValueError, ZeroDivisionError) as ex:                                       # name the layer, as the pixel renderer does
+        if str(ex).startswith("layer ") or i < 0: raise
+        raise ValueError(f"layer {i} ({spec['layers'][i].get('type')}): {type(ex).__name__}: {ex}") from None
     if light.any():                                                                                                   # the light: it brightens what is under it, and on empty ground it is a soft translucent glow
         arr = np.asarray(img).astype(np.float32); has = arr[..., 3] > 4; add = np.clip(light, 0, 1) * 255 * float(o.light)
         mx = np.maximum(add.max(-1, keepdims=True), 1e-3); arr[..., :3] = np.where(has[..., None], np.clip(arr[..., :3] + add, 0, 255), np.clip(add / mx * 255, 0, 255)); ga = np.where(add.max(-1) / 255 > 0.06, np.clip(add.max(-1) / 255 * 0.85, 0, 1) * 255, 0); arr[..., 3] = np.maximum(arr[..., 3], ga)

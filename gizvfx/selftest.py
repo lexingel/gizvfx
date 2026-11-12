@@ -161,4 +161,9 @@ def run():
         assert _up._read(_up.TEMPLATE) and "/gizvfx update" in _up.render_skill(root_) and root_.replace("\\", "/") in _up.render_skill(root_) and _up.MARK in _up.render_skill(root_) and "{{" not in _up.render_skill(root_)
         sp_ = _up.install_skill(os.path.join(d, "skills"), quiet=True); assert _up.refresh_skill_if_installed(os.path.join(d, "skills")) == sp_
         assert _up.new_changelog("a" + chr(10) + "b", "a" + chr(10) + "b" + chr(10) + "- c" + chr(10) + "- d") == ["- c", "- d"]
+    with tempfile.TemporaryDirectory() as d:                                                       # a painted error names the layer, as the pixel renderer does
+        bp_ = os.path.join(d, "b.json"); json.dump({"id": "test/b", "duration": 1, "size": [40, 40], "layers": [{"type": "ring", "radius": 8}, {"type": "glow", "radius": "big"}]}, open(bp_, "w"))
+        from . import painted as _pt2
+        try: _pt2.render(bp_, {}, scale=2); raise SystemExit("a text radius must fail")
+        except ValueError as ex_: assert str(ex_).startswith("layer 1 (glow)"), str(ex_)
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

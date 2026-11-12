@@ -54,6 +54,8 @@ aside,section{min-height:0;overflow:auto}
 #stage.checker{background:conic-gradient(#363b4a 25%,#262a35 0 50%,#363b4a 0 75%,#262a35 0) 0 0/24px 24px}
 #cv{image-rendering:pixelated;max-width:none}
 #cv.smooth{image-rendering:auto}
+#cv.stale,#strip.stale{opacity:.35;transition:opacity .15s}
+#stalenote{position:absolute;top:10px;left:12px;font-size:13px;background:#12141acc;padding:3px 9px;border-radius:99px;max-width:60%}
 #busy{position:absolute;top:10px;right:12px;display:flex;gap:7px;align-items:center;font-size:13px;opacity:0;transition:opacity .15s;background:#12141acc;padding:3px 9px;border-radius:99px}
 #busy.on{opacity:1}
 #err{position:absolute;left:12px;right:12px;bottom:10px;background:#3a1618;border:1px solid #7a2b30;color:#ffd5d5;border-radius:var(--r);padding:8px 10px;display:none;max-height:40%;overflow:auto}
@@ -142,7 +144,7 @@ details.help p{margin:6px 0;color:var(--mut)}
     <div id="items" role="listbox" aria-label="Effects"></div>
   </aside>
   <section id="stagewrap" aria-label="Preview">
-    <div id="stage"><canvas id="cv" width="96" height="96" role="img" aria-label="Effect preview"></canvas><div id="busy" role="status">Drawing&hellip;</div><div id="err" role="alert"></div></div>
+    <div id="stage"><canvas id="cv" width="96" height="96" role="img" aria-label="Effect preview"></canvas><div id="stalenote" role="status" hidden>Showing the last version that could be drawn</div><div id="busy" role="status">Drawing&hellip;</div><div id="err" role="alert"></div></div>
     <div id="bar">
       <button id="bPlay" title="Play or pause (Space)">Pause</button>
       <button id="bPrev" class="icon" aria-label="Previous frame (Left arrow)" title="Previous frame"></button>
@@ -200,27 +202,28 @@ function replaceWith(state,msg){const wasDirty=S.dirty&&(S.recipe||S.id);if(S.re
   S.recipe=state.recipe||null;S.id=state.id||null;S.code=!S.recipe;S.options=state.options||{};S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.renderErr=null;S.idx=0;editT=null;checkpoint();afterLoad();updHist();
   if(S.code&&S.mode==='painted'){setMode('pixel');toast('Painted needs a recipe. This effect is drawn by Python, so it is shown as Pixel.')}
   else if(wasDirty)toast((msg||'Effect replaced')+'. Your earlier edits are one undo away.',{label:'Undo',fn:undo})}
-function afterLoad(){S.name=S.recipe?(S.recipe.name||S.recipe.id||''):(S.effects.find(e=>e.id===S.id)?.name||'');setTitle();$('#modeSeg [data-m=painted]').disabled=S.code;$('#modeSeg [data-m=painted]').title=S.code?'Painted needs a recipe; this effect is drawn by Python':'';buildList();renderEditor();touch()}
+function afterLoad(){S.renderErr=null;showErr(null);clearStage();staleStage(false);setBadge('',null);S.name=S.recipe?(S.recipe.name||S.recipe.id||''):(S.effects.find(e=>e.id===S.id)?.name||'');setTitle();$('#modeSeg [data-m=painted]').disabled=S.code;$('#modeSeg [data-m=painted]').title=S.code?'Painted needs a recipe; this effect is drawn by Python':'';buildList();renderEditor();touch()}
 
 // ---------- errors in plain words
 function friendly(raw){let m=String(raw),where='',layer=null;const L=m.match(/^layer (\d+) \((\w+)\): ([\s\S]*)$/);if(L){layer=+L[1];where='Layer '+(layer+1)+' ('+L[2]+'): ';m=L[3]}
   m=m.replace(/^(TypeError|ValueError|KeyError|IndexError|ZeroDivisionError|AttributeError): /,'');
   if(/not supported between instances|can't multiply|must be real number|unsupported operand|can only concatenate|could not convert|object is not (iterable|subscriptable)/.test(m))m='a value that should be a number is text, or a list sits where one number goes. Check the numbers in this layer.';
   else if(/drawn by Python code; only recipes/.test(m))m='this effect is drawn by Python code, so it has no painted look.';
-  return{text:where+m,layer,raw:String(raw)}}
+  return{text:where+m,layer,raw:String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1))}}
 function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';e.append(f.text);if(f.text!==f.raw)e.append(h('small',{},f.raw))}
 
 // ---------- rendering pipeline
 let seq=0,tR,tC;
 function payload(extra){const b={mode:S.mode,style:S.style,scale:S.scale,options:S.options,...extra};if(S.recipe)b.recipe=S.recipe;else b.id=S.id;return b}
 function touch(){clearTimeout(tR);$('#busy').classList.add('on');tR=setTimeout(doRender,200)}
+function staleStage(on){$('#cv').classList.toggle('stale',on);$('#strip').classList.toggle('stale',on);$('#stalenote').hidden=!(on&&S.frames.length)}
 function clearStage(){S.frames=[];S.idx=0;const cv=$('#cv');cv.getContext('2d').clearRect(0,0,cv.width,cv.height);$('#strip').replaceChildren();$('#scrub').max=0;$('#fc').textContent='0 / 0'}
 async function doRender(){
   if(!S.recipe&&!S.id)return;const my=++seq;let res;
   try{res=await api('/api/render',payload())}catch(e){res={error:String(e)}}
   if(my!==seq)return;$('#busy').classList.remove('on');
-  if(res.error){const f=friendly(res.error);S.renderErr=f;clearStage();showErr(f);setBadge('bad',1);renderCheck();return}
-  S.renderErr=null;showErr(null);const imgs=await Promise.all(res.frames.map(b=>loadImg('data:image/png;base64,'+b)));if(my!==seq)return;
+  if(res.error){const f=friendly(res.error);S.renderErr=f;staleStage(true);showErr(f);setBadge('bad',1);renderCheck();return}
+  S.renderErr=null;staleStage(false);showErr(null);const imgs=await Promise.all(res.frames.map(b=>loadImg('data:image/png;base64,'+b)));if(my!==seq)return;
   S.frames=imgs;S.fps=res.fps;S.loop=res.loop;S.base=res.base;S.res=res;S.idx=Math.min(S.idx,imgs.length-1);
   $('#cv').classList.toggle('smooth',S.mode==='painted');
   $('#scrub').max=imgs.length-1;$('#kind').textContent=res.loop?'loop':'one-shot';
@@ -349,7 +352,10 @@ function renderLayers(){
         ib('del','Delete',()=>{r.layers.splice(i,1);renderLayers();edit();toast('Layer '+(i+1)+' deleted.',{label:'Undo',fn:undo})})),ta,msg,keys))})}
 
 function syncJson(){const j=$('#json');if(document.activeElement===j||!S.recipe)return;j.value=JSON.stringify(S.recipe,null,1);j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true}
-$('#json').oninput=e=>{const m=$('#jsonmsg');try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object')throw new Error('a recipe is an object');S.recipe=v;S.code=false;e.target.removeAttribute('aria-invalid');m.hidden=true;renderEffect();renderLayers();edit()}catch(x){e.target.setAttribute('aria-invalid','true');m.hidden=false;m.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version; your text stays as you typed it.'}};
+function shapeErr(v){if(!v||typeof v!=='object'||Array.isArray(v))return'a recipe is an object like { "layers": [ ... ] }';if(!Array.isArray(v.layers))return'a recipe needs a "layers" list, for example "layers": [ { "type": "glow" } ]';if(v.layers.some(l=>!l||typeof l!=='object'||Array.isArray(l)))return'every layer must be an object like { "type": "glow" }';return null}
+$('#json').oninput=e=>{const m=$('#jsonmsg');let v;try{v=JSON.parse(e.target.value)}catch(x){e.target.setAttribute('aria-invalid','true');m.hidden=false;m.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version; your text stays as you typed it.';return}
+  const se=shapeErr(v);if(se){e.target.setAttribute('aria-invalid','true');m.hidden=false;m.textContent='This is JSON, but not a recipe yet: '+se+'. The recipe and the preview stay as they were.';return}
+  try{S.recipe=v;S.code=false;e.target.removeAttribute('aria-invalid');m.hidden=true;renderEffect();renderLayers();edit()}catch(x){m.hidden=false;m.textContent=String(x.message)}};
 $('#json').onblur=()=>{if(!$('#json').getAttribute('aria-invalid'))syncJson()};
 $('#bFmt').onclick=()=>{if(S.recipe&&!$('#json').getAttribute('aria-invalid')){$('#json').blur();syncJson()}};
 $('#bDl').onclick=()=>{if(!S.recipe)return;download((S.recipe.id||'effect').split('/').pop()+'.json',new Blob([JSON.stringify(S.recipe,null,1)],{type:'application/json'}))};
@@ -371,10 +377,10 @@ function renderCheck(){
   else if(c.error)p.append(msg('bad',friendly(c.error).text,c.error));
   else{if(!c.problems.length)p.append(msg('ok','Clean: deterministic, '+(S.loop?'the loop closes':'ends empty')+', nothing touches the edge.'));
     c.problems.forEach(x=>p.append(msg('bad',x)));c.flags.forEach(x=>p.append(msg('warn',x)))}
-  const f=S.fixed;if(f){p.append(h('h3',{},'Fix result'));if(f.error)p.append(msg('bad',friendly(f.error).text,f.error));else{
+  const f=S.fixed;if(f){p.append(h('h3',{},'Fix result'));if(f.blocked)p.append(msg('warn','Fix cannot repair an effect that cannot be drawn. Correct the error above first (the button takes you to the layer), then press Fix again.'));else if(f.error)p.append(msg('bad',friendly(f.error).text,f.error));else{
     (f.done.length?f.done:['nothing needed fixing']).forEach(x=>p.append(msg('ok',x)));f.problems.forEach(x=>p.append(msg('bad','Still to fix by hand: '+x)));f.notes.forEach(x=>p.append(msg('',x)));
     if(f.fixed_recipe)p.append(h('div',{class:'row'},h('button',{class:'primary',onclick:()=>{replaceWith({recipe:f.fixed_recipe,options:S.options},'Fixed recipe in use (canvas resized)')}},f.problems.length?'Use the fixed recipe ('+f.problems.length+' left)':'Use the fixed recipe'),h('span',{class:'hint'},'The canvas size changes; Undo brings the old one back.')))}}}
-async function runFix(){S.fixed=null;const r=await api('/api/fix',payload());S.fixed=r;tab('check');renderCheck()}
+async function runFix(){S.fixed=null;if(S.renderErr){S.fixed={blocked:true};tab('check');renderCheck();return}const r=await api('/api/fix',payload());S.fixed=r;tab('check');renderCheck()}
 
 // ---------- start
 (async()=>{

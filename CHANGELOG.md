@@ -37,6 +37,8 @@ GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, pa
 
 - UI critique round (impeccable): undo/redo history, no silent loss of edits, errors in plain words with a jump to the layer, Painted only for recipes, a cleared stage instead of a stale effect, labelled fields, one-stop effect list, roving tabs, SVG icons, 28 px targets, contrast at least 4.5:1 and borders 3:1, a first-timer path (New effect, layer chips, short help), a narrow-screen layout with the preview pinned on top.
 
+- UI second critique round: a layer value that cannot be drawn keeps the last good frames dimmed with a note instead of emptying the stage, JSON that parses but is not a recipe no longer replaces it, Fix says plainly it cannot repair an effect that cannot be drawn, undo clears an old error, and painted errors name the layer (1-based everywhere).
+
 History carried over from Gizpix 0.2.0:
 - Painted: glows fall off in the pixel renderer's bands (soft edges), watercolor has more body and colour on dark grounds. Beam colours across the width match the pixel beam.
 - Painted, the last small differences from the pixel frames: `rim`, a true gradient across a `beam` with a white-hot line, core-shaded dots (coin-burst is gold again), thicker speed lines, a glow with the pixel renderer's flat first step (shield-bubble, bomb-fuse), crossing-line sparkles for `star`, more body in watercolor.
