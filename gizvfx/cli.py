@@ -11,6 +11,8 @@
   (ID can also be the path of your own recipe, e.g. my_effect.json)
   python gizvfx.py check [ID ...] [--report]   (--report adds numbers + flags: mesh dithering, flat colour, lone pixels, empty frames, motion pops)                  quality checks (deterministic, loops close, one-shots end empty, nothing cropped)
   python gizvfx.py fix ID|FILE.json ...|--all [--out DIR] [--painted STYLE]   check, repair what can be repaired (--apply: write the fixed recipe over yours, the old one kept as .bak) (cropped canvas, pinholes, lone pixels, too many colours, a one-shot that does not end empty), write the files + NAME_fix.txt, list what is left
+  python gizvfx.py update [--check] [--force]        bring this install up to the latest version on GitHub (git pull, or the repository zip), refresh the skill, run the selftest
+  python gizvfx.py install-skill [--dir D]           write the /gizvfx skill for Claude Code (then `/gizvfx update` works)
   python gizvfx.py ui [--port 8765] [--folder gizvfx_ui] [--no-open]   a local web page: pick or write a recipe, watch it live (pixel or painted), check, fix, save, export
   python gizvfx.py gallery out.png [--scale S]       one picture with a mid-animation frame of every effect
 Options (-o): palette=ice (a ramp name, or hex colours dark to bright: '#102,#215,#43a'), seed=7, light=0.6, flip=true, plus the effect's own (see `show`)."""
@@ -93,6 +95,12 @@ def main(argv=None):
                 for x in problems: print("   - " + x)
                 for x in notes: print("   note: " + x)
             return 1 if left_n else 0
+        if cmd == "update":                                                                      # the latest version from GitHub (git pull, or the repository zip for a copy without .git)
+            ap = argparse.ArgumentParser(prog="gizvfx update"); ap.add_argument("--check", action="store_true", help="only say whether a newer version exists"); ap.add_argument("--force", action="store_true", help="discard local changes to tracked files"); a = ap.parse_args(rest)
+            from .update import update; return update(a.check, a.force)
+        if cmd == "install-skill":                                                               # give Claude Code the /gizvfx skill (and /gizvfx update)
+            ap = argparse.ArgumentParser(prog="gizvfx install-skill"); ap.add_argument("--dir", help="skills folder (default ~/.claude/skills)"); a = ap.parse_args(rest)
+            from .update import install_skill; install_skill(a.dir); return 0
         if cmd == "ui":                                                                          # a local web page: edit a recipe and watch it
             ap = argparse.ArgumentParser(prog="gizvfx ui"); ap.add_argument("--port", type=int, default=8765); ap.add_argument("--folder", default="gizvfx_ui"); ap.add_argument("--no-open", action="store_true"); a = ap.parse_args(rest)
             from .ui import serve; serve(a.port, a.folder, not a.no_open); return 0
@@ -124,7 +132,7 @@ def main(argv=None):
             return 0
     except (KeyError, ValueError) as e:                                                          # recipe errors arrive as ValueError from the draw call too
         print(f"gizvfx: {e.args[0] if e.args else e}", file=sys.stderr); return 2
-    print(f"gizvfx: unknown command '{cmd}'. Commands: list, show, palettes, schema, import, recipe, render, painted, check, fix, ui, gallery, selftest", file=sys.stderr); return 2
+    print(f"gizvfx: unknown command '{cmd}'. Commands: list, show, palettes, schema, import, recipe, render, painted, check, fix, ui, update, install-skill, gallery, selftest", file=sys.stderr); return 2
 
 
 def _centre(f, W, H):

@@ -33,6 +33,8 @@ GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, pa
 
 - `gizvfx ui`: a local web page to pick, write and watch effects live (pixel and every painted style), edit layers, check, fix, save and export.
 
+- `gizvfx update [--check] [--force]` (git pull or the repository zip, new changelog lines, requirements, skill refresh, selftest) and `gizvfx install-skill` (the `/gizvfx` skill for Claude Code, with `/gizvfx update`).
+
 History carried over from Gizpix 0.2.0:
 - Painted: glows fall off in the pixel renderer's bands (soft edges), watercolor has more body and colour on dark grounds. Beam colours across the width match the pixel beam.
 - Painted, the last small differences from the pixel frames: `rim`, a true gradient across a `beam` with a white-hot line, core-shaded dots (coin-burst is gold again), thicker speed lines, a glow with the pixel renderer's flat first step (shield-bubble, bomb-fuse), crossing-line sparkles for `star`, more body in watercolor.

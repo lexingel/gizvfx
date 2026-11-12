@@ -123,6 +123,12 @@ Rules that save rounds:
 - Share a recipe by sending the JSON file. The same file renders the same frames anywhere (`gizvfx render my.json`).
 
 
+## Updating
+
+`python gizvfx.py update` brings the install to the latest version on GitHub: `git pull --ff-only` for a clone, the repository zip for a copy without `.git` (package files are replaced, files that no longer exist are removed; saved recipes in `~/.gizvfx/recipes` and the `gizvfx_ui` folder are never touched). It then prints the new CHANGELOG lines, installs `requirements.txt` again if it changed, refreshes the skill, and runs the selftest. `update --check` only says whether a newer version exists. A clone with local changes is refused (exit code 3) unless `--force`. This is the only command besides `install-skill` that uses the network, and only when you run it.
+
+`python gizvfx.py install-skill [--dir D]` writes the Claude Code skill `~/.claude/skills/gizvfx/SKILL.md` with this install's path in it: the agent then knows `/gizvfx` and `/gizvfx update`.
+
 ## The UI
 
 `python gizvfx.py ui [--port 8765] [--folder gizvfx_ui] [--no-open]` opens a local web page (127.0.0.1 only, standard library, nothing leaves the machine). Left: every effect, searchable; middle: the live preview (Pixel or Painted in any style, ground colour, zoom, play, step, every frame as a strip); right: Effect (name, size, pivot, palette, duration, loop; options to try without changing the recipe), Layers (each layer as JSON with its key list, add, move, duplicate, delete), JSON (the whole recipe, format, download), Check (deterministic, loop, edge, flags, and `Fix` with a button to take the fixed recipe). It also saves recipes and exports the GIF + sprite sheet into the `--folder` (default `gizvfx_ui` in the current directory). A recipe error shows under the preview with the same message as the command line. Code effects (the 13 written in Python) can be watched and recoloured but have no recipe to edit; use `recipe ID` on a JSON effect to learn from it.

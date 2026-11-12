@@ -11,6 +11,8 @@ No reference image, no AI call, no network. See `ABOUT.md` for what it does in p
 python gizvfx.py list                                   # the effects
 python gizvfx.py render fire/torch -o palette=ice --out fx
 python gizvfx.py ui                      # a local web page: pick or write an effect and watch it live
+python gizvfx.py update                  # the latest version from GitHub (git pull, or the repo zip); `--check` only looks
+python gizvfx.py install-skill           # for Claude Code: writes the /gizvfx skill, then `/gizvfx update` does the update for you
 python gizvfx.py painted melee/ink-slash --style watercolor --out fx
 python gizvfx.py schema                                 # the recipe language
 python gizvfx.py check                                  # deterministic, loops close, one-shots end empty

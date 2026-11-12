@@ -145,4 +145,20 @@ def run():
         rec_ = _ui.api_recipe("holy/smite")["recipe"]; r2_ = _ui.api_render(w_, {"recipe": rec_, "mode": "painted", "scale": 2, "style": "chalk"}); assert r2_["w"] == 2 * r2_["base"][0] and r2_["is_recipe"]
         assert _ui.api_check(w_, {"recipe": rec_})["problems"] == [] and "problems" in _ui.api_fix(w_, {"recipe": rec_})
         assert os.path.exists(_ui.api_save(w_, {"name": "x y", "recipe": rec_})["path"])
+    import zipfile as _zf                                                                       # update: a zip install is replaced, stale package files removed, user files kept; the skill text gets the install path
+    from . import update as _up
+    with tempfile.TemporaryDirectory() as d:
+        root_ = os.path.join(d, "inst"); os.makedirs(os.path.join(root_, "gizvfx")); os.makedirs(os.path.join(root_, "gizvfx_ui"))
+        for rel_, txt_ in (("gizvfx.py", "old"), ("gizvfx/a.py", "old"), ("gizvfx/stale.py", "old"), ("gizvfx_ui/mine.json", "keep")): open(os.path.join(root_, rel_), "w").write(txt_)
+        zp_ = os.path.join(d, "n.zip")
+        with _zf.ZipFile(zp_, "w") as z_:
+            z_.writestr("gizvfx-main/gizvfx.py", "new"); z_.writestr("gizvfx-main/gizvfx/a.py", "new"); z_.writestr("gizvfx-main/gizvfx/b.py", "new"); z_.writestr("gizvfx-main/README.md", "r")
+        w_ = _up.apply_zip(zp_, root_)
+        assert open(os.path.join(root_, "gizvfx/a.py")).read() == "new" and os.path.exists(os.path.join(root_, "gizvfx/b.py")) and not os.path.exists(os.path.join(root_, "gizvfx/stale.py")) and open(os.path.join(root_, "gizvfx_ui/mine.json")).read() == "keep"
+        with _zf.ZipFile(zp_, "w") as z_: z_.writestr("x/other.txt", "no")
+        try: _up.apply_zip(zp_, root_); raise SystemExit("a zip that is not GizVFX must be refused")
+        except ValueError: pass
+        assert _up._read(_up.TEMPLATE) and "/gizvfx update" in _up.render_skill(root_) and root_.replace("\\", "/") in _up.render_skill(root_) and _up.MARK in _up.render_skill(root_) and "{{" not in _up.render_skill(root_)
+        sp_ = _up.install_skill(os.path.join(d, "skills"), quiet=True); assert _up.refresh_skill_if_installed(os.path.join(d, "skills")) == sp_
+        assert _up.new_changelog("a" + chr(10) + "b", "a" + chr(10) + "b" + chr(10) + "- c" + chr(10) + "- d") == ["- c", "- d"]
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0
