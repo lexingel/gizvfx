@@ -1,5 +1,7 @@
 # Changelog
 
+- UI: one load path for undo and open (undo no longer crosses into a broken state), labelled undo steps, errors named once with the layer card marked, Check/Fix no longer contradict each other, pivot and ground marker on the stage, preview-option reset, sticky Save/Export footer, JSON tab locked for Python effects, cross-site POST guard.
+
 ## 0.1.0 - GizVFX split out of Gizpix
 GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, package `gizvfx`, user recipes in `~/.gizvfx/recipes`, env `GIZVFX_RECIPES`). Sprite sheet JSON carries `meta.gizvfx` (and the old `meta.pixfx` key). The GIF/sheet writer is its own copy, so the tool does not need the rest of Gizpix.
 

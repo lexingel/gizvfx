@@ -16,12 +16,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:600}
 button.ghost{background:transparent;border-color:transparent}
 button.ghost:hover:not(:disabled){border-color:var(--edge)}
-button.icon{padding:0;width:30px;height:30px;display:inline-grid;place-items:center}
+button.icon{padding:0;width:32px;height:32px;display:inline-grid;place-items:center}
 button.icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 button.chip{padding:3px 9px;border-radius:99px;min-height:28px}
 input,select,textarea{background:#12141a;border:1px solid var(--edge);border-radius:6px;padding:5px 7px;min-width:0;min-height:28px}
 input::placeholder{color:var(--mut);opacity:1}
-input[type=checkbox]{accent-color:var(--accent);width:22px;height:22px;min-height:0}
+input[type=checkbox]{accent-color:var(--accent);width:24px;height:24px;min-height:0}
 input[type=range]{accent-color:var(--accent);padding:0;border:0;background:transparent}
 label{color:var(--mut)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -52,9 +52,15 @@ aside,section{min-height:0;overflow:auto}
 .tag{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--mut);margin-left:4px}
 .empty{padding:18px 10px;color:var(--mut)}
 #stagewrap{display:flex;flex-direction:column;min-width:0;min-height:0}
-#stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#1b1d24}
+#stage{flex:1;min-height:0;position:relative;overflow:hidden;background:#1b1d24;box-shadow:inset 0 0 0 1px var(--line)}
+#cvwrap{position:absolute;inset:0;overflow:auto;display:flex}
+#cvbox{position:relative;margin:auto;flex:none}
+#pv{position:absolute;inset:0;pointer-events:none}
+#pv i{position:absolute;background:var(--accent);opacity:.55}
+#pv .h{left:0;right:0;height:1px}#pv .v{top:0;bottom:0;width:1px}
+#dim{position:absolute;bottom:8px;right:12px;font-size:12px;color:var(--mut);background:#12141acc;padding:1px 8px;border-radius:99px;pointer-events:none}
 #stage.checker{background:conic-gradient(#363b4a 25%,#262a35 0 50%,#363b4a 0 75%,#262a35 0) 0 0/24px 24px}
-#cv{image-rendering:pixelated;max-width:none}
+#cv{image-rendering:pixelated;max-width:none;display:block}
 #cv.smooth{image-rendering:auto}
 #cv.stale,#strip.stale{opacity:.35;transition:opacity .15s}
 #stalenote{position:absolute;top:10px;left:12px;font-size:13px;background:#12141acc;padding:3px 9px;border-radius:99px;max-width:60%}
@@ -69,21 +75,26 @@ aside,section{min-height:0;overflow:auto}
 #strip{display:flex;gap:4px;padding:6px 12px;overflow-x:auto;border-top:1px solid var(--line);background:var(--panel);min-height:78px}
 #strip canvas{height:64px;flex:none;border:1px solid var(--line);border-radius:4px;cursor:pointer;background:#1b1d24;image-rendering:pixelated}
 #strip canvas.on{border-color:var(--accent)}
-#editor{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
+#editor{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+#foot{border-top:1px solid var(--line);background:var(--panel);padding:8px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#foot input{flex:1;min-width:90px}
+#lookNote{font-size:12px;color:var(--mut);flex-basis:100%}
+.skip{position:absolute;left:8px;top:-60px;background:var(--accent);color:var(--ink);padding:6px 10px;border-radius:var(--r);z-index:30}
+.skip:focus{top:8px}
 .tabs{display:flex;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
 .tabs button{flex:1;border:0;border-radius:0;background:transparent;border-bottom:2px solid transparent;padding:9px 4px;color:var(--mut);min-height:38px}
 .tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
 .badge{display:inline-block;min-width:20px;padding:0 5px;margin-left:5px;border-radius:99px;font-size:12px;text-align:center;background:#2f3442;color:var(--text)}
 .badge.ok{background:#1d3a28;color:#aef0bd}.badge.bad{background:#4a1d20;color:#ffc4c4}.badge.warn{background:#463d17;color:#f7de8a}
-.pane{padding:12px;overflow:auto;display:none}
-.pane.on{display:block}
+.pane{padding:14px 16px;overflow:auto;display:none}
+.pane.on{display:block;flex:1 1 auto;min-height:0}
 .grid2{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;align-items:center}
 .row{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap}
-h3{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin:16px 0 6px;font-weight:600}
-h3:first-child{margin-top:0}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin:16px 0 6px;font-weight:600}
+h2:first-child{margin-top:0}
 details.help{border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;margin-bottom:10px;background:var(--panel2)}
-details.help summary,.keys summary{cursor:pointer;color:var(--accent);padding:5px 0}
-.keys summary{display:list-item}
+details.help summary,.keys summary,.msg summary{cursor:pointer;color:var(--accent);padding:5px 0}
+.keys summary{display:list-item;min-height:28px}
 details.help p{margin:6px 0;color:var(--mut)}
 .card{border:1px solid var(--line);border-radius:var(--r);margin:8px 0;background:var(--panel2)}
 .card.sel{border-color:var(--accentline)}
@@ -95,7 +106,7 @@ details.help p{margin:6px 0;color:var(--mut)}
 .card textarea[aria-invalid=true],#json[aria-invalid=true]{border-color:var(--bad)}
 .fmsg{margin:0 8px 8px;color:#ffb4b4;font-size:12px}
 .keys{margin:0 8px 8px;font-size:12px;color:var(--mut)}
-.keys button.key{padding:0 6px;min-height:26px;color:var(--accent);border-color:transparent;background:transparent;font:12px ui-monospace,Consolas,monospace}
+.keys button.key{padding:0 6px;min-height:28px;min-width:28px;color:var(--accent);border-color:transparent;background:transparent;font:12px ui-monospace,Consolas,monospace}
 .keys button.key:hover{border-color:var(--edge)}
 .keys p{margin:2px 0}
 #json{width:100%;height:calc(100vh - 230px);min-height:200px;font:12px/1.4 ui-monospace,Consolas,monospace;white-space:pre;resize:none}
@@ -104,9 +115,9 @@ details.help p{margin:6px 0;color:var(--mut)}
 .msg small{display:block;color:var(--mut);margin-top:2px;word-break:break-word}
 .msg button{margin-top:4px}
 .hint{color:var(--mut);font-size:12px;margin:4px 0}
-#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--edge);border-radius:var(--r);padding:6px 8px 6px 12px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:86vw;z-index:9;display:flex;gap:10px;align-items:center}
+#toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--edge);border-radius:var(--r);padding:6px 8px 6px 12px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:86vw;z-index:9;display:flex;gap:10px;align-items:center}
 #toast.on{opacity:1;pointer-events:auto}
-.sw{width:28px;height:28px;border-radius:6px;padding:0}
+.sw{width:32px;height:32px;border-radius:6px;padding:0}
 .sw[aria-pressed=true]{outline:2px solid var(--accent);outline-offset:1px}
 @media(max-width:1100px){main{grid-template-columns:200px minmax(0,1fr) 340px}}
 @media(max-width:820px){
@@ -123,6 +134,7 @@ details.help p{margin:6px 0;color:var(--mut)}
 </style>
 </head>
 <body>
+<a class="skip" id="skip" href="#editor">Skip to the editor</a>
 <div id="app">
 <header>
   <h1><span>Giz</span>VFX</h1>
@@ -132,12 +144,11 @@ details.help p{margin:6px 0;color:var(--mut)}
   <select id="quality" aria-label="Painted quality" hidden><option value="2">draft 2x</option><option value="3" selected>3x</option><option value="4">final 4x</option></select>
   <div class="seg" id="viewSeg" role="group" aria-label="Show"><button data-v="list" aria-pressed="false">Effects</button><button data-v="edit" aria-pressed="true">Edit</button></div>
   <span class="sp"></span>
-  <div class="grp" id="grounds" role="group" aria-label="Ground behind the effect"></div>
+  <div class="grp" id="grounds" role="group" aria-label="Ground behind the effect"></div><button id="bPv" class="chip" aria-pressed="true" title="Show the pivot (the point the effect stands on) and the ground line">Pivot</button>
   <label class="grp">zoom <select id="zoom"><option value="0">fit</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="6">6x</option><option value="8">8x</option></select></label>
   <button id="bUndo" class="icon" aria-label="Undo (Ctrl+Z)" title="Undo (Ctrl+Z)" disabled></button>
   <button id="bRedo" class="icon" aria-label="Redo (Ctrl+Shift+Z)" title="Redo (Ctrl+Shift+Z)" disabled></button>
-  <button id="bNew" class="primary" title="Start a new effect from a glow and a ring">New effect</button>
-  <button id="bOpen">Open file</button><input type="file" id="file" accept=".json,application/json" hidden>
+  <span class="grp"><button id="bNew" class="primary" title="Start a new effect from a glow and a ring">New effect</button><button id="bOpen">Open file</button></span><input type="file" id="file" accept=".json,application/json" hidden>
 </header>
 <main data-view="edit">
   <aside id="list" aria-label="Effects">
@@ -148,7 +159,7 @@ details.help p{margin:6px 0;color:var(--mut)}
     <div id="items" role="listbox" aria-label="Effects"></div>
   </aside>
   <section id="stagewrap" aria-label="Preview">
-    <div id="stage"><canvas id="cv" width="96" height="96" role="img" aria-label="Effect preview"></canvas><div id="stalenote" role="status" hidden>Showing the last version that could be drawn</div><div id="busy" role="status">Drawing&hellip;</div><div id="err" role="alert"></div></div>
+    <div id="stage"><div id="cvwrap"><div id="cvbox"><canvas id="cv" width="96" height="96" role="img" aria-label="Effect preview"></canvas><div id="pv" aria-hidden="true"><i class="h"></i><i class="v"></i></div></div></div><div id="dim" aria-hidden="true"></div><div id="stalenote" role="status" hidden>Showing the last version that could be drawn</div><div id="busy" role="status">Drawing&hellip;</div><div id="err" role="alert"></div></div>
     <div id="bar">
       <button id="bPlay" title="Play or pause (Space)">Pause</button>
       <button id="bPrev" class="icon" aria-label="Previous frame (Left arrow)" title="Previous frame"></button>
@@ -157,6 +168,7 @@ details.help p{margin:6px 0;color:var(--mut)}
       <span id="fc">0 / 0</span>
       <span id="kind" class="tag"></span>
     </div>
+    <div id="rmnote" class="hint" role="status" hidden style="padding:0 12px">Paused because your system prefers reduced motion. Press Play to watch.</div>
     <div id="strip" aria-hidden="true"></div>
   </section>
   <aside id="editor" aria-label="Editor">
@@ -164,12 +176,13 @@ details.help p{margin:6px 0;color:var(--mut)}
       <button role="tab" id="tab-effect" aria-controls="p-effect" data-t="effect" aria-selected="true">Effect</button>
       <button role="tab" id="tab-layers" aria-controls="p-layers" data-t="layers" aria-selected="false" tabindex="-1">Layers</button>
       <button role="tab" id="tab-json" aria-controls="p-json" data-t="json" aria-selected="false" tabindex="-1">JSON</button>
-      <button role="tab" id="tab-check" aria-controls="p-check" data-t="check" aria-selected="false" tabindex="-1">Check<span class="badge" id="badge" aria-label="Check result: not run">&hellip;</span></button>
+      <button role="tab" id="tab-check" aria-controls="p-check" data-t="check" aria-selected="false" tabindex="-1">Check<span class="badge" id="badge" aria-hidden="true">&hellip;</span><span class="sr" id="badgeSr">Check result: not run</span></button>
     </div>
     <div class="pane on" id="p-effect" role="tabpanel" aria-labelledby="tab-effect"></div>
     <div class="pane" id="p-layers" role="tabpanel" aria-labelledby="tab-layers"></div>
     <div class="pane" id="p-json" role="tabpanel" aria-labelledby="tab-json"><textarea id="json" spellcheck="false" aria-label="Recipe JSON" aria-describedby="jsonmsg"></textarea><div id="jsonmsg" class="fmsg" role="alert" hidden></div><div class="row"><button id="bFmt">Format</button><button id="bDl">Download JSON</button></div></div>
     <div class="pane" id="p-check" role="tabpanel" aria-labelledby="tab-check"></div>
+    <div id="foot"><label for="saveName" class="sr">File name</label><input id="saveName" placeholder="file name"><button id="bSave">Save recipe</button><button id="bExport" class="primary">Export GIF + sheet</button><span id="lookNote"></span></div>
   </aside>
 </main>
 </div>
@@ -177,7 +190,7 @@ details.help p{margin:6px 0;color:var(--mut)}
 <script>
 const $=(s,r=document)=>r.querySelector(s);
 function h(tag,props={},...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(props||{})){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(k==='value'||k==='checked'||k==='disabled'||k==='hidden')e[k]=v;else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v)}for(const c of kids.flat())if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(String(c)));return e}
-async function api(path,body){const r=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()}
+async function api(path,body){const r=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json','X-GizVFX':'1'},body:JSON.stringify(body)});return r.json()}
 const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
 let uidN=0;const uid=p=>p+(++uidN);
 const IC={up:'<path d="M3 9l4-4 4 4"/>',down:'<path d="M3 5l4 4 4-4"/>',dup:'<rect x="5" y="5" width="7" height="7" rx="1.2"/><path d="M9 3H3.5A.5.5 0 003 3.5V9"/>',del:'<path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/>',prev:'<path d="M9 3L5 7l4 4"/>',next:'<path d="M5 3l4 4-4 4"/>',undo:'<path d="M5 3.5L2.5 6 5 8.5"/><path d="M3 6h5a3 3 0 010 6H6"/>',redo:'<path d="M9 3.5L11.5 6 9 8.5"/><path d="M11 6H6a3 3 0 000 6h2"/>'};
@@ -192,29 +205,40 @@ const TEMPL={glow:{type:'glow',radius:[8,30]},ring:{type:'ring',radius:[2,30],th
 const COMMON_TYPES=['glow','ring','particles','burst','beam','bolt'];
 
 // ---------- history (undo/redo) and title
-const snap=()=>JSON.stringify({recipe:S.recipe,id:S.id,options:S.options});
-function updHist(){$('#bUndo').disabled=!HI.stack.length;$('#bRedo').disabled=!HI.redo.length}
+const snap=()=>JSON.stringify({recipe:S.recipe,id:S.id,openedId:S.openedId||null});
+function updHist(){const u=$('#bUndo'),r=$('#bRedo'),us=HI.stack[HI.stack.length-1],rs=HI.redo[HI.redo.length-1];u.disabled=!us;r.disabled=!rs;const lu='Undo'+(us?': '+us.l:'')+' (Ctrl+Z)',lr='Redo'+(rs?': '+rs.l:'')+' (Ctrl+Shift+Z)';u.title=lu;u.setAttribute('aria-label',lu);r.title=lr;r.setAttribute('aria-label',lr)}
 function checkpoint(){S.last=snap();S.dirty=false;setTitle()}
 function setTitle(){document.title=(S.dirty?'* ':'')+(S.name?S.name+' - ':'')+'GizVFX'}
-let editT=null;
-function edit(){if(!editT){HI.stack.push(S.last);if(HI.stack.length>80)HI.stack.shift();HI.redo.length=0;updHist()}clearTimeout(editT);editT=setTimeout(()=>{editT=null},800);S.last=snap();S.dirty=true;setTitle();touch();syncJson();renderSummaries()}
-function restore(str){const s=JSON.parse(str);S.recipe=s.recipe;S.id=s.id;S.options=s.options||{};S.code=!S.recipe;S.optsSig='';S.sel=-1;S.fixed=null;S.idx=0;editT=null;S.last=snap();afterLoad();updHist()}
-function undo(){if(!HI.stack.length)return;HI.redo.push(snap());restore(HI.stack.pop())}
-function redo(){if(!HI.redo.length)return;HI.stack.push(snap());restore(HI.redo.pop())}
+let editT=null,editK=null;
+function edit(key,label){key=key||'x';if(editT&&key!==editK){clearTimeout(editT);editT=null}
+  if(!editT){HI.stack.push({s:S.last,l:label||'edit'});if(HI.stack.length>80)HI.stack.shift();HI.redo.length=0;updHist()}
+  editK=key;clearTimeout(editT);editT=setTimeout(()=>{editT=null},800);S.last=snap();S.dirty=true;setTitle();touch();syncJson();renderSummaries()}
+const stepKey=()=>'s'+(++uidN);
+function forcePixel(){S.mode='pixel';[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m==='pixel'));$('#style').hidden=$('#quality').hidden=true}
+function load(st,keepOpts){S.recipe=st.recipe||null;S.id=st.id||null;S.openedId=st.openedId||null;S.code=!S.recipe;if(!keepOpts)S.options=st.options||{};
+  S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.renderErr=null;S.res=null;S.idx=0;clearTimeout(editT);editT=null;
+  const forced=S.code&&S.mode==='painted';if(forced)forcePixel();S.last=snap();afterLoad();return forced}
+const PYTOAST='Painted needs a recipe. This effect is drawn by Python, so it is shown as Pixel.';
+function restore(str){const forced=load(JSON.parse(str),true);updHist();if(forced)toast(PYTOAST)}
+function undo(){if(!HI.stack.length)return;const e=HI.stack.pop();HI.redo.push({s:snap(),l:e.l});restore(e.s)}
+function redo(){if(!HI.redo.length)return;const e=HI.redo.pop();HI.stack.push({s:snap(),l:e.l});restore(e.s)}
 $('#bUndo').onclick=undo;$('#bRedo').onclick=redo;setIcon($('#bUndo'),'undo');setIcon($('#bRedo'),'redo');setIcon($('#bPrev'),'prev');setIcon($('#bNext'),'next');
-function replaceWith(state,msg){const wasDirty=S.dirty&&(S.recipe||S.id);if(S.recipe||S.id){HI.stack.push(snap());if(HI.stack.length>80)HI.stack.shift()}HI.redo.length=0;
-  S.recipe=state.recipe||null;S.id=state.id||null;S.code=!S.recipe;S.options=state.options||{};S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.renderErr=null;S.idx=0;editT=null;checkpoint();afterLoad();updHist();
-  if(S.code&&S.mode==='painted'){setMode('pixel');toast('Painted needs a recipe. This effect is drawn by Python, so it is shown as Pixel.')}
+function replaceWith(state,msg){const wasDirty=S.dirty&&(S.recipe||S.id);if(S.recipe||S.id){HI.stack.push({s:snap(),l:'open another effect'});if(HI.stack.length>80)HI.stack.shift()}HI.redo.length=0;
+  const forced=load(state,false);S.dirty=false;setTitle();updHist();
+  if(forced)toast(PYTOAST);
   else if(wasDirty)toast((msg||'Effect replaced')+'. Your earlier edits are one undo away.',{label:'Undo',fn:undo})}
-function afterLoad(){S.renderErr=null;showErr(null);clearStage();staleStage(false);setBadge('',null);S.name=S.recipe?(S.recipe.name||S.recipe.id||''):(S.effects.find(e=>e.id===S.id)?.name||'');setTitle();$('#modeSeg [data-m=painted]').setAttribute('aria-disabled',String(S.code));$('#modeNote').hidden=!S.code;buildList();renderEditor();touch()}
+function afterLoad(){S.renderErr=null;showErr(null);clearStage();staleStage(false);setBadge('',null);S.name=S.recipe?(S.recipe.name||S.recipe.id||''):(S.effects.find(e=>e.id===S.id)?.name||'');setTitle();$('#modeSeg [data-m=painted]').setAttribute('aria-disabled',String(S.code));$('#modeNote').hidden=!S.code;buildList();renderEditor();updFoot();updLook();touch()}
 
 // ---------- errors in plain words
-function friendly(raw){let m=String(raw),where='',layer=null;const L=m.match(/^layer (\d+) \((\w+)\): ([\s\S]*)$/);if(L){layer=+L[1];where='Layer '+(layer+1)+' ('+L[2]+'): ';m=L[3]}
+function friendly(raw){let m=String(raw),where='',layer=null,changed=false;const L=m.match(/^layer (\d+)(?: \((\w+)\))?: ([\s\S]*)$/);if(L){layer=+L[1];where='Layer '+(layer+1)+(L[2]?' ('+L[2]+')':'')+': ';m=L[3]}
   m=m.replace(/^(TypeError|ValueError|KeyError|IndexError|ZeroDivisionError|AttributeError): /,'');
-  if(/not supported between instances|can't multiply|must be real number|unsupported operand|can only concatenate|could not convert|object is not (iterable|subscriptable)/.test(m))m='a value that should be a number is text, or a list sits where one number goes. Check the numbers in this layer.';
-  else if(/drawn by Python code; only recipes/.test(m))m='this effect is drawn by Python code, so it has no painted look.';
-  return{text:where+m,layer,raw:String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1))}}
-function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';e.append(f.text);if(f.text!==f.raw)e.append(h('small',{},f.raw))}
+  const t=m.replace(/\. (Types|Keys): [\s\S]*$/,'.');if(t!==m){m=t;changed=true}
+  if(/not supported between instances|can't multiply|must be real number|unsupported operand|can only concatenate|could not convert|object is not (iterable|subscriptable)/.test(m)){m='a value that should be a number is text, or a list sits where one number goes. Check the numbers in this layer.';changed=true}
+  else if(/drawn by Python code; only recipes/.test(m)){m='this effect is drawn by Python code, so it has no painted look.';changed=true}
+  return{text:where+m,layer,raw:changed?String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1)):null}}
+function rawDetails(raw){return raw?h('details',{},h('summary',{},'original message'),h('small',{},raw)):null}
+function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';e.append(f.text);const d=rawDetails(f.raw);if(d)e.append(d)}
+function markLayer(f){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const ta=c.querySelector('textarea'),m=c.querySelector('.fmsg');if(!ta)return;const mine=!!f&&f.layer===i;if(mine){ta.setAttribute('aria-invalid','true');m.hidden=false;m.textContent=f.text}else if(ta.dataset.rerr){ta.removeAttribute('aria-invalid');m.hidden=true}ta.dataset.rerr=mine?'1':''})}
 
 // ---------- rendering pipeline
 let seq=0,tR,tC;
@@ -226,25 +250,29 @@ async function doRender(){
   if(!S.recipe&&!S.id)return;const my=++seq;let res;
   try{res=await api('/api/render',payload())}catch(e){res={error:String(e)}}
   if(my!==seq)return;$('#busy').classList.remove('on');
-  if(res.error){const f=friendly(res.error);S.renderErr=f;staleStage(true);showErr(f);setBadge('bad',1);renderCheck();return}
-  S.renderErr=null;staleStage(false);showErr(null);const imgs=await Promise.all(res.frames.map(b=>loadImg('data:image/png;base64,'+b)));if(my!==seq)return;
-  S.frames=imgs;S.fps=res.fps;S.loop=res.loop;S.base=res.base;S.res=res;S.idx=Math.min(S.idx,imgs.length-1);
+  if(res.error){const f=friendly(res.error);S.renderErr=f;staleStage(true);showErr(f);markLayer(f);setBadge('bad',1);renderCheck();return}
+  S.renderErr=null;staleStage(false);showErr(null);markLayer(null);const imgs=await Promise.all(res.frames.map(b=>loadImg('data:image/png;base64,'+b)));if(my!==seq)return;
+  S.frames=imgs;S.fps=res.fps;S.loop=res.loop;S.base=res.base;S.pivot=res.pivot;S.res=res;S.idx=Math.min(S.idx,imgs.length-1);
   $('#cv').classList.toggle('smooth',S.mode==='painted');
   $('#scrub').max=imgs.length-1;$('#kind').textContent=res.loop?'loop':'once';
   buildStrip();fit();draw();buildOptions();scheduleCheck();
 }
 
 // ---------- stage
-function fit(){const st=$('#stage'),[bw,bh]=S.base;let z=+S.zoom;if(!z)z=Math.max(1,Math.floor(Math.min((st.clientWidth-30)/bw,(st.clientHeight-30)/bh)));const cv=$('#cv');cv.style.width=bw*z+'px';cv.style.height=bh*z+'px';$('#zoom').options[0].textContent=+S.zoom?'fit':'fit ('+z+'x)'}
-function draw(){const im=S.frames[S.idx];if(!im)return;const cv=$('#cv');if(cv.width!==im.width||cv.height!==im.height){cv.width=im.width;cv.height=im.height}const c=cv.getContext('2d');c.imageSmoothingEnabled=S.mode==='painted';c.clearRect(0,0,cv.width,cv.height);c.drawImage(im,0,0);
+function fit(){const st=$('#stage'),[bw,bh]=S.base;let z=+S.zoom;if(!z)z=Math.max(1,Math.floor(Math.min((st.clientWidth-30)/bw,(st.clientHeight-30)/bh)));const cv=$('#cv');cv.style.width=bw*z+'px';cv.style.height=bh*z+'px';$('#dim').textContent=bw+'\u00d7'+bh+' \u00b7 '+z+'x'}
+function draw(){const im=S.frames[S.idx];if(!im)return;const cv=$('#cv');if(cv.width!==im.width||cv.height!==im.height){cv.width=im.width;cv.height=im.height}const c=cv.getContext('2d');c.imageSmoothingEnabled=S.mode==='painted';c.clearRect(0,0,cv.width,cv.height);c.drawImage(im,0,0);placePv();
   $('#scrub').value=S.idx;$('#fc').textContent=(S.idx+1)+' / '+S.frames.length;cv.setAttribute('aria-label',(S.name||'Effect')+' preview, frame '+(S.idx+1)+' of '+S.frames.length);[...$('#strip').children].forEach((c,i)=>c.classList.toggle('on',i===S.idx))}
+function placePv(){const pv=S.pivot||(S.recipe&&S.recipe.pivot)||[S.base[0]>>1,S.base[1]>>1];$('#pv .v').style.left=(pv[0]/S.base[0]*100)+'%';$('#pv .h').style.top=(pv[1]/S.base[1]*100)+'%'}
+let pvOn=true;try{pvOn=localStorage.getItem('gizvfx_pv')!=='0'}catch(_){}
+function setPv(on){pvOn=on;$('#pv').hidden=!on;$('#bPv').setAttribute('aria-pressed',String(on));try{localStorage.setItem('gizvfx_pv',on?'1':'0')}catch(_){}}
+$('#bPv').onclick=()=>setPv(!pvOn);
 function buildStrip(){const s=$('#strip');s.replaceChildren();S.frames.forEach((im,i)=>{const c=h('canvas',{width:im.width,height:im.height,title:'frame '+(i+1),onclick:()=>{S.idx=i;play(false);draw()}});c.getContext('2d').drawImage(im,0,0);s.append(c)})}
 function setGround(g){S.ground=g;const st=$('#stage');st.classList.toggle('checker',g==='checker');st.style.background=g==='checker'?'':g;[...$('#grounds').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===g))}
 let last=0;function loop(ts){requestAnimationFrame(loop);if(!S.playing||S.frames.length<2)return;if(ts-last<1000/S.fps)return;last=ts;
   if(S.idx>=S.frames.length-1){if(S.loop){S.idx=0}else{if(++S.hold>4){S.hold=0;S.idx=0}else{draw();return}}}else S.idx++;draw()}
 requestAnimationFrame(loop);
-function play(on){S.playing=on;$('#bPlay').textContent=on?'Pause':'Play'}
-$('#bPlay').textContent=S.playing?'Pause':'Play';
+function play(on){S.playing=on;$('#bPlay').textContent=on?'Pause':'Play';$('#rmnote').hidden=true}
+$('#bPlay').textContent=S.playing?'Pause':'Play';$('#rmnote').hidden=S.playing||!matchMedia('(prefers-reduced-motion: reduce)').matches;
 $('#bPlay').onclick=()=>play(!S.playing);
 const step=d=>{if(!S.frames.length)return;play(false);S.idx=(S.idx+d+S.frames.length)%S.frames.length;draw()};
 $('#bPrev').onclick=()=>step(-1);$('#bNext').onclick=()=>step(1);
@@ -258,9 +286,9 @@ addEventListener('resize',fit);
 $('#zoom').onchange=e=>{S.zoom=e.target.value;fit()};
 
 // ---------- header
-function setMode(m){if(m==='painted'&&S.code){toast('Painted needs a recipe. This effect is drawn by Python code.');return}S.mode=m;[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));$('#style').hidden=$('#quality').hidden=m!=='painted';S.optsSig='';if(S.recipe)renderEffect();touch()}
+function setMode(m){if(m==='painted'&&S.code){toast('Painted needs a recipe. This effect is drawn by Python code.');return}S.mode=m;[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));$('#style').hidden=$('#quality').hidden=m!=='painted';S.optsSig='';if(S.recipe)renderEffect();updLook();touch()}
 $('#modeSeg').onclick=e=>{const b=e.target.closest('button');if(b)setMode(b.dataset.m)};
-$('#style').onchange=e=>{S.style=e.target.value;if(S.recipe)renderEffect();touch()};
+$('#style').onchange=e=>{S.style=e.target.value;updLook();touch()};
 $('#quality').onchange=e=>{S.scale=+e.target.value;touch()};
 GROUNDS.forEach(([g,n])=>$('#grounds').append(h('button',{class:'sw',title:n+' ground','aria-label':n+' ground','aria-pressed':'false','data-g':g,style:g==='checker'?'background:conic-gradient(#666 25%,#333 0 50%,#666 0 75%,#333 0) 0 0/8px 8px':'background:'+g,onclick:()=>setGround(g)})));
 function setView(v){$('main').dataset.view=v;[...$('#viewSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));fit()}
@@ -272,7 +300,7 @@ function buildList(){
   const q=$('#q').value.toLowerCase().trim(),only=$('#onlyRecipes').checked,box=$('#items');box.replaceChildren();let cat=null;shown=[];
   for(const e of S.effects){if(only&&!e.recipe)continue;if(q&&!(e.id+' '+e.name+' '+e.about+' '+e.tags.join(' ')).toLowerCase().includes(q))continue;shown.push(e);const c=e.id.split('/')[0];
     if(c!==cat){cat=c;box.append(h('div',{class:'cat',role:'presentation'},c))}
-    const sel=e.id===(S.openedId||S.id);box.append(h('div',{class:'item',role:'option',tabindex:'-1','aria-selected':String(sel),'data-id':e.id,onclick:()=>openEffect(e.id)},h('span',{},e.id.split('/')[1]),h('span',{class:'tag'},e.loop?'loop':'once'),e.recipe?null:h('span',{class:'tag',title:'drawn by Python: can be recoloured but not edited'},'code'),h('small',{},e.about||e.name)))}
+    const sel=e.id===(S.openedId||S.id);box.append(h('div',{class:'item',role:'option',tabindex:'-1','aria-selected':String(sel),'data-id':e.id,onclick:()=>openEffect(e.id)},h('span',{},e.id.split('/')[1]),h('span',{class:'tag'},e.loop?'loop':'once'),e.recipe?null:h('span',{class:'tag',title:'drawn by Python code: can be recoloured but not edited'},'Python'),h('small',{},e.about||e.name)))}
   if(S.recipe&&!S.openedId&&!q&&!only)box.prepend(h('div',{class:'item',role:'option',tabindex:'-1','aria-selected':'true','data-id':''},h('span',{},S.name||'Your effect'),h('span',{class:'tag'},'yours'),h('small',{},'not one of the shipped effects: save it to keep it')));
   const items=[...box.querySelectorAll('.item')];(items.find(i=>i.getAttribute('aria-selected')==='true')||items[0])?.setAttribute('tabindex','0');
   $('#count').textContent=shown.length+' of '+S.effects.length;
@@ -285,12 +313,12 @@ $('#items').addEventListener('keydown',e=>{const items=[...$('#items').querySele
   if(n!=null){e.preventDefault();items.forEach(x=>x.tabIndex=-1);items[n].tabIndex=0;items[n].focus();items[n].scrollIntoView({block:'nearest'})}});
 async function openEffect(id){
   const r=await api('/api/recipe?id='+encodeURIComponent(id));if(r.error){toast(r.error);return}
-  S.openedId=id;replaceWith({recipe:r.recipe||null,id:r.recipe?null:id},'Opened '+id);if(r.recipe){S.name=r.recipe.name||id;setTitle()}
+  replaceWith({recipe:r.recipe||null,id:r.recipe?null:id,openedId:id},'Opened '+id);if(r.recipe){S.name=r.recipe.name||id;setTitle()}
   buildList();if(matchMedia('(max-width:820px)').matches)setView('edit')}
-function newRecipe(){S.openedId=null;replaceWith({recipe:JSON.parse(JSON.stringify(S.meta.new))},'New effect started');tab('layers')}
+function newRecipe(){replaceWith({recipe:JSON.parse(JSON.stringify(S.meta.new))},'New effect started');tab('layers')}
 $('#bNew').onclick=newRecipe;
 $('#bOpen').onclick=()=>$('#file').click();
-$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{S.openedId=null;replaceWith({recipe:JSON.parse(await f.text())},'File opened')}catch(x){toast('That file is not valid JSON: '+x.message)}e.target.value=''};
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{replaceWith({recipe:JSON.parse(await f.text())},'File opened')}catch(x){toast('That file is not valid JSON: '+x.message)}e.target.value=''};
 
 // ---------- editor
 function tab(t,focus){S.tab=t;document.querySelectorAll('.tabs button').forEach(b=>{const on=b.dataset.t===t;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;if(on&&focus)b.focus()});document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t))}
@@ -304,26 +332,25 @@ function renderEffect(){
   const p=$('#p-effect');p.replaceChildren();const r=S.recipe;
   const help=h('details',{class:'help'},h('summary',{},'How this works'),h('p',{},'An effect is a recipe: a list of layers (glow, ring, particles, beam...) drawn in order, plus a size, a pivot (the point it stands on) and a palette.'),h('p',{},'Open the Layers tab, change a layer, and the preview redraws as you type. Check tells you if the effect loops cleanly, ends empty and stays inside its canvas.'));
   try{if(!localStorage.getItem('gizvfx_ui_seen'))help.open=true;localStorage.setItem('gizvfx_ui_seen','1')}catch(_){help.open=true}
-  if(!r){p.append(help,h('div',{class:'msg'},'This effect is drawn by Python code, so its layers are not available. You can recolour it and change its options below, and watch it in Pixel. To make an effect of your own, press New effect, or tick Editable only in the list.'),h('div',{class:'row'},h('button',{class:'primary',onclick:newRecipe},'New effect')),h('h3',{},'Preview options'),h('div',{id:'optsBox'}));buildOptions(true);return}
-  const f=(k,type='text',attrs={})=>h('input',{type,value:r[k]??'',...attrs,oninput:e=>{r[k]=type==='number'?num(e.target.value,r[k]):e.target.value;if(k==='name'||k==='id'){S.name=r.name||r.id||''}edit()}});
-  const sz=i=>h('input',{type:'number',min:8,max:256,value:r.size?.[i]??96,style:'width:76px',oninput:e=>{r.size=r.size||[96,96];r.size[i]=Math.round(num(e.target.value,96));edit()}});
-  const pv=i=>h('input',{type:'number',value:r.pivot?.[i]??'',placeholder:'centre',style:'width:76px',oninput:e=>{const v=e.target.value;if(v===''){delete r.pivot}else{r.pivot=r.pivot||[Math.floor((r.size?.[0]||96)/2),Math.floor((r.size?.[1]||96)/2)];r.pivot[i]=Math.round(num(v,0))}edit()}});
-  const pal=h('select',{onchange:e=>{r.palette=e.target.value;edit()}},...S.meta.palettes.map(n=>h('option',{value:n,selected:r.palette===n},n)));
+  if(!r){p.append(help,h('div',{class:'msg'},'This effect is drawn by Python code, so its layers are not available. You can recolour it and change its options below, and watch it in Pixel. To make an effect of your own, press New effect, or tick Editable only in the list.'),h('div',{class:'row'},h('button',{class:'primary',onclick:newRecipe},'New effect')),h('h2',{},'Preview options'),h('div',{id:'optsHead',class:'row'}),h('div',{id:'optsBox'}));buildOptions(true);return}
+  const f=(k,type='text',attrs={})=>h('input',{type,value:r[k]??'',...attrs,oninput:e=>{r[k]=type==='number'?num(e.target.value,r[k]):e.target.value;if(k==='name'||k==='id'){S.name=r.name||r.id||'';setTitle()}edit('f'+k,'edit '+k)}});
+  const sz=i=>h('input',{type:'number',min:8,max:256,value:r.size?.[i]??96,style:'width:76px',oninput:e=>{r.size=r.size||[96,96];r.size[i]=Math.round(num(e.target.value,96));edit('size'+i,'change size')}});
+  const pv=i=>h('input',{type:'number',value:r.pivot?.[i]??'',placeholder:'centre',style:'width:76px',oninput:e=>{const v=e.target.value;if(v===''){delete r.pivot}else{r.pivot=r.pivot||[Math.floor((r.size?.[0]||96)/2),Math.floor((r.size?.[1]||96)/2)];r.pivot[i]=Math.round(num(v,0))}edit('pv'+i,'move pivot')}});
+  const pal=h('select',{onchange:e=>{r.palette=e.target.value;edit(stepKey(),'change palette')}},...S.meta.palettes.map(n=>h('option',{value:n,selected:r.palette===n},n)));
   if(typeof r.palette!=='string'||!S.meta.palettes.includes(r.palette))pal.prepend(h('option',{value:r.palette,selected:true},'custom'));
-  const g=h('div',{class:'grid2'});
-  const add=(l,i,t)=>g.append(...fld(l,i,t));
-  add('name',f('name'));add('id',f('id'),'category/name: also the file name of exports');add('about',f('about'));add('duration (s)',f('duration','number',{step:0.1,min:0.1}));add('fps',f('fps','number',{min:1,max:60}));
-  add('width',sz(0));add('height',sz(1));add('pivot x',pv(0),'where the effect stands: layers are placed relative to it');add('pivot y',pv(1),'where the effect stands: layers are placed relative to it');add('palette',pal,'the colours of the effect, dark to bright');
-  add('loop',h('input',{type:'checkbox',checked:!!r.loop,onchange:e=>{r.loop=e.target.checked;edit()}}));
-  p.append(help,h('h3',{},'Effect'),g,
-    h('h3',{},'Preview options'),h('div',{class:'hint'},'Only for this preview: the recipe is not changed.'),h('div',{id:'optsBox'}),
-    h('h3',{},'Save and export'),h('div',{class:'row'},h('label',{for:'saveName',class:'sr'},'File name'),h('input',{id:'saveName',placeholder:'file name',value:(r.id||'effect').split('/').pop(),style:'flex:1'}),h('button',{onclick:save},'Save recipe')),
-    h('div',{class:'row'},h('button',{class:'primary',onclick:()=>exportFx()},'Export GIF + sheet'),h('span',{class:'hint'},'current look: '+S.mode+(S.mode==='painted'?' '+S.style:''))));
+  const g=h('div',{class:'grid2'}),g2=h('div',{class:'grid2'});
+  const add=(l,i,t,to=g)=>to.append(...fld(l,i,t));
+  add('name',f('name'));add('duration (s)',f('duration','number',{step:0.1,min:0.1}));add('fps',f('fps','number',{min:1,max:60}));
+  add('width',sz(0));add('height',sz(1));add('palette',pal,'the colours of the effect, dark to bright');
+  add('loop',h('input',{type:'checkbox',checked:!!r.loop,onchange:e=>{r.loop=e.target.checked;edit(stepKey(),'toggle loop')}}));
+  add('id',f('id'),'category/name: also the file name of exports',g2);add('about',f('about'),'',g2);add('pivot x',pv(0),'where the effect stands: layers are placed relative to it',g2);add('pivot y',pv(1),'where the effect stands: layers are placed relative to it',g2);
+  p.append(help,h('h2',{},'Effect'),g,h('details',{class:'help',style:'margin-top:10px'},h('summary',{},'Details: id, description, pivot'),g2),
+    h('h2',{},'Preview options'),h('div',{class:'hint'},'Only for this preview: the recipe is not changed.'),h('div',{id:'optsHead',class:'row'}),h('div',{id:'optsBox'}));
   buildOptions(true)}
 
 function buildOptions(force){
   const box=$('#optsBox');if(!box||!S.res)return;const o=S.res.options,ro=S.res.recipe_options||{};const sig=JSON.stringify([Object.keys(o),S.id||S.recipe?.id,S.mode]);if(!force&&sig===S.optsSig&&box.children.length)return;S.optsSig=sig;box.replaceChildren();
-  const set=(k,v)=>{if(v===''||v==null)delete S.options[k];else S.options[k]=v;touch()};
+  const set=(k,v)=>{if(v===''||v==null)delete S.options[k];else S.options[k]=v;updOpts();touch()};
   const g=h('div',{class:'grid2'});const add=(l,i,t)=>g.append(...fld(l,i,t));
   add('colour override',h('select',{onchange:e=>set('palette',e.target.value||null)},h('option',{value:''},'(effect default)'),...S.meta.palettes.map(n=>h('option',{value:n,selected:S.options.palette===n},n))));
   add('seed',h('input',{type:'number',value:S.options.seed??o.seed??1,oninput:e=>set('seed',num(e.target.value,1))}));
@@ -331,12 +358,13 @@ function buildOptions(force){
   add('flip',h('input',{type:'checkbox',checked:!!S.options.flip,onchange:e=>set('flip',e.target.checked||null)}),'face left');
   if(S.mode==='pixel')add('colours',h('input',{type:'number',min:0,max:64,value:S.options.colors??o.colors??24,oninput:e=>set('colors',Math.round(num(e.target.value,24)))}),'one shared palette of at most N colours; 0 = off');
   for(const k of Object.keys(ro)){const cur=S.options[k]??o[k]??ro[k];add(k,h('input',{value:typeof cur==='string'?cur:JSON.stringify(cur),oninput:e=>{let v=e.target.value;try{v=JSON.parse(v)}catch(_){}set(k,v)}}),'option of this recipe')}
-  box.append(g)}
+  box.append(g);updOpts()}
+function updOpts(){const hd=$('#optsHead');if(!hd)return;hd.replaceChildren();const n=Object.keys(S.options).length;if(n)hd.append(h('span',{class:'hint'},n+' override'+(n>1?'s':'')+' active'),h('button',{onclick:()=>{S.options={};S.optsSig='';buildOptions(true);touch()}},'Reset preview options'))}
 
 function fmtLayer(l){return '{'+String.fromCharCode(10)+Object.entries(l).map(([k,v])=>' '+JSON.stringify(k)+': '+JSON.stringify(v)).join(','+String.fromCharCode(10))+String.fromCharCode(10)+'}'}
 function summary(l){return Object.keys(l).filter(x=>x!=='type').slice(0,3).map(x=>x+': '+JSON.stringify(l[x])).join('  ')}
-function renderSummaries(){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const l=S.recipe?.layers?.[i];if(l)c.querySelector('.s').textContent=summary(l)})}
-function addLayer(type){const r=S.recipe;r.layers.push(JSON.parse(JSON.stringify(TEMPL[type]||{type})));S.sel=r.layers.length-1;renderLayers();edit();const cards=document.querySelectorAll('#p-layers .card');cards[cards.length-1]?.scrollIntoView({block:'nearest'});cards[cards.length-1]?.querySelector('textarea').focus()}
+function renderSummaries(){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const l=S.recipe?.layers?.[i];if(l){c.querySelector('.s').textContent=summary(l);c.querySelector('.title b').textContent=(i+1)+' '+l.type}})}
+function addLayer(type){const r=S.recipe;r.layers.push(JSON.parse(JSON.stringify(TEMPL[type]||{type})));S.sel=r.layers.length-1;renderLayers();edit(stepKey(),'add '+type+' layer');const cards=document.querySelectorAll('#p-layers .card');cards[cards.length-1]?.scrollIntoView({block:'nearest'});cards[cards.length-1]?.querySelector('textarea').focus()}
 function renderLayers(){
   const p=$('#p-layers');p.replaceChildren();const r=S.recipe;if(!r){p.append(h('div',{class:'msg'},'No layers to edit: this effect is drawn by Python code.'),h('div',{class:'row'},h('button',{class:'primary',onclick:newRecipe},'New effect')));return}
   const more=h('select',{'aria-label':'Another layer type',onchange:e=>{if(e.target.value){addLayer(e.target.value);e.target.value=''}}},h('option',{value:''},'Other type...'),...S.meta.layers.filter(t=>!COMMON_TYPES.includes(t)).sort().map(t=>h('option',{value:t},t)));
@@ -344,53 +372,60 @@ function renderLayers(){
     h('div',{class:'hint'},r.layers.length?'Layers draw in this order: the last one is on top. Edit a layer as JSON; the key list under it shows what it accepts.':'No layers yet. Add one above: a glow or a ring is a good start.'));
   r.layers.forEach((l,i)=>{
     const msgId=uid('lm');const msg=h('div',{class:'fmsg',id:msgId,role:'alert',hidden:true});
-    const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' ('+l.type+') JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');msg.hidden=true;edit()}catch(x){e.target.setAttribute('aria-invalid','true');msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
-    ta.value=fmtLayer(l);
-    const sc=S.meta.schema[l.type]||{};
-    const keys=h('div',{class:'keys'},h('details',{},h('summary',{},'keys of '+l.type+' ('+Object.keys(sc).length+')'),...Object.entries(sc).map(([k,v])=>h('p',{},h('button',{class:'key',title:'add this key to the layer',onclick:()=>{try{const cur=JSON.parse(ta.value);if(!(k in cur)){cur[k]=0;ta.value=fmtLayer(cur);ta.dispatchEvent(new Event('input'))}}catch(_){}}},k),' '+v)),h('p',{},h('b',{},'every layer: '),Object.keys(S.meta.common).join(', '))));
+    const keys=h('div',{class:'keys'});
+    const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' ('+l.type+') JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;if(v.type!==e.target.dataset.type){e.target.dataset.type=v.type;e.target.setAttribute('aria-label','Layer '+(i+1)+' ('+v.type+') JSON');fillKeys(v.type)}edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
+    ta.value=fmtLayer(l);ta.dataset.type=l.type;
+    function fillKeys(type){const sc=S.meta.schema[type]||{};
+      keys.replaceChildren(h('details',{},h('summary',{},'keys of '+type+' ('+Object.keys(sc).length+')'),...Object.entries(sc).map(([k,v])=>h('p',{},h('button',{class:'key',title:'add this key to the layer',onclick:()=>{try{const cur=JSON.parse(ta.value);if(!(k in cur)){cur[k]=0;ta.value=fmtLayer(cur);ta.dispatchEvent(new Event('input'))}}catch(_){}}},k),' '+v)),h('p',{},h('b',{},'every layer: '),Object.keys(S.meta.common).join(', '))))}
+    fillKeys(l.type);
     const ib=(n,label,fn,dis)=>{const b=h('button',{class:'icon ghost',title:label,'aria-label':label+' (layer '+(i+1)+')',disabled:dis,onclick:fn});setIcon(b,n);return b};
     p.append(h('div',{class:'card'+(i===S.sel?' sel':'')},
       h('div',{class:'hd'},h('button',{class:'title',onclick:()=>{S.sel=i;document.querySelectorAll('#p-layers .card').forEach((c,j)=>c.classList.toggle('sel',j===i));ta.focus()}},h('b',{},(i+1)+' '+l.type),h('span',{class:'s'},summary(l))),
-        ib('up','Move up',()=>{[r.layers[i-1],r.layers[i]]=[r.layers[i],r.layers[i-1]];renderLayers();edit()},i===0),
-        ib('down','Move down',()=>{[r.layers[i+1],r.layers[i]]=[r.layers[i],r.layers[i+1]];renderLayers();edit()},i===r.layers.length-1),
-        ib('dup','Duplicate',()=>{r.layers.splice(i+1,0,JSON.parse(JSON.stringify(l)));renderLayers();edit()}),
-        ib('del','Delete',()=>{r.layers.splice(i,1);renderLayers();edit();toast('Layer '+(i+1)+' deleted.',{label:'Undo',fn:undo});const t=document.querySelectorAll('#p-layers .card .title');(t[Math.min(i,t.length-1)]||document.querySelector('#p-layers .chip'))?.focus()})),ta,msg,keys))})}
+        ib('up','Move up',()=>{[r.layers[i-1],r.layers[i]]=[r.layers[i],r.layers[i-1]];renderLayers();edit(stepKey(),'move layer '+(i+1)+' up')},i===0),
+        ib('down','Move down',()=>{[r.layers[i+1],r.layers[i]]=[r.layers[i],r.layers[i+1]];renderLayers();edit(stepKey(),'move layer '+(i+1)+' down')},i===r.layers.length-1),
+        ib('dup','Duplicate',()=>{r.layers.splice(i+1,0,JSON.parse(JSON.stringify(l)));renderLayers();edit(stepKey(),'duplicate layer '+(i+1))}),
+        ib('del','Delete',()=>{r.layers.splice(i,1);renderLayers();edit(stepKey(),'delete layer '+(i+1));toast('Layer '+(i+1)+' deleted.',{label:'Undo',fn:undo});const t=document.querySelectorAll('#p-layers .card .title');(t[Math.min(i,t.length-1)]||document.querySelector('#p-layers .chip'))?.focus()})),ta,msg,keys))});if(S.renderErr)markLayer(S.renderErr)}
 
-function syncJson(){const j=$('#json');if(document.activeElement===j||!S.recipe)return;j.value=JSON.stringify(S.recipe,null,1);j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true}
-function shapeErr(v){if(!v||typeof v!=='object'||Array.isArray(v))return'a recipe is an object like { "layers": [ ... ] }';if(!Array.isArray(v.layers))return'a recipe needs a "layers" list, for example "layers": [ { "type": "glow" } ]';if(v.layers.some(l=>!l||typeof l!=='object'||Array.isArray(l)))return'every layer must be an object like { "type": "glow" }';return null}
+function syncJson(){const j=$('#json');if(document.activeElement===j)return;const off=!S.recipe;j.disabled=off;$('#bFmt').disabled=$('#bDl').disabled=off;if(off){j.value='';j.placeholder='This effect is drawn by Python code, so there is no recipe to edit. Press New effect to make one.';j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true;return}j.placeholder='';j.value=JSON.stringify(S.recipe,null,1);j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true}
+function shapeErr(v){if(!v||typeof v!=='object'||Array.isArray(v))return'a recipe is an object like { "layers": [ ... ] }';if(!Array.isArray(v.layers))return'a recipe needs a "layers" list, for example "layers": [ { "type": "glow" } ]';if(!v.layers.length)return'a recipe needs at least one layer';if(v.layers.some(l=>!l||typeof l!=='object'||Array.isArray(l)))return'every layer must be an object like { "type": "glow" }';return null}
 $('#json').oninput=e=>{const m=$('#jsonmsg');let v;try{v=JSON.parse(e.target.value)}catch(x){e.target.setAttribute('aria-invalid','true');m.hidden=false;m.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version; your text stays as you typed it.';return}
   const se=shapeErr(v);if(se){e.target.setAttribute('aria-invalid','true');m.hidden=false;m.textContent='This is JSON, but not a recipe yet: '+se+'. The recipe and the preview stay as they were.';return}
-  try{S.recipe=v;S.code=false;e.target.removeAttribute('aria-invalid');m.hidden=true;renderEffect();renderLayers();edit()}catch(x){m.hidden=false;m.textContent=String(x.message)}};
+  try{S.recipe=v;S.code=false;e.target.removeAttribute('aria-invalid');m.hidden=true;renderEffect();renderLayers();edit('json','edit JSON')}catch(x){m.hidden=false;m.textContent=String(x.message)}};
 $('#json').onblur=()=>{if(!$('#json').getAttribute('aria-invalid'))syncJson()};
 $('#bFmt').onclick=()=>{if(S.recipe&&!$('#json').getAttribute('aria-invalid')){$('#json').blur();syncJson()}};
 $('#bDl').onclick=()=>{if(!S.recipe)return;download((S.recipe.id||'effect').split('/').pop()+'.json',new Blob([JSON.stringify(S.recipe,null,1)],{type:'application/json'}))};
 function download(name,blob){const a=h('a',{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();a.remove()}
-async function save(){if(!S.recipe)return;const r=await api('/api/save',{name:$('#saveName')?.value||(S.recipe.id||'effect').split('/').pop(),recipe:S.recipe});if(r.error){toast(r.error);return}S.dirty=false;setTitle();toast('Saved to '+r.path)}
+function updFoot(){const r=S.recipe;$('#bSave').disabled=!r;const n=$('#saveName');n.disabled=!r;n.value=r?(r.id||'effect').split('/').pop():''}
+function updLook(){$('#lookNote').textContent='Exports the current look: '+S.mode+(S.mode==='painted'?' '+S.style:'')}
+$('#bSave').onclick=()=>save();$('#bExport').onclick=()=>exportFx();
+async function save(){if(!S.recipe)return;const r=await api('/api/save',{name:$('#saveName').value||(S.recipe.id||'effect').split('/').pop(),recipe:S.recipe});if(r.error){toast(r.error);return}S.dirty=false;setTitle();toast('Saved to '+r.path)}
 async function exportFx(){toast('Exporting...');const r=await api('/api/export',payload({name:S.recipe?($('#saveName')?.value||''):''}));if(r.error){toast(friendly(r.error).text);return}
   for(const[n,b64]of Object.entries(r.files)){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);download(n,new Blob([u]))}toast('Exported. A copy is also in '+r.folder)}
 
 // ---------- check and fix
-function setBadge(cls,n){const b=$('#badge');b.className='badge '+cls;b.textContent=cls==='ok'?'ok':n==null?'...':String(n);b.setAttribute('aria-label','Check result: '+(cls==='ok'?'clean':cls==='bad'?n+' problem(s)':cls==='warn'?n+' note(s)':'running'))}
+function setBadge(cls,n){const b=$('#badge');b.className='badge '+cls;b.textContent=cls==='ok'?'ok':n==null?'...':String(n);$('#badgeSr').textContent='Check result: '+(cls==='ok'?'clean':cls==='bad'?n+' problem(s)':cls==='warn'?n+' note(s)':'running')}
 function scheduleCheck(){clearTimeout(tC);S.check=null;setBadge('',null);tC=setTimeout(runCheck,500)}
 async function runCheck(){if(S.renderErr)return;const my=seq;const r=await api('/api/check',payload());if(my!==seq)return;S.check=r;if(r.error)setBadge('bad',1);else setBadge(r.problems.length?'bad':r.flags.length?'warn':'ok',r.problems.length||r.flags.length);renderCheck()}
-function msg(cls,text,raw){return h('div',{class:'msg '+cls,role:cls==='bad'?'alert':null},text,raw&&raw!==text?h('small',{},raw):null)}
+function msg(cls,text,raw){return h('div',{class:'msg '+cls,role:cls==='bad'?'alert':null},text,raw&&raw!==text?rawDetails(raw):null)}
 function renderCheck(){
   const p=$('#p-check');p.replaceChildren();const c=S.check;
-  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:'primary',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. Your recipe changes only if you press Use.')));
+  const need=c&&!c.error&&!S.renderErr&&(c.problems.length||c.flags.length);
+  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:need?'primary':'',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. Your recipe changes only if you press Use.')));
   if(S.renderErr){const f=S.renderErr,d=msg('bad','The effect cannot be drawn. '+f.text,f.raw);if(f.layer!=null&&S.recipe)d.append(h('button',{onclick:()=>{tab('layers');S.sel=f.layer;renderLayers();document.querySelectorAll('#p-layers .card')[f.layer]?.scrollIntoView({block:'nearest'});document.querySelectorAll('#p-layers textarea')[f.layer]?.focus()}},'Go to layer '+(f.layer+1)));p.append(d)}
   else if(!c)p.append(h('div',{class:'hint'},'Checking...'));
-  else if(c.error)p.append(msg('bad',friendly(c.error).text,c.error));
-  else{if(!c.problems.length)p.append(msg('ok','Clean: deterministic, '+(S.loop?'the loop closes':'ends empty')+', nothing touches the edge.'));
+  else if(c.error){const fe=friendly(c.error);p.append(msg('bad',fe.text,fe.raw))}
+  else{if(!c.problems.length&&!c.flags.length)p.append(msg('ok','Clean: deterministic, '+(S.loop?'the loop closes':'ends empty')+', nothing touches the edge.'));else if(!c.problems.length)p.append(msg('ok','No blocking problems. '+c.flags.length+' note'+(c.flags.length>1?'s':'')+' below for you to judge.'));
     c.problems.forEach(x=>p.append(msg('bad',x)));c.flags.forEach(x=>p.append(msg('warn',x)))}
-  const f=S.fixed;if(f){p.append(h('h3',{},'Fix result'));if(f.blocked)p.append(msg('warn','Fix cannot repair an effect that cannot be drawn. Correct the error above first (the button takes you to the layer), then press Fix again.'));else if(f.error)p.append(msg('bad',friendly(f.error).text,f.error));else{
-    (f.done.length?f.done:['nothing needed fixing']).forEach(x=>p.append(msg('ok',x)));f.problems.forEach(x=>p.append(msg('bad','Still to fix by hand: '+x)));f.notes.forEach(x=>p.append(msg('',x)));
-    if(f.fixed_recipe)p.append(h('div',{class:'row'},h('button',{class:'primary',onclick:()=>{replaceWith({recipe:f.fixed_recipe,options:S.options},'Fixed recipe in use (canvas resized)')}},f.problems.length?'Use the fixed recipe ('+f.problems.length+' left)':'Use the fixed recipe'),h('span',{class:'hint'},'The canvas size changes; Undo brings the old one back.')))}}}
+  const f=S.fixed;if(f){p.append(h('h2',{},'Fix result'));if(f.blocked)p.append(msg('warn','Fix cannot repair an effect that cannot be drawn. Correct the error above first (the button takes you to the layer), then press Fix again.'));else if(f.error){const fe=friendly(f.error);p.append(msg('bad',fe.text,fe.raw))}else{
+    (f.done.length?f.done:['Nothing a machine can repair here; the notes above are for you to judge.']).forEach(x=>p.append(msg('ok',x)));f.problems.forEach(x=>p.append(msg('bad','Still to fix by hand: '+x)));f.notes.forEach(x=>p.append(msg('',x)));
+    if(f.fixed_recipe)p.append(h('div',{class:'row'},h('button',{class:'primary',onclick:()=>{replaceWith({recipe:f.fixed_recipe,options:S.options,openedId:S.openedId},'Fixed recipe in use (canvas resized)')}},f.problems.length?'Use the fixed recipe ('+f.problems.length+' left)':'Use the fixed recipe'),h('span',{class:'hint'},'The canvas size changes; Undo brings the old one back.')))}}}
 async function runFix(){S.fixed=null;if(S.renderErr){S.fixed={blocked:true};tab('check');renderCheck();return}const r=await api('/api/fix',payload());S.fixed=r;tab('check');renderCheck()}
 
+$('#skip').onclick=e=>{e.preventDefault();document.querySelector('.tabs [aria-selected=true]').focus()};
 // ---------- start
 (async()=>{
   S.meta=await api('/api/meta');$('#style').append(...S.meta.styles.map(s=>h('option',{value:s},s)));
-  S.effects=(await api('/api/list')).effects;setGround(S.ground);setBadge('',null);tab('effect');updHist();
+  S.effects=(await api('/api/list')).effects;setGround(S.ground);setPv(pvOn);setBadge('',null);tab('layers');updHist();updFoot();updLook();
   const first=['buff/level-up','holy/smite'].map(id=>S.effects.find(e=>e.id===id&&e.recipe)).find(Boolean)||S.effects.find(e=>e.recipe)||S.effects[0];if(first)await openEffect(first.id);
   buildList()})();
 </script>

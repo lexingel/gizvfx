@@ -67,7 +67,7 @@ def api_render(work, body):
     else:
         frames = engine.render(eid, given, fps=fps); sc = 1
     opts = dict(o); pal = meta.get("recipe", {}).get("palette") if opts.get("palette") is None else opts["palette"]
-    return {"frames": [_png(f) for f in frames], "fps": fps, "loop": bool(meta["loop"]), "w": frames[0].width, "h": frames[0].height, "base": list(meta["size"]), "scale": sc,
+    return {"frames": [_png(f) for f in frames], "fps": fps, "loop": bool(meta["loop"]), "w": frames[0].width, "h": frames[0].height, "base": list(meta["size"]), "pivot": list(meta["pivot"]), "scale": sc,
             "name": meta["name"], "options": opts, "recipe_options": dict(meta.get("options", {})), "palette": pal if isinstance(pal, str) else None, "is_recipe": "recipe" in meta}
 
 
@@ -105,7 +105,9 @@ def api_export(work, body):
     from .export import write_all
     from . import painted
     eid = work.target(body); mode = body.get("mode", "pixel"); style = body.get("style", "ink"); mod, meta = engine.get(eid); given = _given(body, meta); o = engine.options(meta, given); fps = meta.get("fps", 12)
-    name = str(body.get("name") or meta["id"].split("/")[-1]) + ("" if mode == "pixel" else "_" + style)
+    rid = str((body.get("recipe") or {}).get("id") or "")
+    base = (rid or meta["id"]).split("/")[-1]
+    name = str(body.get("name") or ("effect" if base == "_live" else base)) + ("" if mode == "pixel" else "_" + style)
     out = tempfile.mkdtemp(prefix="gizvfx_exp_")
     try:
         if mode == "painted":
@@ -153,6 +155,7 @@ def make_handler(work, port):
 
         def do_POST(self):
             if not self._guard(): return
+            if self.headers.get("X-GizVFX") != "1": return self._send(403, {"error": "forbidden"})        # a cross-site form or no-cors fetch cannot set this header
             fn = POST.get(urlparse(self.path).path)
             if not fn: return self._send(404, {"error": "not found"})
             try:
