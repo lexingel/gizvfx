@@ -1,0 +1,12 @@
+{
+  "id": "buff/level-up", "name": "Level up", "about": "Golden rings spread on the floor, sparkles climb, a star pops overhead.",
+  "tags": ["buff", "level", "gold", "reward"], "loop": false, "duration": 1.4, "fps": 12, "size": [80, 100], "pivot": [40, 84], "palette": "gold",
+  "layers": [
+    {"type": "glow", "at": [0, -12], "radius": [30, 0], "strength": [0.7, 0], "ease": "out"},
+    {"type": "ring", "squash": 0.35, "radius": [4, 30], "thick": [3.5, 0], "ease": "expo"},
+    {"type": "ring", "squash": 0.35, "radius": [2, 22], "thick": [3, 0], "t": [0.15, 0.85], "ease": "expo", "v": 0.95},
+    {"type": "particles", "mode": "burst", "count": 26, "area": [30, 6], "angle": [-100, -80], "speed": [24, 62], "life": [0.5, 1], "stagger": 0.5, "size": [3, 0], "v": [1, 0.55], "shade": "core"},
+    {"type": "star", "at": [0, -48], "size": [0, 15], "arms": 4, "t": [0.3, 0.55], "ease": "out"},
+    {"type": "star", "at": [0, -48], "size": [15, 0], "arms": 4, "t": [0.55, 0.95]}
+  ]
+}

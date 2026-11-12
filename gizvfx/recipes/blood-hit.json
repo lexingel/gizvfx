@@ -1,0 +1,10 @@
+{
+  "id": "combat/blood-hit", "name": "Blood hit", "about": "A splash of droplets thrown to the right, with thin streaks and a quick flash.",
+  "tags": ["hit", "blood", "combat", "flesh"], "loop": false, "duration": 0.9, "fps": 12, "size": [80, 80], "pivot": [20, 40], "palette": "blood",
+  "options": {"drops": 20},
+  "layers": [
+    {"type": "disc", "radius": [8, 0], "t": [0, 0.25], "bias": 0.3},
+    {"type": "particles", "mode": "burst", "count": 8, "angle": [-30, 30], "speed": [22, 42], "life": [0.3, 0.6], "stagger": 0.1, "shape": "streak", "streak": 6, "size": [2, 1], "v": [0.9, 0.6]},
+    {"type": "particles", "mode": "burst", "count": "$drops", "angle": [-60, 30], "speed": [14, 34], "life": [0.5, 1], "stagger": 0.2, "gravity": 14, "size": [3.5, 1], "shade": "core", "v": [0.9, 0.35]}
+  ]
+}

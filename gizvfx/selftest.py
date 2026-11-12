@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""gizvfx selftest: every effect is deterministic, loops close, one-shots end empty, nothing is cropped; palette and option handling; sheet, JSON and GIF export.
+python -m gizvfx selftest   (no golden hashes: float maths can differ by a pixel between platforms, so the checks are about properties, not bytes)"""
+import json, os, tempfile
+import numpy as np
+from PIL import Image, ImageSequence
+from . import engine
+from .export import write_all
+from .ramps import resolve
+
+
+def run():
+    reg = engine.registry(); assert len(reg) >= 12, len(reg)
+    for eid in sorted(reg):
+        bad = engine.check(eid); assert not bad, (eid, bad)
+        m, meta = reg[eid]; assert {"id", "name", "loop", "duration", "size", "about"} <= set(meta), eid
+    fr = engine.render("fire/torch", {"palette": "ice"}); fr2 = engine.render("fire/torch", {"palette": "ice"})
+    assert all(np.array_equal(np.array(a), np.array(b)) for a, b in zip(fr, fr2)), "same options must give the same frames"
+    other = engine.render("fire/torch", {"seed": 9}); assert any(not np.array_equal(np.array(a), np.array(b)) for a, b in zip(fr, other)), "seed must change something"
+    assert engine.render("impacts/hit-spark", {"flip": True})[1].size == (72, 72)
+    for bad_opt in ({"nope": 1},):
+        try: engine.options(engine.get("fire/torch")[1], bad_opt); raise SystemExit("an unknown option must be an error")
+        except KeyError: pass
+    try: resolve("not-a-palette"); raise SystemExit("an unknown palette must be an error")
+    except ValueError: pass
+    assert resolve("#102,#215,#43a")[1] == (34, 17, 85)
+    for eid in ("fire/torch", "explosions/small-explosion"):
+        m, meta = engine.get(eid); frames = engine.render(eid, frames=6)
+        with tempfile.TemporaryDirectory() as d:
+            paths = write_all(frames, d, "x", meta, {}, 12, scale=2)
+            assert len(paths) == 4 and all(os.path.getsize(p) > 0 for p in paths), paths
+            js = json.load(open(os.path.join(d, "x_sheet.json"), encoding="utf-8")); assert js["meta"]["gizvfx"]["frames"] == 6 and js["meta"]["gizvfx"]["loop"] == meta["loop"]
+            with Image.open(os.path.join(d, "x.gif")) as g: n = sum(1 for _ in ImageSequence.Iterator(g))
+            assert n >= 6, n
+    from . import spec                                                               # recipes: a described effect renders, and mistakes are named
+    mod, meta = spec.load({"name": "t", "size": [48, 48], "options": {"r": 10}, "layers": [{"type": "ring", "radius": "$r", "thick": [3, 0]}, {"type": "glow", "radius": 12, "strength": [0.6, 0]}]})
+    assert len(engine.render_frame(mod, meta, engine.options(meta), 0.2).a.nonzero()[0]) > 0
+    for bad_spec, word in (({"layers": [{"type": "particle"}]}, "particles"), ({"layers": [{"type": "glow", "raduis": 3}]}, "radius"), ({"layers": [{"type": "glow", "radius": "$nope"}]}, "option")):
+        try:
+            m2, me2 = spec.load({"size": [32, 32], **bad_spec}); engine.render_frame(m2, me2, engine.options(me2), 0.5); raise SystemExit(f"recipe mistake not caught: {bad_spec}")
+        except (ValueError, KeyError) as e: assert word in str(e), (word, str(e))
+    mod, meta = spec.load({"name": "t", "size": [64, 64], "layers": [{"type": "poly", "shape": "crystal", "scale": [0, 1, 0]}, {"type": "include", "recipe": "environment/smoke-puff", "t": [0, 0.8]}]})
+    assert engine.render_frame(mod, meta, engine.options(meta), 0.4).a.any() and not engine.check("environment/smoke-puff")
+    for bad_spec, word in (({"layers": [{"type": "particles", "count": 9999}]}, "limit"), ({"size": [999, 20], "layers": [{"type": "glow"}]}, "size"), ({"layers": [{"type": "include", "recipe": "fire/torch"}]}, "Python"), ({"layers": [{"type": "stamp", "image": "../x.png"}]}, "recipe file")):
+        try:
+            m2, me2 = spec.load({"size": [32, 32], **bad_spec}); engine.render_frame(m2, me2, engine.options(me2), 0.5); raise SystemExit(f"limit not enforced: {bad_spec}")
+        except (ValueError, KeyError) as e: assert word in str(e), (word, str(e))
+    for eid in ("melee/ink-slash", "impacts/ink-burst", "impacts/pop-burst", "impacts/paint-splat", "melee/speed-dash"):                                    # painted version: renders, deterministic, one-shot ends empty
+        from . import painted
+        assert not painted.check(eid), (eid, painted.check(eid)); assert painted.render(eid, frames=3, scale=2)[1].size == (engine.get(eid)[1]["size"][0] * 2, engine.get(eid)[1]["size"][1] * 2)
+    for eid in ("fire/fire-wall", "magic/energy-orb", "magic/teleport", "weather/tornado", "lightning/strike", "magic/crystal-eruption"):                                                         # a recipe of layers with no native painted version still renders (smooth upscale)
+        fr = painted.render(eid, frames=3, scale=2, style="comic"); assert fr[1].getchannel("A").getbbox(), eid
+    for st in painted.STYLES: assert painted.render("melee/claw-scratch", frames=3, scale=2, style=st)[1].getchannel("A").getbbox(), st
+    try: painted.render("fire/torch"); raise SystemExit("a Python effect has no painted version")
+    except ValueError: pass
+    with tempfile.TemporaryDirectory() as d:                                                       # fix: a cropped one-shot comes out clean
+        rp = os.path.join(d, "crop.json"); json.dump({"id": "test/crop", "loop": False, "duration": 1.0, "size": [30, 30], "layers": [{"type": "star", "size": [0, 30], "arms": 8, "at": [0, 0]}, {"type": "glow", "radius": [10, 30]}]}, open(rp, "w"))
+        from .fix import fix
+        done, left, _ = fix(rp, out=os.path.join(d, "o"), scale=1)
+        assert done and not [x for x in left if "canvas edge" in x or "end empty" in x], (done, left)
+    print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

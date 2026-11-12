@@ -1,0 +1,61 @@
+{
+ "id": "environment/dust-ring",
+ "name": "Dust ring",
+ "about": "A ring of dust puffs that swells out from a landing and thins away.",
+ "tags": [
+  "dust",
+  "landing",
+  "stomp",
+  "ring",
+  "ground"
+ ],
+ "loop": false,
+ "duration": 1.1,
+ "fps": 12,
+ "size": [
+  120,
+  64
+ ],
+ "pivot": [
+  60,
+  40
+ ],
+ "palette": "dust",
+ "layers": [
+  {
+   "type": "blob",
+   "mode": "ring",
+   "count": 15,
+   "spread": [
+    26,
+    7
+   ],
+   "radius": [
+    8,
+    12
+   ],
+   "scale": [
+    0.2,
+    1,
+    0.8,
+    0
+   ],
+   "drift": [
+    0,
+    20
+   ],
+   "rise": [
+    0,
+    7
+   ],
+   "stagger": 0.3,
+   "depth": 9,
+   "lit": [
+    -1,
+    -1
+   ],
+   "lit_strength": 0.3,
+   "bias": 0.2
+  }
+ ]
+}

@@ -1,0 +1,133 @@
+{
+ "id": "melee/claw-scratch",
+ "name": "Claw scratch",
+ "about": "Three parallel claw marks drawn one after another, over a halftone blood spatter. Has a painted version.",
+ "tags": [
+  "melee",
+  "claw",
+  "brush",
+  "halftone"
+ ],
+ "loop": false,
+ "duration": 0.9,
+ "fps": 12,
+ "size": [
+  88,
+  84
+ ],
+ "pivot": [
+  44,
+  42
+ ],
+ "palette": "blood",
+ "layers": [
+  {
+   "type": "halftone",
+   "at": [
+    2,
+    12
+   ],
+   "size": [
+    30,
+    12
+   ],
+   "cell": 4,
+   "angle": 30,
+   "tone": [
+    0,
+    0.85,
+    0.85,
+    0
+   ],
+   "fade": 0.7,
+   "fade_dir": 90,
+   "palette": "blood",
+   "v": 0.35,
+   "t": [
+    0.1,
+    1
+   ]
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     -34.8,
+     -26
+    ],
+    [
+     -27.2,
+     0
+    ],
+    [
+     -22.8,
+     26
+    ]
+   ],
+   "width": 7,
+   "tail": 0.55,
+   "dry": 0.7,
+   "lanes": 7,
+   "palette": "blood",
+   "t": [
+    0.0,
+    0.7
+   ],
+   "head": 0.25
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     -14.0,
+     -24
+    ],
+    [
+     -8.0,
+     2
+    ],
+    [
+     -2.0,
+     28
+    ]
+   ],
+   "width": 7,
+   "tail": 0.55,
+   "dry": 0.7,
+   "lanes": 7,
+   "palette": "blood",
+   "t": [
+    0.04,
+    0.74
+   ],
+   "head": 0.25
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     6.800000000000001,
+     -22
+    ],
+    [
+     11.2,
+     4
+    ],
+    [
+     18.8,
+     30
+    ]
+   ],
+   "width": 7,
+   "tail": 0.55,
+   "dry": 0.7,
+   "lanes": 7,
+   "palette": "blood",
+   "t": [
+    0.08,
+    0.7799999999999999
+   ],
+   "head": 0.25
+  }
+ ]
+}

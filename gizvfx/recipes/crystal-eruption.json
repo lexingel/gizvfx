@@ -1,0 +1,13 @@
+{
+  "id": "magic/crystal-eruption", "name": "Crystal eruption", "about": "Ice crystals burst out of the floor in a row, shards fly, and a dust ring spreads; then everything shatters away.",
+  "tags": ["crystal", "ice", "eruption", "spikes", "ground", "shatter"], "loop": false, "duration": 1.4, "fps": 12, "size": [128, 96], "pivot": [64, 76], "palette": "ice",
+  "layers": [
+    {"type": "include", "recipe": "environment/dust-ring", "palette": "dust", "at": [0, 4], "t": [0, 0.85]},
+    {"type": "poly", "shape": "crystal", "at": [-30, -6], "rotate": -14, "scale": [0, 1.0, 1.0, 0], "ease": ["out", "linear", "in"], "t": [0.08, 1], "depth": 4},
+    {"type": "poly", "shape": "crystal", "at": [-15, -9], "rotate": -6, "scale": [0, 1.5, 1.5, 0], "ease": ["out", "linear", "in"], "t": [0.04, 1], "depth": 5},
+    {"type": "poly", "shape": "crystal", "at": [0, -12], "rotate": 0, "scale": [0, 2.0, 2.0, 0], "ease": ["out", "linear", "in"], "t": [0, 1], "depth": 6},
+    {"type": "poly", "shape": "crystal", "at": [16, -9], "rotate": 7, "scale": [0, 1.5, 1.5, 0], "ease": ["out", "linear", "in"], "t": [0.04, 1], "depth": 5},
+    {"type": "poly", "shape": "crystal", "at": [31, -6], "rotate": 15, "scale": [0, 1.0, 1.0, 0], "ease": ["out", "linear", "in"], "t": [0.08, 1], "depth": 4},
+    {"type": "particles", "mode": "burst", "count": 22, "at": [0, -4], "area": [60, 4], "angle": [-120, -60], "speed": [16, 46], "life": [0.5, 1], "stagger": 0.3, "gravity": 24, "shape": "shard", "size": [2.5, 1], "v": [1, 0.5], "t": [0.1, 1]}
+  ]
+}

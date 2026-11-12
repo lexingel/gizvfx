@@ -1,0 +1,158 @@
+{
+ "id": "projectiles/curve-orb",
+ "name": "Curving orb",
+ "about": "An energy orb swoops along a curved path, spiralling a little, trailing a tail, and bursts at the end.",
+ "tags": [
+  "orb",
+  "projectile",
+  "curve",
+  "homing",
+  "path",
+  "spiral"
+ ],
+ "loop": false,
+ "duration": 1.3,
+ "fps": 12,
+ "size": [
+  132,
+  92
+ ],
+ "pivot": [
+  66,
+  46
+ ],
+ "palette": "arcane",
+ "style": {
+  "outline": "auto"
+ },
+ "layers": [
+  {
+   "type": "glow",
+   "at": [
+    [
+     -46,
+     12
+    ],
+    [
+     -22,
+     -24
+    ],
+    [
+     8,
+     24
+    ],
+    [
+     46,
+     -12
+    ]
+   ],
+   "radius": 14,
+   "strength": 0.5,
+   "t": [
+    0,
+    0.75
+   ]
+  },
+  {
+   "type": "disc",
+   "at": [
+    [
+     -46,
+     12
+    ],
+    [
+     -22,
+     -24
+    ],
+    [
+     8,
+     24
+    ],
+    [
+     46,
+     -12
+    ]
+   ],
+   "spin": [
+    3,
+    3
+   ],
+   "radius": 5,
+   "smear": [
+    0.4,
+    0.1
+   ],
+   "t": [
+    0,
+    0.75
+   ]
+  },
+  {
+   "type": "star",
+   "at": [
+    46,
+    -12
+   ],
+   "size": [
+    0,
+    13
+   ],
+   "arms": 8,
+   "t": [
+    0.75,
+    0.87
+   ],
+   "ease": "out"
+  },
+  {
+   "type": "star",
+   "at": [
+    46,
+    -12
+   ],
+   "size": [
+    13,
+    0
+   ],
+   "arms": 8,
+   "t": [
+    0.87,
+    1
+   ]
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 14,
+   "at": [
+    46,
+    -12
+   ],
+   "angle": [
+    0,
+    360
+   ],
+   "speed": [
+    8,
+    22
+   ],
+   "life": [
+    0.5,
+    1
+   ],
+   "stagger": 0.3,
+   "size": [
+    3,
+    0
+   ],
+   "v": [
+    1,
+    0.4
+   ],
+   "t": [
+    0.75,
+    1
+   ]
+  }
+ ]
+}

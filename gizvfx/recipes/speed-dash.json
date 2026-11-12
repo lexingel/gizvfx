@@ -1,0 +1,63 @@
+{
+ "id": "melee/speed-dash",
+ "name": "Speed dash",
+ "about": "Parallel speed lines shooting past, with a hatched shadow. Has painted versions.",
+ "tags": [
+  "melee",
+  "speed",
+  "lines"
+ ],
+ "loop": false,
+ "duration": 0.6,
+ "fps": 12,
+ "size": [
+  96,
+  56
+ ],
+ "pivot": [
+  48,
+  28
+ ],
+ "palette": "ice",
+ "layers": [
+  {
+   "type": "hatch",
+   "at": [
+    0,
+    6
+   ],
+   "size": [
+    34,
+    10
+   ],
+   "angle": 62,
+   "spacing": 4,
+   "tone": [
+    0,
+    0.7,
+    0.7,
+    0
+   ],
+   "palette": "shadow",
+   "v": 0.5,
+   "t": [
+    0.05,
+    1
+   ]
+  },
+  {
+   "type": "speedlines",
+   "count": 9,
+   "length": 40,
+   "width": 1.4,
+   "spread": 34,
+   "angle": 0,
+   "travel": 30,
+   "v": 0.6,
+   "t": [
+    0,
+    1
+   ]
+  }
+ ]
+}

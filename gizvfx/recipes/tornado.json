@@ -1,0 +1,95 @@
+{
+ "id": "weather/tornado",
+ "name": "Tornado",
+ "about": "A swirling dust funnel that sways, with debris circling it and a dust ring on the ground.",
+ "tags": [
+  "wind",
+  "tornado",
+  "storm",
+  "whirlwind",
+  "cyclone"
+ ],
+ "loop": true,
+ "duration": 1.2,
+ "fps": 12,
+ "size": [
+  80,
+  112
+ ],
+ "pivot": [
+  40,
+  98
+ ],
+ "palette": "dust",
+ "layers": [
+  {
+   "type": "ring",
+   "squash": 0.35,
+   "radius": 17,
+   "thick": {
+    "wave": [
+     2,
+     3,
+     2
+    ]
+   },
+   "v": 0.45
+  },
+  {
+   "type": "funnel",
+   "height": 84,
+   "stripes": 4,
+   "twist": 0.1,
+   "turns": 2,
+   "lean": 4,
+   "v": 0.6,
+   "profile": [
+    2,
+    3,
+    8,
+    15,
+    23
+   ],
+   "bend": [
+    0,
+    3,
+    -3,
+    4,
+    -2
+   ],
+   "ripple": [
+    1.5,
+    2
+   ],
+   "outline": "auto"
+  },
+  {
+   "type": "orbit",
+   "count": 5,
+   "radius": 18,
+   "squash": 0.35,
+   "turns": 2,
+   "size": 3,
+   "trail": 2,
+   "at": [
+    0,
+    -26
+   ],
+   "v": 0.7
+  },
+  {
+   "type": "orbit",
+   "count": 4,
+   "radius": 22,
+   "squash": 0.35,
+   "turns": -3,
+   "size": 2,
+   "trail": 2,
+   "at": [
+    0,
+    -54
+   ],
+   "v": 0.55
+  }
+ ]
+}

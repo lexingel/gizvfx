@@ -1,0 +1,11 @@
+{
+  "id": "lightning/strike", "name": "Lightning strike", "about": "A bolt from the sky hits the ground: forks, a white flash, a floor ring and sparks.",
+  "tags": ["lightning", "strike", "storm", "electric"], "loop": false, "duration": 1.0, "fps": 12, "size": [80, 130], "pivot": [40, 108], "palette": "electric",
+  "layers": [
+    {"type": "glow", "at": [0, -50], "radius": [44, 0], "strength": [0.7, 0], "t": [0, 0.6]},
+    {"type": "bolt", "from": [0, -98], "to": [0, 0], "width": [4, 1], "grow": 0.2, "flicker": 5, "branches": 3, "t": [0, 0.6], "v": 0.7},
+    {"type": "star", "size": [16, 0], "arms": 8, "t": [0.1, 0.5], "ease": "out"},
+    {"type": "ring", "squash": 0.4, "radius": [2, 30], "thick": [3, 0], "t": [0.1, 0.8], "ease": "expo"},
+    {"type": "particles", "mode": "burst", "count": 14, "angle": [-170, -10], "speed": [12, 34], "life": [0.4, 0.9], "stagger": 0.4, "gravity": 10, "size": [2, 0], "v": [1, 0.5], "t": [0.1, 1]}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "buff/shield-bubble", "name": "Shield bubble", "about": "A glassy dome around the character with a bright rim, a soft light inside, a sheen on the top-left and motes circling it.",
+  "tags": ["shield", "buff", "bubble", "ice", "protect"], "loop": true, "duration": 1.6, "fps": 12, "size": [72, 72], "palette": "ice",
+  "options": {"radius": 24},
+  "layers": [
+    {"type": "glow", "radius": "$radius", "strength": {"wave": [0.35, 0.5, 1]}, "steps": 3},
+    {"type": "ring", "radius": 21, "thick": 1, "v": 0.3},
+    {"type": "ring", "radius": "$radius", "thick": {"wave": [1.5, 2.5, 2]}, "v": 0.6},
+    {"type": "ring", "radius": 23, "thick": 2, "arc": [205, 250], "v": 0.95},
+    {"type": "ring", "radius": 21, "thick": 1, "arc": [212, 238], "v": 0.85},
+    {"type": "orbit", "count": 3, "radius": "$radius", "turns": 1, "size": 3, "trail": 5, "v": 0.85}
+  ]
+}

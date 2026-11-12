@@ -1,0 +1,19 @@
+Documentation and pictures of Gizpix
+
+Unless a file says otherwise, the written documentation (README.md, ABOUT.md, HANDOUT.md, MEASUREMENTS.md, PRODUCT.md,
+DESIGN.md, CHANGELOG.md, NOTICE.md) and the screenshots and demo pictures in images/ (except images/evidence/ and images/about/)
+are licensed under the Creative Commons Attribution 4.0 International licence (CC BY 4.0):
+
+    https://creativecommons.org/licenses/by/4.0/legalcode
+
+You may share and adapt them for any purpose, including commercially, if you give appropriate credit
+("Gizpix", with a link to the repository), link to the licence, and say if you made changes.
+
+The pictures in images/evidence/ and images/about/ are dedicated to the public domain under CC0 1.0:
+
+    https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+They were made from AI-generated sprite frames. They are not offered as training data for machine-learning
+models; that restriction comes from the generator's terms of service and CC0 does not remove it.
+
+The source code is not covered by this file. It is under AGPL-3.0-or-later (see LICENSE).

@@ -1,0 +1,41 @@
+{
+ "id": "impacts/paint-splat",
+ "name": "Paint splat",
+ "about": "A blob bursts out, droplets fly and drips run, then it dries away. Has painted versions (pixfx painted --style stencil).",
+ "tags": [
+  "impact",
+  "splat",
+  "paint"
+ ],
+ "loop": false,
+ "duration": 1.0,
+ "fps": 12,
+ "size": [
+  96,
+  84
+ ],
+ "pivot": [
+  48,
+  38
+ ],
+ "palette": "poison",
+ "layers": [
+  {
+   "type": "splat",
+   "radius": [
+    0,
+    16,
+    16,
+    14
+   ],
+   "drops": 10,
+   "reach": 2.1,
+   "drips": 3,
+   "drip_len": 16,
+   "t": [
+    0,
+    1
+   ]
+  }
+ ]
+}

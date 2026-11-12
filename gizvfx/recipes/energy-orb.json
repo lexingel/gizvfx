@@ -1,0 +1,13 @@
+{
+  "id": "magic/energy-orb", "name": "Energy orb", "about": "A pulsing ball of power with turning rays, orbiting motes and sparks rising off it.",
+  "tags": ["magic", "charge", "orb"], "loop": true, "duration": 1.5, "fps": 12, "size": [72, 72], "palette": "arcane",
+  "options": {"radius": 9},
+  "layers": [
+    {"type": "glow", "radius": {"wave": [22, 28, 2]}, "strength": {"wave": [0.45, 0.8, 2]}},
+    {"type": "rays", "count": 8, "inner": 10, "length": {"wave": [4, 9, 2]}, "width": 2, "rotate": [0, 45], "v": 0.7},
+    {"type": "particles", "mode": "stream", "count": 18, "angle": [0, 360], "speed": [12, 24], "life": [0.6, 1], "size": [1.5, 0], "cycles": 2, "v": [0.85, 0.35]},
+    {"type": "ring", "radius": 11, "thick": 1, "v": 0.45},
+    {"type": "disc", "radius": "$radius", "mode": "core", "bias": {"wave": [-0.05, 0.12, 2]}},
+    {"type": "orbit", "count": 4, "radius": 20, "squash": 0.6, "turns": 1, "size": 2, "trail": 1, "v": 0.7}
+  ]
+}

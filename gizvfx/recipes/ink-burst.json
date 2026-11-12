@@ -1,0 +1,281 @@
+{
+ "id": "impacts/ink-burst",
+ "name": "Ink burst",
+ "about": "Eight brush strokes fly out from a point, over a halftone dot burst. Has a painted version.",
+ "tags": [
+  "impact",
+  "ink",
+  "brush",
+  "halftone"
+ ],
+ "loop": false,
+ "duration": 0.75,
+ "fps": 12,
+ "size": [
+  84,
+  84
+ ],
+ "pivot": [
+  42,
+  42
+ ],
+ "palette": "ember",
+ "layers": [
+  {
+   "type": "halftone",
+   "size": [
+    26,
+    26
+   ],
+   "cell": 4,
+   "angle": 45,
+   "tone": [
+    0,
+    0.9,
+    0.9,
+    0
+   ],
+   "fade": 0.8,
+   "fade_dir": 0,
+   "palette": "shadow",
+   "v": 0.55,
+   "t": [
+    0.05,
+    1
+   ]
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     8.8,
+     1.8
+    ],
+    [
+     20.9,
+     2.3
+    ],
+    [
+     33.0,
+     0.7
+    ]
+   ],
+   "width": 5,
+   "tail": 0.5,
+   "dry": 0.5,
+   "lanes": 5,
+   "palette": "ember",
+   "t": [
+    0.0,
+    0.75
+   ],
+   "head": 0.3
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     5.0,
+     7.5
+    ],
+    [
+     10.0,
+     18.5
+    ],
+    [
+     13.0,
+     30.3
+    ]
+   ],
+   "width": 7,
+   "tail": 0.5,
+   "dry": 0.5,
+   "lanes": 5,
+   "palette": "ember",
+   "t": [
+    0.02,
+    0.75
+   ],
+   "head": 0.3
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     -1.8,
+     8.8
+    ],
+    [
+     -2.3,
+     20.9
+    ],
+    [
+     -0.7,
+     33.0
+    ]
+   ],
+   "width": 5,
+   "tail": 0.5,
+   "dry": 0.5,
+   "lanes": 5,
+   "palette": "ember",
+   "t": [
+    0.04,
+    0.75
+   ],
+   "head": 0.3
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     -7.5,
+     5.0
+    ],
+    [
+     -18.5,
+     10.0
+    ],
+    [
+     -30.3,
+     13.0
+    ]
+   ],
+   "width": 7,
+   "tail": 0.5,
+   "dry": 0.5,
+   "lanes": 5,
+   "palette": "ember",
+   "t": [
+    0.06,
+    0.75
+   ],
+   "head": 0.3
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     -8.8,
+     -1.8
+    ],
+    [
+     -20.9,
+     -2.3
+    ],
+    [
+     -33.0,
+     -0.7
+    ]
+   ],
+   "width": 5,
+   "tail": 0.5,
+   "dry": 0.5,
+   "lanes": 5,
+   "palette": "ember",
+   "t": [
+    0.08,
+    0.75
+   ],
+   "head": 0.3
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     -5.0,
+     -7.5
+    ],
+    [
+     -10.0,
+     -18.5
+    ],
+    [
+     -13.0,
+     -30.3
+    ]
+   ],
+   "width": 7,
+   "tail": 0.5,
+   "dry": 0.5,
+   "lanes": 5,
+   "palette": "ember",
+   "t": [
+    0.0,
+    0.75
+   ],
+   "head": 0.3
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     1.8,
+     -8.8
+    ],
+    [
+     2.3,
+     -20.9
+    ],
+    [
+     0.7,
+     -33.0
+    ]
+   ],
+   "width": 5,
+   "tail": 0.5,
+   "dry": 0.5,
+   "lanes": 5,
+   "palette": "ember",
+   "t": [
+    0.01999999999999999,
+    0.75
+   ],
+   "head": 0.3
+  },
+  {
+   "type": "brush",
+   "path": [
+    [
+     7.5,
+     -5.0
+    ],
+    [
+     18.5,
+     -10.0
+    ],
+    [
+     30.3,
+     -13.0
+    ]
+   ],
+   "width": 7,
+   "tail": 0.5,
+   "dry": 0.5,
+   "lanes": 5,
+   "palette": "ember",
+   "t": [
+    0.04000000000000001,
+    0.75
+   ],
+   "head": 0.3
+  },
+  {
+   "type": "ring",
+   "radius": [
+    4,
+    30
+   ],
+   "thick": [
+    3,
+    0
+   ],
+   "palette": "ember",
+   "v": 0.8,
+   "t": [
+    0,
+    0.45
+   ]
+  }
+ ]
+}

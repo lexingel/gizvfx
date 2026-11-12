@@ -1,0 +1,7 @@
+{
+  "id": "environment/smoke-puff", "name": "Smoke puff", "about": "A puff of smoke that swells, drifts up and is eaten away from the edges.",
+  "tags": ["smoke", "dust", "puff", "environment"], "loop": false, "duration": 1.2, "fps": 10, "size": [72, 80], "pivot": [36, 58], "palette": "smoke",
+  "layers": [
+    {"type": "blob", "count": 9, "spread": [15, 6], "radius": [6, 12], "scale": [0.2, 1.15, 1.15], "rise": [0, 10, 26], "ease": "linear", "seed": 1, "depth": 8, "lit": [-1, -1], "lit_strength": 0.35, "bias": [-0.2, -0.3, -0.5], "erode": [0, 0, 20]}
+  ]
+}

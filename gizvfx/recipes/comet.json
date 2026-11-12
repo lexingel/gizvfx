@@ -1,0 +1,136 @@
+{
+ "id": "projectiles/comet",
+ "name": "Comet",
+ "about": "A fireball streaks across with a long shrinking tail and bursts at the end.",
+ "tags": [
+  "comet",
+  "meteor",
+  "fireball",
+  "streak",
+  "projectile"
+ ],
+ "loop": false,
+ "duration": 1.1,
+ "fps": 12,
+ "size": [
+  120,
+  72
+ ],
+ "pivot": [
+  60,
+  36
+ ],
+ "palette": "fire",
+ "layers": [
+  {
+   "type": "glow",
+   "at": [
+    [
+     -40,
+     14
+    ],
+    [
+     40,
+     -14
+    ]
+   ],
+   "radius": 16,
+   "strength": 0.5,
+   "t": [
+    0,
+    0.6
+   ]
+  },
+  {
+   "type": "disc",
+   "at": [
+    [
+     -40,
+     14
+    ],
+    [
+     40,
+     -14
+    ]
+   ],
+   "radius": 6,
+   "t": [
+    0,
+    0.6
+   ],
+   "smear": [
+    0.45,
+    0.1
+   ],
+   "bias": 0.1,
+   "outline": "auto"
+  },
+  {
+   "type": "star",
+   "at": [
+    40,
+    -14
+   ],
+   "size": [
+    0,
+    14
+   ],
+   "arms": 8,
+   "t": [
+    0.6,
+    0.72
+   ],
+   "ease": "out"
+  },
+  {
+   "type": "star",
+   "at": [
+    40,
+    -14
+   ],
+   "size": [
+    14,
+    0
+   ],
+   "arms": 8,
+   "t": [
+    0.72,
+    1
+   ]
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 14,
+   "at": [
+    40,
+    -14
+   ],
+   "angle": [
+    90,
+    270
+   ],
+   "speed": [
+    8,
+    24
+   ],
+   "life": [
+    0.5,
+    1
+   ],
+   "stagger": 0.3,
+   "size": [
+    3,
+    0
+   ],
+   "v": [
+    1,
+    0.4
+   ],
+   "t": [
+    0.6,
+    1
+   ]
+  }
+ ]
+}

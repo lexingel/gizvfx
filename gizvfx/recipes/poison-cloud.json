@@ -1,0 +1,9 @@
+{
+  "id": "status/poison-cloud", "name": "Poison cloud", "about": "A swelling green cloud with bubbles rising out of it.",
+  "tags": ["poison", "gas", "status", "cloud"], "loop": true, "duration": 2.0, "fps": 10, "size": [80, 80], "pivot": [40, 46], "palette": "poison",
+  "options": {"puffs": 9},
+  "layers": [
+    {"type": "blob", "count": "$puffs", "spread": [16, 7], "radius": [7, 11], "scale": {"wave": [0.9, 1.1, 1]}, "depth": 14, "bias": -0.05},
+    {"type": "particles", "mode": "stream", "count": 9, "area": [30, 6], "at": [0, 4], "angle": [-100, -80], "speed": [16, 30], "life": [0.7, 1], "size": [3, 1], "sway": 2, "cycles": 1, "shade": "core", "v": [0.95, 0.5]}
+  ]
+}

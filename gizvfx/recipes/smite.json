@@ -1,0 +1,152 @@
+{
+ "id": "holy/smite",
+ "name": "Smite",
+ "about": "A holy beam drops from the sky with a flash, floor ring and rising sparks.",
+ "loop": false,
+ "duration": 1.2,
+ "fps": 12,
+ "size": [
+  80,
+  140
+ ],
+ "pivot": [
+  40,
+  116
+ ],
+ "palette": "holy",
+ "layers": [
+  {
+   "type": "glow",
+   "at": [
+    0,
+    -50
+   ],
+   "radius": [
+    20,
+    40,
+    0
+   ],
+   "strength": [
+    0.3,
+    0.7,
+    0
+   ],
+   "t": [
+    0,
+    0.75
+   ]
+  },
+  {
+   "type": "beam",
+   "from": [
+    0,
+    -108
+   ],
+   "to": [
+    0,
+    0
+   ],
+   "width": [
+    2,
+    14,
+    0
+   ],
+   "tip": [
+    2,
+    12,
+    0
+   ],
+   "extend": 0.25,
+   "t": [
+    0,
+    0.7
+   ],
+   "v": 0.9,
+   "core": 0.6
+  },
+  {
+   "type": "star",
+   "size": [
+    0,
+    22,
+    0
+   ],
+   "arms": 8,
+   "t": [
+    0.18,
+    0.6
+   ],
+   "v": 1
+  },
+  {
+   "type": "ring",
+   "squash": 0.35,
+   "radius": [
+    2,
+    32
+   ],
+   "thick": [
+    4,
+    0
+   ],
+   "t": [
+    0.2,
+    0.9
+   ],
+   "ease": "expo"
+  },
+  {
+   "type": "ring",
+   "squash": 0.35,
+   "radius": [
+    1,
+    20
+   ],
+   "thick": [
+    3,
+    0
+   ],
+   "t": [
+    0.25,
+    0.8
+   ],
+   "ease": "expo",
+   "v": 1
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 24,
+   "area": [
+    22,
+    4
+   ],
+   "angle": [
+    -100,
+    -80
+   ],
+   "speed": [
+    20,
+    60
+   ],
+   "life": [
+    0.5,
+    1
+   ],
+   "stagger": 0.5,
+   "size": [
+    3,
+    0
+   ],
+   "v": [
+    1,
+    0.6
+   ],
+   "t": [
+    0.2,
+    1
+   ],
+   "shade": "core"
+  }
+ ]
+}

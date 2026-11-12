@@ -1,0 +1,146 @@
+{
+ "id": "status/soul-wisp",
+ "name": "Soul wisp",
+ "about": "A cold ghostly flame rises along a snaking path, trailing wisps, and fades out.",
+ "tags": [
+  "ghost",
+  "soul",
+  "wisp",
+  "spirit",
+  "death"
+ ],
+ "loop": false,
+ "duration": 1.8,
+ "fps": 12,
+ "size": [
+  64,
+  112
+ ],
+ "pivot": [
+  32,
+  94
+ ],
+ "palette": "ice",
+ "layers": [
+  {
+   "type": "glow",
+   "at": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     -72
+    ]
+   ],
+   "wobble": [
+    7,
+    0,
+    2
+   ],
+   "radius": 16,
+   "strength": [
+    0.3,
+    0.5,
+    0.3,
+    0
+   ]
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 18,
+   "at": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     -72
+    ]
+   ],
+   "wobble": [
+    7,
+    0,
+    2
+   ],
+   "area": [
+    3,
+    3
+   ],
+   "angle": [
+    70,
+    110
+   ],
+   "speed": [
+    6,
+    24
+   ],
+   "life": [
+    0.25,
+    0.5
+   ],
+   "stagger": 0.9,
+   "size": [
+    3.5,
+    0
+   ],
+   "v": [
+    0.8,
+    0.3
+   ]
+  },
+  {
+   "type": "blob",
+   "at": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     -72
+    ]
+   ],
+   "wobble": [
+    7,
+    0,
+    2
+   ],
+   "count": 7,
+   "radius": [
+    3,
+    6
+   ],
+   "scale": [
+    0.5,
+    1,
+    1,
+    0
+   ],
+   "lit": [
+    0,
+    -1
+   ],
+   "lit_strength": 0.4,
+   "bias": 0.1,
+   "seed": 2,
+   "smear": [
+    0.2,
+    0.25
+   ],
+   "mode": "flame",
+   "height": [
+    12,
+    18,
+    16,
+    10
+   ],
+   "flicker": 6,
+   "sway": 2.5,
+   "depth": 5
+  }
+ ]
+}

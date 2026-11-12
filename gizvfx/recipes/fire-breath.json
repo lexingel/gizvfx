@@ -1,0 +1,13 @@
+{
+  "id": "fire/fire-breath", "name": "Fire breath", "about": "A jet of flame to the right, hot and bright at the mouth, cooling and breaking up as it travels.",
+  "tags": ["fire", "breath", "dragon", "flame", "jet"], "loop": true, "duration": 1.0, "fps": 12, "size": [128, 56], "pivot": [10, 28], "palette": "fire",
+  "options": {"reach": 96},
+  "layers": [
+    {"type": "glow", "radius": {"wave": [24, 30, 2]}, "strength": 0.5},
+    {"type": "particles", "mode": "stream", "count": 30, "area": [4, 8], "angle": [-9, 9], "speed": [50, "$reach"], "life": [0.6, 1], "size": [4, 1], "cycles": 2, "v": [0.45, 0.1], "sway": 3, "cover": [1, 0.3], "travel": "linear"},
+    {"type": "particles", "mode": "stream", "count": 40, "area": [4, 6], "angle": [-10, 10], "speed": [30, 80], "life": [0.5, 0.9], "size": [6, 2], "cycles": 2, "v": [0.75, 0.35], "sway": 2, "travel": "linear"},
+    {"type": "beam", "from": [2, 0], "to": [44, 0], "width": {"wave": [11, 14, 3]}, "tip": 4, "v": 0.9},
+    {"type": "particles", "mode": "stream", "count": 24, "at": [4, 0], "area": [4, 6], "angle": [-9, 9], "speed": [34, 76], "life": [0.5, 0.9], "size": [3, 1], "cycles": 2, "v": [0.97, 0.55], "shape": "streak", "streak": 8, "sway": 2, "travel": "linear"},
+    {"type": "blob", "count": 5, "spread": [3, 4], "radius": [5, 7], "scale": {"wave": [0.9, 1.1, 2]}, "depth": 4, "bias": 0.3}
+  ]
+}

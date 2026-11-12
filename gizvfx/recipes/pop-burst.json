@@ -1,0 +1,102 @@
+{
+ "id": "impacts/pop-burst",
+ "name": "Pop burst",
+ "about": "A comic hit burst with speed lines flying out of it over a halftone dot disc. Has painted versions (pixfx painted --style comic).",
+ "tags": [
+  "impact",
+  "comic",
+  "burst"
+ ],
+ "loop": false,
+ "duration": 0.7,
+ "fps": 12,
+ "size": [
+  96,
+  96
+ ],
+ "pivot": [
+  48,
+  48
+ ],
+ "palette": "ember",
+ "layers": [
+  {
+   "type": "halftone",
+   "size": [
+    30,
+    30
+   ],
+   "cell": 4,
+   "angle": 45,
+   "tone": [
+    0,
+    0.85,
+    0.85,
+    0
+   ],
+   "fade": 0.7,
+   "fade_dir": 45,
+   "palette": "shadow",
+   "v": 0.5,
+   "t": [
+    0.05,
+    1
+   ]
+  },
+  {
+   "type": "speedlines",
+   "radial": true,
+   "count": 12,
+   "r0": 16,
+   "length": 24,
+   "width": 1.4,
+   "travel": 10,
+   "v": 0.9,
+   "t": [
+    0,
+    0.9
+   ]
+  },
+  {
+   "type": "burst",
+   "radius": [
+    0,
+    28,
+    26,
+    20,
+    0
+   ],
+   "inner": 0.55,
+   "points": 10,
+   "rotate": [
+    0,
+    12
+   ],
+   "t": [
+    0,
+    0.8
+   ],
+   "ease": "out"
+  },
+  {
+   "type": "burst",
+   "radius": [
+    0,
+    12,
+    10,
+    0
+   ],
+   "inner": 0.5,
+   "points": 8,
+   "rotate": [
+    10,
+    -10
+   ],
+   "v": 0.95,
+   "t": [
+    0.04,
+    0.7
+   ]
+  }
+ ]
+}

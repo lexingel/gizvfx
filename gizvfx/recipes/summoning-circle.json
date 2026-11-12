@@ -1,0 +1,22 @@
+{
+  "id": "magic/summoning-circle", "name": "Summoning circle", "about": "A magic circle draws itself on the floor, runes turn on it, four pillars of light rise from its edge and a column of motes climbs from the middle, then it all fades.",
+  "tags": ["magic", "summon", "circle", "ritual", "arcane", "pillar"], "loop": false, "duration": 2.0, "fps": 12, "size": [128, 128], "pivot": [64, 104], "palette": "arcane",
+  "options": {"radius": 38},
+  "layers": [
+    {"type": "glow", "at": [0, -20], "radius": [10, 44], "strength": [0.1, 0.7], "t": [0, 0.5], "steps": 3},
+    {"type": "glow", "at": [0, -20], "radius": [44, 0], "strength": [0.7, 0], "t": [0.5, 1], "ease": "in", "steps": 3},
+    {"type": "ring", "squash": 0.4, "radius": [2, "$radius"], "thick": 2, "t": [0, 0.3], "ease": "out", "v": 0.75},
+    {"type": "ring", "squash": 0.4, "radius": "$radius", "thick": [2, 0], "t": [0.3, 0.9], "ease": "in", "v": 0.75},
+    {"type": "ring", "squash": 0.4, "radius": [2, 24], "thick": 1, "t": [0.1, 0.35], "ease": "out", "v": 0.55},
+    {"type": "ring", "squash": 0.4, "radius": 24, "thick": [1, 0], "t": [0.35, 1], "ease": "in", "v": 0.55},
+    {"type": "ring", "squash": 0.4, "radius": 31, "thick": 1, "cover": 0.45, "t": [0.2, 0.85], "v": 0.45},
+    {"type": "orbit", "count": 6, "radius": 31, "squash": 0.4, "turns": 1, "size": [3, 0], "trail": 2, "t": [0.2, 0.85], "v": 0.9},
+    {"type": "beam", "from": [-38, 0], "to": [-38, -62], "width": [5, 0], "tip": [2, 0], "extend": 0.3, "t": [0.3, 0.9], "ease": "in", "v": 0.75},
+    {"type": "beam", "from": [38, 0], "to": [38, -62], "width": [5, 0], "tip": [2, 0], "extend": 0.3, "t": [0.32, 0.9], "ease": "in", "v": 0.75},
+    {"type": "beam", "from": [0, 15], "to": [0, -48], "width": [5, 0], "tip": [2, 0], "extend": 0.3, "t": [0.36, 0.9], "ease": "in", "v": 0.85},
+    {"type": "beam", "from": [0, -15], "to": [0, -78], "width": [5, 0], "tip": [2, 0], "extend": 0.3, "t": [0.28, 0.9], "ease": "in", "v": 0.65},
+    {"type": "particles", "mode": "burst", "count": 34, "area": [30, 6], "angle": [-95, -85], "speed": [30, 80], "life": [0.35, 0.7], "stagger": 0.6, "size": [2.5, 0], "v": [1, 0.5], "t": [0.3, 1]},
+    {"type": "star", "at": [0, -46], "size": [0, 14], "arms": 4, "thin": 0.1, "t": [0.55, 0.7], "ease": "out", "v": 0.98},
+    {"type": "star", "at": [0, -46], "size": [14, 0], "arms": 4, "thin": 0.1, "t": [0.7, 0.95], "v": 0.98}
+  ]
+}

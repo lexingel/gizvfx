@@ -1,0 +1,217 @@
+{
+ "id": "status/acid-splash",
+ "name": "Acid splash",
+ "about": "Green acid splash, droplets, bubbling puddle that shrinks away.",
+ "loop": false,
+ "duration": 1.4,
+ "fps": 12,
+ "size": [
+  96,
+  80
+ ],
+ "pivot": [
+  48,
+  60
+ ],
+ "palette": "poison",
+ "layers": [
+  {
+   "type": "blob",
+   "mode": "ring",
+   "count": 12,
+   "spread": [
+    17,
+    4
+   ],
+   "radius": [
+    7,
+    10
+   ],
+   "scale": [
+    0.2,
+    1,
+    1,
+    0
+   ],
+   "drift": 0,
+   "stagger": 0.2,
+   "t": [
+    0.1,
+    1
+   ],
+   "seed": 3,
+   "depth": 8,
+   "at": [
+    0,
+    -2
+   ],
+   "lit": [
+    -1,
+    -1
+   ],
+   "lit_strength": 0.3
+  },
+  {
+   "type": "blob",
+   "count": 8,
+   "spread": [
+    14,
+    10
+   ],
+   "radius": [
+    4,
+    6
+   ],
+   "scale": [
+    0,
+    1,
+    0
+   ],
+   "rise": [
+    0,
+    14
+   ],
+   "t": [
+    0,
+    0.4
+   ],
+   "seed": 5,
+   "depth": 5,
+   "at": [
+    0,
+    -6
+   ],
+   "bias": 0.3
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 22,
+   "area": [
+    10,
+    3
+   ],
+   "angle": [
+    -150,
+    -30
+   ],
+   "speed": [
+    18,
+    46
+   ],
+   "life": [
+    0.5,
+    0.9
+   ],
+   "stagger": 0.15,
+   "gravity": 28,
+   "size": [
+    3,
+    0.5
+   ],
+   "v": [
+    0.9,
+    0.5
+   ],
+   "shade": "core"
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 10,
+   "at": [
+    0,
+    -2
+   ],
+   "area": [
+    24,
+    3
+   ],
+   "angle": [
+    -95,
+    -85
+   ],
+   "speed": [
+    6,
+    16
+   ],
+   "life": [
+    0.3,
+    0.55
+   ],
+   "stagger": 0.9,
+   "t": [
+    0.3,
+    1
+   ],
+   "size": [
+    3,
+    0
+   ],
+   "v": [
+    1,
+    0.8
+   ],
+   "cover": [
+    0.9,
+    0.4
+   ]
+  },
+  {
+   "type": "ring",
+   "squash": 0.4,
+   "radius": [
+    3,
+    26
+   ],
+   "thick": [
+    3,
+    0
+   ],
+   "t": [
+    0,
+    0.6
+   ],
+   "ease": "expo"
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 9,
+   "at": [
+    0,
+    -2
+   ],
+   "area": [
+    34,
+    5
+   ],
+   "angle": [
+    -100,
+    -80
+   ],
+   "speed": [
+    3,
+    10
+   ],
+   "life": [
+    0.45,
+    0.8
+   ],
+   "stagger": 0.8,
+   "t": [
+    0.25,
+    1
+   ],
+   "shape": "bubble",
+   "size": [
+    3,
+    7
+   ],
+   "v": [
+    0.95,
+    0.8
+   ]
+  }
+ ]
+}

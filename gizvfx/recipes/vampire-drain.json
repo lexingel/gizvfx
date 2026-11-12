@@ -1,0 +1,150 @@
+{
+ "id": "combat/vampire-drain",
+ "name": "Vampire drain",
+ "about": "Blood-red wisps bow through the air from a target on the right into the caster on the left, who flares as they arrive.",
+ "tags": [
+  "drain",
+  "vampire",
+  "blood",
+  "lifesteal",
+  "siphon"
+ ],
+ "loop": false,
+ "duration": 1.4,
+ "fps": 12,
+ "size": [
+  128,
+  64
+ ],
+ "pivot": [
+  64,
+  32
+ ],
+ "palette": "blood",
+ "layers": [
+  {
+   "type": "glow",
+   "at": [
+    46,
+    0
+   ],
+   "radius": [
+    22,
+    0
+   ],
+   "strength": [
+    0.6,
+    0
+   ],
+   "t": [
+    0,
+    0.7
+   ]
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 44,
+   "at": [
+    46,
+    0
+   ],
+   "area": [
+    8,
+    16
+   ],
+   "target": [
+    -46,
+    0
+   ],
+   "curve": 16,
+   "life": [
+    0.35,
+    0.6
+   ],
+   "stagger": 0.55,
+   "travel": "linear",
+   "size": [
+    3.5,
+    1.5
+   ],
+   "v": [
+    0.95,
+    0.5
+   ],
+   "smear": [
+    0.18,
+    0.3
+   ]
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 16,
+   "at": [
+    46,
+    0
+   ],
+   "area": [
+    6,
+    10
+   ],
+   "target": [
+    -46,
+    0
+   ],
+   "curve": 8,
+   "life": [
+    0.4,
+    0.65
+   ],
+   "stagger": 0.55,
+   "travel": "linear",
+   "shape": "star",
+   "size": [
+    3,
+    3
+   ],
+   "v": 1
+  },
+  {
+   "type": "disc",
+   "at": [
+    -46,
+    0
+   ],
+   "radius": [
+    0,
+    7,
+    3,
+    0
+   ],
+   "t": [
+    0.35,
+    1
+   ],
+   "bias": 0.1
+  },
+  {
+   "type": "glow",
+   "at": [
+    -46,
+    0
+   ],
+   "radius": [
+    0,
+    24,
+    0
+   ],
+   "strength": [
+    0,
+    0.8,
+    0
+   ],
+   "t": [
+    0.35,
+    1
+   ]
+  }
+ ]
+}
