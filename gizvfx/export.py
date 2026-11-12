@@ -10,7 +10,7 @@ DARK = (30, 30, 38)
 def up(im, scale): return im if scale == 1 else im.resize((im.width * scale, im.height * scale), Image.NEAREST)
 
 
-def write_all(frames, out_dir, name, meta, opts, fps, scale=1, gif=True, sheet=True, contact=True, bg=DARK, hold=4):
+def write_all(frames, out_dir, name, meta, opts, fps, scale=1, gif=True, sheet=True, contact=True, bg=DARK, hold=4, contact_scale=None, contact_bg=None):
     os.makedirs(out_dir, exist_ok=True); paths = []; ms = int(round(1000 / fps))
     if sheet:
         im, js = _sheet([f for f in frames], name, ms=ms, scale=scale)
@@ -27,7 +27,7 @@ def write_all(frames, out_dir, name, meta, opts, fps, scale=1, gif=True, sheet=T
             blank = fr[-1].copy(); blank.paste(tuple(bg) + (255,) if bg is not None else (0, 0, 0, 0), (0, 0, blank.width, blank.height)); fr += [blank] * hold
         p = os.path.join(out_dir, f"{name}.gif"); save_gif(fr, p, ms); paths.append(p)
     if contact:
-        p = os.path.join(out_dir, f"{name}_contact.png"); contact_sheet(frames, p, scale=max(scale, 2), bg=bg or DARK); paths.append(p)
+        p = os.path.join(out_dir, f"{name}_contact.png"); contact_sheet(frames, p, scale=contact_scale or max(scale, 2), bg=contact_bg or bg or DARK); paths.append(p)
     return paths
 
 

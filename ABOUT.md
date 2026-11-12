@@ -24,7 +24,7 @@ A recipe is plain data. It never runs code, reads files outside its own folder o
 
 `check` tests whether an effect gives the same frames twice, whether a loop closes, whether a one-shot ends on an empty frame and whether anything touches the canvas edge. With `--report` it also measures mesh dithering, flat color, lone pixels, empty frames and jumps in motion, and names a fix for each flag.
 
-`fix` goes one step further. It repairs what a machine can repair: a cropped canvas is enlarged, one-pixel holes are filled, lone pixels are removed, more than 40 colors are cut to 24, and a one-shot that does not end empty fades out over its last three frames. It writes the files and a `NAME_fix.txt`, then lists what is left for you. Your original recipe is never changed.
+`fix` goes one step further. It repairs what a machine can repair: a cropped canvas is enlarged, one-pixel holes are filled, lone pixels are removed, more than 40 colors are cut to 24, and a one-shot that does not end empty fades out over its last three frames. It writes the files and a `NAME_fix.txt`, then lists what you still have to fix by hand, and separately a few advisory notes (a motion jump, flat color). Only the first list makes the exit code 1. Your original recipe is never changed.
 
 ## Commands
 

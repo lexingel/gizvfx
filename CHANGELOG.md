@@ -5,6 +5,8 @@ GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, pa
 
 - New `fix` command: check an effect, repair what can be repaired (cropped canvas, pinholes, lone pixels, too many colours, one-shot that does not end empty), write the files and `NAME_fix.txt`, list what is left.
 
+- Found by a blind test (an agent that had only the repo): option values can be negated ("-$height") and a non-number gives a clear error; `poly` shape `heart`; `painted` writes a contact sheet; `fix` separates problems (exit 1) from advisory notes; docs: palette rule for layers with their own palette, `curve` is one number, the painted section is a list.
+
 History carried over from Gizpix 0.2.0:
 - Painted: glows fall off in the pixel renderer's bands (soft edges), watercolor has more body and colour on dark grounds. Beam colours across the width match the pixel beam.
 - Painted, the last small differences from the pixel frames: `rim`, a true gradient across a `beam` with a white-hot line, core-shaded dots (coin-burst is gold again), thicker speed lines, a glow with the pixel renderer's flat first step (shield-bubble, bomb-fuse), crossing-line sparkles for `star`, more body in watercolor.

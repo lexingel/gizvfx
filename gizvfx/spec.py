@@ -34,7 +34,7 @@ SCHEMA = {
     "particles": {"mode": "burst (all fly out from the window start) | stream (endless, loop-safe)", "count": "int", "area": "[w, h] spawn box", "angle": "[a0, a1] degrees, 0 = right, 90 = down, -90 = up",
                   "speed": "[lo, hi] px travelled over a particle's life", "life": "[lo, hi] fraction of the window (burst) or of the cycle (stream)", "cycles": "stream: repeats per loop (whole number)",
                   "stagger": "burst: spread the births over this fraction of the window", "gravity": "px of downward pull at end of life (negative = rises)", "lob": "true = a parabola: launched along `angle` at `speed`, lands back at its spawn height at the end of its life (fountains, thrown debris)", "sway": "px of side wobble",
-                  "size": "[start, end] px", "shape": "dot | streak | star | bubble (hollow, pops) | shard (sliver)", "streak": "streak length px", "shade": "flat | core", "travel": "ease of the flight: out | linear | in | expo", "cover": "[c0, c1] dither fade over life", "target": "[x, y] from the pivot: every particle travels from its spawn point to here instead of flying along `angle`", "curve": "px sideways bow of that path (with `target`), random per particle"},
+                  "size": "[start, end] px", "shape": "dot | streak | star | bubble (hollow, pops) | shard (sliver)", "streak": "streak length px", "shade": "flat | core", "travel": "ease of the flight: out | linear | in | expo", "cover": "[c0, c1] dither fade over life", "target": "[x, y] from the pivot: every particle travels from its spawn point to here instead of flying along `angle`", "curve": "one number: px of sideways bow of that path (with `target`), random per particle"},
     "blob": {"mode": "lump (default) | ring (puffs on the `spread` ellipse: ground dust, smoke rings; `drift` px outward, `stagger`) | flame (puffs up a swaying spine: `height`, `radius` = [base, tip-ish], `flicker`, `sway`, `cycles`, `jitter`)", "count": "int discs merged into one body", "height": "flame: px", "flicker": "flame: reshapes per window (default 5)", "sway": "flame: px", "cycles": "flame: sways per window (whole)", "jitter": "flame: px", "drift": "ring: px outward, animatable", "stagger": "0..0.9: puffs start growing at different moments", "spread": "[w, h] px", "radius": "[lo, hi] px", "scale": "0..1+ animatable: grow and shrink the whole body", "rise": "px upward, animatable",
              "depth": "band width px (bigger = bands further in)", "lit": "[dx, dy] direction of the light, e.g. [-1, -1] = top-left (sphere-like shading)", "lit_strength": "0..1, default 0.3", "bias": "dark(-)..bright(+) animatable: cool a fireball with [0.2, -0.6]", "erode": "px eaten from the edge, animatable ([0, 10] dissolves it; better than cover)", "cover": "0..1 dither"},
     "bolt": {"from": "[x, y]", "to": "[x, y]", "width": "px, animatable", "grow": "fraction of the window spent striking from `from` to `to`", "flicker": "reshapes per window (default 6)",
@@ -42,7 +42,7 @@ SCHEMA = {
     "rays": {"count": "int", "inner": "px from centre, animatable", "length": "px, animatable", "width": "px at the root", "rotate": "degrees over the window", "jitter": "0..1 random length", "squash": "0.1..1: rays lying on the floor (1 = round)"},
     "orbit": {"count": "int", "radius": "px, animatable", "squash": "1 = circle", "turns": "whole turns over the window (whole number for loops)", "size": "px, animatable", "trail": "dots behind each one", "shade": "flat | core"},
     "beam": {"from": "[x, y]", "to": "[x, y]", "width": "px, animatable", "tip": "width at the far end", "extend": "fraction of the window spent growing from `from` to `to`", "shade": "flat = one colour, no stripes", "core": "0..0.9 share of the width at the brightest step (default 0.45)"},
-    "poly": {"shape": "crystal | shard | rock | diamond | arrow (ready-made outlines)", "points": "[[x, y], ...] your own outline, px from `at` (3 to 24 points)", "rotate": "degrees, animatable (a full turn [0, 360] over a loop closes it)", "scale": "animatable", "anchor": "center (default) | base: the lowest point sits on `at`",
+    "poly": {"shape": "crystal | shard | rock | diamond | arrow | heart (ready-made outlines)", "points": "[[x, y], ...] your own outline, px from `at` (3 to 24 points)", "rotate": "degrees, animatable (a full turn [0, 360] over a loop closes it)", "scale": "animatable", "anchor": "center (default) | base: the lowest point sits on `at`",
              "depth": "band width px (default 4)", "lit": "[dx, dy] light direction (default [-1, -1])", "lit_strength": "0..1, default 0.35", "bias": "dark(-)..bright(+)", "cover": "0..1 dither"},
     "stamp": {"image": "a PNG next to the recipe file, at most 32x32 px (your own sprite: a coin, a leaf)", "scale": "whole number 1 to 4", "flip": "true = mirror", "rotate": "0 | 90 | 180 | 270"},
     "include": {"recipe": "id of a recipe (`gizvfx list`) or the path of a .json file; its time is stretched over this layer's window and it is drawn at this layer's `at`", "options": "{name: value} for that recipe's options"},
@@ -65,10 +65,13 @@ SCHEMA = {
 
 def sub(x, o):
     """replace "$name" strings by the option's value, recursively"""
-    if isinstance(x, str) and x.startswith("$"):
-        name, _, mul = x[1:].partition("*")                                            # "$reach" or "$reach*0.55"
+    if isinstance(x, str) and x.lstrip("-").startswith("$"):
+        sign = -1 if x.startswith("-") else 1
+        name, _, mul = x.lstrip("-")[1:].partition("*")                                # "$reach", "$reach*0.55" or "-$height"
         if name not in o: raise KeyError(f"'{x}' is not an option of this recipe (options: {', '.join(sorted(o))})")
-        return o[name] * float(mul) if mul else o[name]
+        v = o[name]
+        if (sign < 0 or mul) and not isinstance(v, (int, float)): raise ValueError(f"'{x}': option '{name}' is {v!r}, not a number, so it cannot be negated or scaled")
+        return sign * v * float(mul) if mul else (-v if sign < 0 else v)
     if isinstance(x, list): return [sub(i, o) for i in x]
     if isinstance(x, dict): return {k: sub(v, o) for k, v in x.items()}
     return x
@@ -414,7 +417,8 @@ def L_funnel(f, d, c):
 
 
 POLYS = {"crystal": [[0, -13], [5, -4], [4, 9], [-4, 9], [-5, -4]], "shard": [[0, -11], [3, 7], [-3, 7]], "diamond": [[0, -9], [6, 0], [0, 9], [-6, 0]], "arrow": [[0, -10], [6, 0], [2, 0], [2, 10], [-2, 10], [-2, 0], [-6, 0]],
-         "rock": [[-7, 5], [-8, -1], [-4, -6], [2, -7], [7, -2], [8, 4], [3, 7]]}
+         "rock": [[-7, 5], [-8, -1], [-4, -6], [2, -7], [7, -2], [8, 4], [3, 7]],
+         "heart": [[0, 7], [-4, 3], [-7, -1], [-7, -4], [-5, -7], [-2, -7], [0, -4], [2, -7], [5, -7], [7, -4], [7, -1], [4, 3]]}
 
 
 def L_poly(f, d, c):

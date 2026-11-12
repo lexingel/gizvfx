@@ -64,8 +64,8 @@ Turn the description into layers (each line is one layer type):
 | speed lines, a dash, lines flying out of an impact | `speedlines` (`count`, `length`, `width`; `radial: true` + `r0` fly out from the centre, otherwise parallel lines with `angle`, `spread`, `travel`; they grow, move and shrink away) |
 | a paint or slime splat with droplets and drips | `splat` (`radius`, `drops`, `reach`, `drips`, `drip_len`; bursts out, runs, then dries away) |
 | comic dots, a spatter or burst of dots that shrink away | `halftone` (`size`, `cell`, `angle`, `tone` = dot size, `fade` + `fade_dir`) |
-| wisps that fly from A to B, energy sucked into a portal | `particles` with `target` (and `curve` to bow them) |
-| crystals, rocks, shards, spikes | `poly` (`shape: crystal | shard | rock | diamond | arrow`, or `points`; animate `scale` and `rotate`) |
+| wisps that fly from A to B, energy sucked into a portal | `particles` with `target` (and `curve`, one number of px, to bow them) |
+| crystals, rocks, shards, spikes | `poly` (`shape: crystal | shard | rock | diamond | arrow | heart`, or `points`; animate `scale` and `rotate`) |
 | the user's own small sprite (a coin, a leaf) | `stamp` (a PNG of at most 32x32 next to the recipe file; `scale` 1 to 4) |
 | an existing effect inside a new one, at another place or time | `include` (`recipe` id or .json path, `options`, `palette`; at most 2 deep; only recipes, not the Python effects) |
 | a projectile on a curve, a spiral, a homing swoop | `at` with 3 or more points `[[x,y],[x,y],[x,y],...]` (a smooth curve), `spin: [radius, turns]` |
@@ -81,6 +81,8 @@ Rules that save rounds:
 - Loops: use only `{"wave": [lo, hi, whole_cycles]}`, particles `stream` with whole `cycles`, orbits with whole `turns`, a `poly` `rotate` of a full turn (`[0, 360]`) and `funnel` `turns`. Things that run on window progress break the seam: `arc` `sweep`, `blob` `drift` and a `rise` that does not return, `smear` on a one-way move. (`blob` `stagger` is ignored in loops for that reason.)
 - `blob` bands: `depth` about 1.3 times the radius gives layered colour; a small depth gives a flat pale blob. `cover` below 0.3 looks like a mesh at 1x: prefer thin layers, a stepped `glow` or a `ring` to dithered fills.
 - A value can have more than two keys: `"size": [0, 20, 0]` grows then shrinks in ONE layer (no second layer needed). `"$reach*0.5"` scales an option. `blob` takes `lit: [-1, -1]` for sphere-like shading, `bolt` takes `rim: "#hex"` (cracks on dark ground), `beam` takes `shade: flat` (no stripes), `blob` takes `erode: [0, 0, 16]` (the body is eaten from its edge: the clean way to dissolve; avoid `cover`), `glow` and `rays` take `squash` (lying on the floor), `particles` take `shape: star` (twinkles).
+- Option values may be negated or scaled: `"to": [0, "-$height"]`, `"$reach*0.5"`, `"-$height*0.5"`. Only numeric options can; anything else is a one-line error.
+- `-o palette=NAME` recolours the layers that use the recipe's own palette. A layer that names its own `palette` (a ramp name or a role like `"@accent"`) keeps it; change those in the recipe.
 - Options make a recipe reusable: `"options": {"radius": 24}` and `"radius": "$radius"` inside; the user then runs `-o radius=40`. `-o palette=NAME` recolours the whole thing.
 - `python gizvfx.py check my.json --report` prints numbers and FLAG lines (mesh dithering, flat colour, lone pixels, empty frames, motion pops) with the fix for each; run it after every render, then still LOOK at the contact sheet. A motion pop on a hit that lands after a flight is intended.
 - Limits (every recipe): at most 40 layers, canvas 8 to 256 px, particle `count` 400, other counts 64 (blob 60). A recipe someone sends you: `python gizvfx.py import FILE.json` validates it, applies the limits, runs `check` and the report, and keeps a copy under `~/.gizvfx/recipes` (it then shows in `gizvfx list`); a recipe never runs code, reads outside its own folder, or fetches anything.
@@ -95,14 +97,32 @@ Rules that save rounds:
 
 ## 4. Painted (hi-res) version of a recipe
 
-`--style ink|watercolor|comic|chalk|linocut|stencil|glitch|lineart` (default ink); `--intensity 0..2` and `--hold N` shape `glitch` (how wrecked it is, and how many frames each glitch pose lasts: 1 = new every frame, 4 = stutter) changes the look of the same recipe: `watercolor` wet edges, granulation and a soft bleed (heals, poison, mist, washes); `comic` flat colour with a black outline (hits, bursts, claw marks, anything that must read at a glance); `chalk` broken, dusty coverage (dust, smoke, rough scribbles); `linocut` is black ink with gouge cuts (the bright core becomes bare paper; reads on light backgrounds); `stencil` is spray paint: a hard core and a mist of overspray dots (splats, graffiti hits); `lineart` keeps only a thin bright outline with a glow (magic, energy; best on dark backgrounds); `glitch` is a broken screen: sliced rows, an RGB split and scanlines, different in every frame (the only style that changes with time); `ink` is the brush look. In the skill claude-drawing the styles that suit effects best are comic (burst frames, speed lines, puffs), ink wash, watercolor, chalk/crayon, spray stencil (splats, drips), linocut (white gouge cuts), CRT/VHS (glitch overlays) and cartoon sparkle/puff vocabulary; all of these but the single-line draw-on trail are built (CRT/VHS became `glitch`; a single-line trail is `lineart` or a thin `brush`).
+`python gizvfx.py painted ID|my.json [--scale 4] [--style STYLE] [--bg #hex|none] [--intensity 0..2] [--hold N]` draws the **same recipe** smooth at 4x the size with a real alpha channel: no palette limit, no dither, bristle lanes with a paint body, soft grain, anti-aliased hatch lines and halftone dots.
 
-`python gizvfx.py painted ID [--scale 4] [--bg #hex|none]` draws the **same recipe** smooth at 4x the size with a real alpha channel (no palette limit, no dither): bristle lanes with a paint body, soft grain, anti-aliased hatch lines and halftone dots. Output: `NAME_painted.gif` and `NAME_painted_sheet.png` + `.json` (transparent frames). `brush hatch halftone burst speedlines splat glow disc ring particles blob star orbit beam funnel bolt rays poly` are drawn natively smooth; `include` is drawn by the same painted renderer (its time stretched over the layer's window) and smoothly upscaled, then styled, so every shipped recipe has a fully native painted version; glows are added as light on top of everything and fall off in the same bands as in the pixel renderer (with soft edges) (a soft glow stays soft in every style; `smear`, `erode`, `outline` and `rim` work in the painted version too). The outermost recipe pixel of a painted frame is always empty. `python -c "from gizvfx import painted; print(painted.check('melee/ink-slash'))"` checks it (deterministic, one-shot ends empty, nothing touches the edge). It is not pixel art: use it for HD or non-pixel projects, and `gizvfx render` for pixel sprites. Pigment is drawn on transparent, so it reads best on light backgrounds.
+Output in `--out`: `NAME_painted.gif`, `NAME_painted_sheet.png` + `.json` (transparent frames, one row) and `NAME_painted_contact.png` (a wrapped grid on a light ground: open this one).
 
+Styles (default `ink`):
+- `ink`: the brush look.
+- `watercolor`: wet edges, granulation, a soft bleed (heals, poison, mist, washes).
+- `comic`: flat colour with a black outline (hits, bursts, claw marks, anything that must read at a glance).
+- `chalk`: broken, dusty coverage (dust, smoke, rough scribbles).
+- `linocut`: black ink with gouge cuts; the bright core becomes bare paper (reads on light backgrounds).
+- `stencil`: spray paint, a hard core and a mist of overspray dots (splats, graffiti hits).
+- `lineart`: only a thin bright outline with a glow (magic, energy; best on dark backgrounds).
+- `glitch`: a broken screen with sliced rows, an RGB split and scanlines, different in every frame (the only style that changes with time). `--intensity` sets how wrecked it is; `--hold N` is how many frames each glitch pose lasts (1 = new every frame, 4 = stutter).
+
+What is drawn natively smooth: `brush hatch halftone burst speedlines splat glow disc ring particles blob star orbit beam funnel bolt rays poly`, plus `smear`, `erode`, `outline` and `rim`. `include` is drawn by the same painted renderer (its time stretched over the layer's window) and smoothly upscaled, then styled. So every recipe has a painted version; the 13 Python effects do not.
+
+Glows are added as light on top of everything and fall off in the same bands as in the pixel renderer, with soft edges. The outermost pixel of a painted frame is always empty.
+
+Check it: `python -c "from gizvfx import painted; print(painted.check('melee/ink-slash'))"` (deterministic, one-shot ends empty, nothing touches the edge).
+
+It is not pixel art: use it for HD or non-pixel projects, and `gizvfx render` for pixel sprites. Pigment is drawn on transparent, so it reads best on light backgrounds (except `lineart` and `glitch`).
 
 ## 5. `fix`: check, repair, write
 
 `python gizvfx.py fix ID|my.json ... [--all] [--out DIR] [--painted STYLE]` renders the effect, repairs what a machine can repair, writes the GIF, sprite sheet, JSON and contact sheet to `--out` plus `NAME_fix.txt`, and prints what is left. Exit 1 when something is left. The original recipe is never changed.
 
 Repaired: a cropped effect gets a bigger canvas (`NAME.fixed.json` is the new recipe; glow counts); one-pixel holes are filled (skipped when there are so many that it is dithering); lone pixels are removed when `check --report` flags them; more than 40 colours are limited to 24; a one-shot that does not end empty fades out over its last 3 frames.
-Left for you (with the fix named in the line): loop that does not close, mesh dithering, flat colour, empty frames, motion pops, Python-code effects that touch the edge (they cannot be resized). `--painted STYLE` also runs the painted check for that style (recipes only).
+Exit code: 0 when nothing must be fixed by hand, 1 when something must be (cropped Python effect, no empty end, loop seam, painted check). Advisory `note:` lines never change the exit code.
+To fix by hand (the fix is named in the line): loop that does not close and Python-code effects that touch the edge (they cannot be resized). Notes (advisory): mesh dithering, flat colour, empty frames, lone pixels, motion pops; a motion pop on a hit that lands after a flight is meant. `--painted STYLE` also runs the painted check for that style (recipes only).

@@ -87,9 +87,10 @@ def main(argv=None):
             ids = sorted(engine.registry()) if a.all else a.ids; left_n = 0
             if not ids: raise ValueError("fix: give an effect id, a recipe .json, or --all")
             for eid in ids:
-                done, left, paths = fix(eid, _opts(a.opt), out=a.out, scale=a.scale, painted_style=a.painted); left_n += bool(left)
-                print(f"{eid}: " + ("; ".join(done) if done else "nothing to fix") + (f"  | LEFT: {len(left)}" if left else "  | clean"))
-                for x in left: print("   - " + x)
+                done, problems, notes, paths = fix(eid, _opts(a.opt), out=a.out, scale=a.scale, painted_style=a.painted); left_n += bool(problems)
+                print(f"{eid}: " + ("; ".join(done) if done else "nothing to fix") + (f"  | TO FIX: {len(problems)}" if problems else "  | clean") + (f" ({len(notes)} notes)" if notes else ""))
+                for x in problems: print("   - " + x)
+                for x in notes: print("   note: " + x)
             return 1 if left_n else 0
         if cmd == "gallery":
             ap = argparse.ArgumentParser(prog="gizvfx gallery"); ap.add_argument("out"); ap.add_argument("--scale", type=int, default=2); a = ap.parse_args(rest)
@@ -115,7 +116,7 @@ def main(argv=None):
             m, meta = engine.get(a.id); given = _opts(a.opt); o = engine.options(meta, given); fps = a.fps or meta.get("fps", 12)
             frames = painted.render(a.id, given, frames=a.frames, fps=fps, scale=a.scale, style=a.style, opts={"intensity": a.intensity, "hold": a.hold}); name = (a.name or meta["id"].split("/")[-1]) + "_" + ("painted" if a.style == "ink" else a.style)
             m2 = dict(meta); m2["pivot"] = tuple(v * a.scale for v in meta["pivot"])
-            for pth in write_all(frames, a.out, name, m2, dict(o), fps, scale=1, contact=False, bg=_bg(a.bg)): print(pth)
+            for pth in write_all(frames, a.out, name, m2, dict(o), fps, scale=1, contact=True, contact_scale=1, contact_bg=(232, 228, 218), bg=_bg(a.bg)): print(pth)
             return 0
     except (KeyError, ValueError) as e:                                                          # recipe errors arrive as ValueError from the draw call too
         print(f"gizvfx: {e.args[0] if e.args else e}", file=sys.stderr); return 2

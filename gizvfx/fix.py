@@ -67,7 +67,7 @@ def _pad_recipe(meta, out, name, pad=8):
 
 
 def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=None):
-    """returns (done list, left list, written paths)"""
+    """returns (done, problems, notes, written paths): problems are what a user must fix (cropping, does not end empty, loop seam, painted check); notes are advisory (mesh, flat colour, motion pops, empty frames, lone pixels)"""
     m, meta = engine.get(eid); name = name or meta["id"].split("/")[-1]; path = eid; done = []
     if "recipe" in meta and not meta.get("tile"):
         for _ in range(4):
@@ -85,14 +85,14 @@ def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=Non
     if len(np.unique(px, axis=0)) > 40: frames = engine.limit_colors(frames, 24); done.append("colours limited to 24")
     if not meta["loop"] and np.array(frames[-1])[..., 3].any(): frames = _fade_out(frames); done.append("faded out over the last 3 frames (it did not end empty)")
     mt, fl = engine.report(path, given, frames)
-    left = _frame_problems(frames, meta) + ["seam: " + b for b in engine.check(path, given) if "loop does not close" in b or "deterministic" in b] + fl
-    if painted_style and "recipe" not in meta: left.append(f"painted {painted_style}: skipped, this effect is drawn by Python code, not a recipe")
+    problems = _frame_problems(frames, meta) + ["seam: " + b for b in engine.check(path, given) if "loop does not close" in b or "deterministic" in b]; notes = list(fl)
+    if painted_style and "recipe" not in meta: notes.append(f"painted {painted_style}: skipped, this effect is drawn by Python code, not a recipe")
     elif painted_style:
         from . import painted
-        left += [f"painted {painted_style}: {b}" for b in painted.check(path, scale, painted_style)]
+        problems += [f"painted {painted_style}: {b}" for b in painted.check(path, scale, painted_style)]
     o = engine.options(meta, given or {}); fps = meta.get("fps", 12)
     paths = write_all(frames, out, name, meta, dict(o), fps, scale=scale, bg=DARK)
     rp = os.path.join(out, name + "_fix.txt")
     with open(rp, "w", encoding="utf-8") as fh:
-        fh.write(f"{meta['id']}\nfixed:\n" + "".join(f"  - {x}\n" for x in done or ["nothing needed fixing"]) + "left for you:\n" + "".join(f"  - {x}\n" for x in left or ["nothing"]))
-    return done, left, paths + ([path] if path != eid else []) + [rp]
+        fh.write(f"{meta['id']}\nfixed:\n" + "".join(f"  - {x}\n" for x in done or ["nothing needed fixing"]) + "to fix by hand:\n" + "".join(f"  - {x}\n" for x in problems or ["nothing"]) + "notes (advisory, e.g. a motion pop that is meant):\n" + "".join(f"  - {x}\n" for x in notes or ["none"]))
+    return done, problems, notes, paths + ([path] if path != eid else []) + [rp]

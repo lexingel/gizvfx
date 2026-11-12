@@ -56,6 +56,6 @@ def run():
     with tempfile.TemporaryDirectory() as d:                                                       # fix: a cropped one-shot comes out clean
         rp = os.path.join(d, "crop.json"); json.dump({"id": "test/crop", "loop": False, "duration": 1.0, "size": [30, 30], "layers": [{"type": "star", "size": [0, 30], "arms": 8, "at": [0, 0]}, {"type": "glow", "radius": [10, 30]}]}, open(rp, "w"))
         from .fix import fix
-        done, left, _ = fix(rp, out=os.path.join(d, "o"), scale=1)
-        assert done and not [x for x in left if "canvas edge" in x or "end empty" in x], (done, left)
+        done, problems, notes, _ = fix(rp, out=os.path.join(d, "o"), scale=1)
+        assert done and not problems, (done, problems)
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0
