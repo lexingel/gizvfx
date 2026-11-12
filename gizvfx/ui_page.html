@@ -36,7 +36,7 @@ header h1 span{color:var(--accent)}
 .grp{display:inline-flex;gap:6px;align-items:center}
 #viewSeg,#bViewT{display:none}
 #modeNote{font-size:12px;color:var(--mut)}
-.seg button[aria-disabled=true]{opacity:.7;color:var(--mut);cursor:default}
+.seg button[aria-disabled=true]{opacity:.85;color:var(--mut);cursor:default}
 main{display:grid;grid-template-columns:250px minmax(0,1fr) 400px;min-height:0}
 aside,section{min-height:0;overflow:auto}
 #list{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
@@ -134,7 +134,7 @@ details.help p{margin:6px 0;color:var(--mut)}
   main[data-view=list] #editor,main[data-view=edit] #list{display:none}
   #json{height:50vh}
 }
-@media(pointer:coarse),(max-width:820px){button,input,select,textarea,.tabs button,.keys summary{min-height:44px}button.icon,.sw{width:44px;height:44px}input[type=checkbox]{width:32px;height:32px;min-height:0}#bar input[type=range]{min-height:44px}.card .hd .title{flex-direction:column;gap:0}.card .hd .title .s{white-space:normal;max-height:2.9em}}
+@media(pointer:coarse),(max-width:820px){button,button.chip,.keys button.key,input,select,textarea,.tabs button,.keys summary,details.help summary{min-height:44px}.keys button.key{min-width:44px}button.icon,.sw{width:44px;height:44px}input[type=checkbox]{width:32px;height:32px;min-height:0}#bar input[type=range]{min-height:44px}.card .hd .title{flex-direction:column;gap:0}.card .hd .title .s{white-space:normal;max-height:2.9em}}
 @media(prefers-reduced-motion:reduce){#busy,#toast{transition:none}}
 </style>
 </head>
