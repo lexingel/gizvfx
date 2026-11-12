@@ -21,7 +21,7 @@ button.icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-widt
 button.chip{padding:3px 9px;border-radius:99px;min-height:28px}
 input,select,textarea{background:#12141a;border:1px solid var(--edge);border-radius:6px;padding:5px 7px;min-width:0;min-height:28px}
 input::placeholder{color:var(--mut);opacity:1}
-input[type=checkbox]{accent-color:var(--accent);width:24px;height:24px;min-height:0}
+input[type=checkbox]{accent-color:var(--accent);width:28px;height:28px;min-height:0}
 input[type=range]{accent-color:var(--accent);padding:0;border:0;background:transparent}
 label{color:var(--mut)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -34,7 +34,7 @@ header h1 span{color:var(--accent)}
 .seg button[aria-pressed=true]{background:var(--accent2);color:var(--accent)}
 .sp{flex:1}
 .grp{display:inline-flex;gap:6px;align-items:center}
-#viewSeg{display:none}
+#viewSeg,#bViewT{display:none}
 #modeNote{font-size:12px;color:var(--mut)}
 .seg button[aria-disabled=true]{opacity:.45;cursor:default}
 main{display:grid;grid-template-columns:250px minmax(0,1fr) 400px;min-height:0}
@@ -122,14 +122,19 @@ details.help p{margin:6px 0;color:var(--mut)}
 @media(max-width:1100px){main{grid-template-columns:200px minmax(0,1fr) 340px}}
 @media(max-width:820px){
   #app{height:100dvh}
-  #viewSeg{display:inline-flex}
+  header{padding:6px 10px;gap:6px}
+  #viewSeg,#bViewT{display:inline-flex}
+  #viewGrp{display:none;flex-basis:100%}
+  #viewGrp.open{display:inline-flex;flex-wrap:wrap}
+  .sp{display:none}
   main{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
-  #stagewrap{grid-row:1;grid-column:1;height:44vh;border-bottom:1px solid var(--line)}
+  #stagewrap{grid-row:1;grid-column:1;height:36vh;border-bottom:1px solid var(--line)}
   #list,#editor{grid-row:2;grid-column:1;border:0}
   #strip{display:none}
   main[data-view=list] #editor,main[data-view=edit] #list{display:none}
   #json{height:50vh}
 }
+@media(pointer:coarse){button,input,select,textarea{min-height:44px}button.icon{width:44px;height:44px}.sw{width:44px;height:44px}input[type=checkbox]{width:32px;height:32px}}
 @media(prefers-reduced-motion:reduce){#busy,#toast{transition:none}}
 </style>
 </head>
@@ -144,10 +149,11 @@ details.help p{margin:6px 0;color:var(--mut)}
   <select id="quality" aria-label="Painted quality" hidden><option value="2">draft 2x</option><option value="3" selected>3x</option><option value="4">final 4x</option></select>
   <div class="seg" id="viewSeg" role="group" aria-label="Show"><button data-v="list" aria-pressed="false">Effects</button><button data-v="edit" aria-pressed="true">Edit</button></div>
   <span class="sp"></span>
-  <div class="grp" id="grounds" role="group" aria-label="Ground behind the effect"></div><button id="bPv" class="chip" aria-pressed="true" title="Show the pivot (the point the effect stands on) and the ground line">Pivot</button>
-  <label class="grp">zoom <select id="zoom"><option value="0">fit</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="6">6x</option><option value="8">8x</option></select></label>
-  <button id="bUndo" class="icon" aria-label="Undo (Ctrl+Z)" title="Undo (Ctrl+Z)" disabled></button>
-  <button id="bRedo" class="icon" aria-label="Redo (Ctrl+Shift+Z)" title="Redo (Ctrl+Shift+Z)" disabled></button>
+  <button id="bViewT" class="chip" aria-expanded="false" aria-controls="viewGrp" title="Ground, pivot and zoom">View</button>
+  <span class="grp" id="viewGrp"><span class="grp" id="grounds" role="group" aria-label="Ground behind the effect"></span><button id="bPv" class="chip" aria-pressed="true" title="Show the pivot (the point the effect stands on) and the ground line">Pivot</button>
+  <label class="grp">zoom <select id="zoom"><option value="0">fit</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="6">6x</option><option value="8">8x</option></select></label></span>
+  <span class="grp"><button id="bUndo" class="icon" aria-label="Undo (Ctrl+Z)" title="Undo (Ctrl+Z)" disabled></button>
+  <button id="bRedo" class="icon" aria-label="Redo (Ctrl+Shift+Z)" title="Redo (Ctrl+Shift+Z)" disabled></button></span>
   <span class="grp"><button id="bNew" class="primary" title="Start a new effect from a glow and a ring">New effect</button><button id="bOpen">Open file</button></span><input type="file" id="file" accept=".json,application/json" hidden>
 </header>
 <main data-view="edit">
@@ -169,7 +175,7 @@ details.help p{margin:6px 0;color:var(--mut)}
       <span id="kind" class="tag"></span>
     </div>
     <div id="rmnote" class="hint" role="status" hidden style="padding:0 12px">Paused because your system prefers reduced motion. Press Play to watch.</div>
-    <div id="strip" aria-hidden="true"></div>
+    <div id="strip" aria-hidden="true" tabindex="-1"></div>
   </section>
   <aside id="editor" aria-label="Editor">
     <div class="tabs" role="tablist" aria-label="Editor sections">
@@ -182,7 +188,7 @@ details.help p{margin:6px 0;color:var(--mut)}
     <div class="pane" id="p-layers" role="tabpanel" aria-labelledby="tab-layers"></div>
     <div class="pane" id="p-json" role="tabpanel" aria-labelledby="tab-json"><textarea id="json" spellcheck="false" aria-label="Recipe JSON" aria-describedby="jsonmsg"></textarea><div id="jsonmsg" class="fmsg" role="alert" hidden></div><div class="row"><button id="bFmt">Format</button><button id="bDl">Download JSON</button></div></div>
     <div class="pane" id="p-check" role="tabpanel" aria-labelledby="tab-check"></div>
-    <div id="foot"><label for="saveName" class="sr">File name</label><input id="saveName" placeholder="file name"><button id="bSave">Save recipe</button><button id="bExport" class="primary">Export GIF + sheet</button><span id="lookNote"></span></div>
+    <div id="foot"><label for="saveName" class="sr">File name</label><input id="saveName" placeholder="file name"><button id="bSave">Save recipe</button><button id="bExport" class="primary" title="Export (Ctrl+Enter)">Export GIF + sheet</button><span id="lookNote"></span></div>
   </aside>
 </main>
 </div>
@@ -196,7 +202,7 @@ let uidN=0;const uid=p=>p+(++uidN);
 const IC={up:'<path d="M3 9l4-4 4 4"/>',down:'<path d="M3 5l4 4 4-4"/>',dup:'<rect x="5" y="5" width="7" height="7" rx="1.2"/><path d="M9 3H3.5A.5.5 0 003 3.5V9"/>',del:'<path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/>',prev:'<path d="M9 3L5 7l4 4"/>',next:'<path d="M5 3l4 4-4 4"/>',undo:'<path d="M5 3.5L2.5 6 5 8.5"/><path d="M3 6h5a3 3 0 010 6H6"/>',redo:'<path d="M9 3.5L11.5 6 9 8.5"/><path d="M11 6H6a3 3 0 000 6h2"/>'};
 const icon=n=>h('span',{html:'<svg viewBox="0 0 14 14" aria-hidden="true">'+IC[n]+'</svg>'}).firstChild;
 function setIcon(btn,n){btn.replaceChildren(icon(n))}
-function toast(t,act){const e=$('#toast');e.replaceChildren(t);if(act)e.append(h('button',{onclick:()=>{act.fn();e.classList.remove('on')}},act.label));e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),act?7000:3500)}
+function toast(t,act){const e=$('#toast');e.replaceChildren(t);if(act)e.append(h('button',{onclick:()=>{act.fn();e.classList.remove('on')}},act.label));e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>{e.classList.remove('on');toast.c=setTimeout(()=>{if(!e.classList.contains('on'))e.replaceChildren()},300)},act?7000:3500);clearTimeout(toast.c)}
 
 const S={recipe:null,id:null,code:false,options:{},mode:'pixel',style:'ink',scale:3,ground:'#1b1d24',zoom:0,frames:[],idx:0,fps:12,loop:true,base:[96,96],playing:!matchMedia('(prefers-reduced-motion: reduce)').matches,hold:0,meta:null,effects:[],tab:'effect',sel:-1,optsSig:'',res:null,check:null,renderErr:null,fixed:null,dirty:false,last:'',name:''};
 const HI={stack:[],redo:[]};
@@ -214,27 +220,32 @@ function edit(key,label){key=key||'x';if(editT&&key!==editK){clearTimeout(editT)
   if(!editT){HI.stack.push({s:S.last,l:label||'edit'});if(HI.stack.length>80)HI.stack.shift();HI.redo.length=0;updHist()}
   editK=key;clearTimeout(editT);editT=setTimeout(()=>{editT=null},800);S.last=snap();S.dirty=true;setTitle();touch();syncJson();renderSummaries()}
 const stepKey=()=>'s'+(++uidN);
-function forcePixel(){S.mode='pixel';[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m==='pixel'));$('#style').hidden=$('#quality').hidden=true}
+function forcePixel(){S.wantPainted=S.mode==='painted';S.mode='pixel';[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m==='pixel'));$('#style').hidden=$('#quality').hidden=true}
 function load(st,keepOpts){S.recipe=st.recipe||null;S.id=st.id||null;S.openedId=st.openedId||null;S.code=!S.recipe;if(!keepOpts)S.options=st.options||{};
   S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.renderErr=null;S.res=null;S.idx=0;clearTimeout(editT);editT=null;
   const forced=S.code&&S.mode==='painted';if(forced)forcePixel();S.last=snap();afterLoad();return forced}
 const PYTOAST='Painted needs a recipe. This effect is drawn by Python, so it is shown as Pixel.';
-function restore(str){const forced=load(JSON.parse(str),true);updHist();if(forced)toast(PYTOAST)}
+function restore(str){const forced=load(JSON.parse(str),true);updHist();if(forced)toast(PYTOAST);else if(!S.code&&S.wantPainted){S.wantPainted=false;setMode('painted')}}
 function undo(){if(!HI.stack.length)return;const e=HI.stack.pop();HI.redo.push({s:snap(),l:e.l});restore(e.s)}
 function redo(){if(!HI.redo.length)return;const e=HI.redo.pop();HI.stack.push({s:snap(),l:e.l});restore(e.s)}
 $('#bUndo').onclick=undo;$('#bRedo').onclick=redo;setIcon($('#bUndo'),'undo');setIcon($('#bRedo'),'redo');setIcon($('#bPrev'),'prev');setIcon($('#bNext'),'next');
-function replaceWith(state,msg){const wasDirty=S.dirty&&(S.recipe||S.id);if(S.recipe||S.id){HI.stack.push({s:snap(),l:'open another effect'});if(HI.stack.length>80)HI.stack.shift()}HI.redo.length=0;
+function replaceWith(state,msg){const wasDirty=S.dirty&&(S.recipe||S.id);if(S.recipe||S.id){HI.stack.push({s:snap(),l:'open another effect'});if(HI.stack.length>80)HI.stack.shift()}HI.redo.length=0;S.wantPainted=false;
   const forced=load(state,false);S.dirty=false;setTitle();updHist();
   if(forced)toast(PYTOAST);
   else if(wasDirty)toast((msg||'Effect replaced')+'. Your earlier edits are one undo away.',{label:'Undo',fn:undo})}
 function afterLoad(){S.renderErr=null;showErr(null);clearStage();staleStage(false);setBadge('',null);S.name=S.recipe?(S.recipe.name||S.recipe.id||''):(S.effects.find(e=>e.id===S.id)?.name||'');setTitle();$('#modeSeg [data-m=painted]').setAttribute('aria-disabled',String(S.code));$('#modeNote').hidden=!S.code;buildList();renderEditor();updFoot();updLook();touch()}
 
 // ---------- errors in plain words
+const TXT=new Set(['type','id','shape','clip','include','palette','ease','style','text','color','from','to','name','role','mode','stamp','tint','kind','anchor','follow','target','wave']);
+function lev(a,b){const d=Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]);for(let j=1;j<=b.length;j++)d[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]}
 function friendly(raw){let m=String(raw),where='',layer=null,changed=false;const L=m.match(/^layer (\d+)(?: \((\w+)\))?: ([\s\S]*)$/);if(L){layer=+L[1];where='Layer '+(layer+1)+(L[2]?' ('+L[2]+')':'')+': ';m=L[3]}
   m=m.replace(/^(TypeError|ValueError|KeyError|IndexError|ZeroDivisionError|AttributeError): /,'');
   const t=m.replace(/\. (Types|Keys): [\s\S]*$/,'.');if(t!==m){m=t;changed=true}
   if(/not supported between instances|can't multiply|must be real number|unsupported operand|can only concatenate|could not convert|object is not (iterable|subscriptable)/.test(m)){m='a value that should be a number is text, or a list sits where one number goes. Check the numbers in this layer.';changed=true}
   else if(/drawn by Python code; only recipes/.test(m)){m='this effect is drawn by Python code, so it has no painted look.';changed=true}
+  if(layer!=null&&S.recipe&&S.meta){const lay=(S.recipe.layers||[])[layer],un=m.match(/type '([^']*)' is unknown/);
+    if(un){const near=[...S.meta.layers].map(t=>[lev(t,un[1]),t]).sort((a,b)=>a[0]-b[0]).slice(0,4).map(x=>x[1]);m+=' Closest types: '+near.join(', ')+'.';changed=true}
+    else if(m.startsWith('a value that should be a number')&&lay){const bad=Object.entries(lay).filter(([k,v])=>!TXT.has(k)&&(typeof v==='string'||(Array.isArray(v)&&v.some(x=>typeof x==='string')))).map(x=>x[0]);if(bad.length)m+=' Look at: '+bad.join(', ')+'.'}}
   return{text:where+m,layer,raw:changed?String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1)):null}}
 function rawDetails(raw){return raw?h('details',{},h('summary',{},'original message'),h('small',{},raw)):null}
 function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';e.append(f.text);const d=rawDetails(f.raw);if(d)e.append(d)}
@@ -277,7 +288,8 @@ $('#bPlay').onclick=()=>play(!S.playing);
 const step=d=>{if(!S.frames.length)return;play(false);S.idx=(S.idx+d+S.frames.length)%S.frames.length;draw()};
 $('#bPrev').onclick=()=>step(-1);$('#bNext').onclick=()=>step(1);
 $('#scrub').oninput=e=>{play(false);S.idx=+e.target.value;draw()};
-addEventListener('keydown',e=>{const t=e.target,tag=t.tagName,typing=/INPUT|TEXTAREA|SELECT/.test(tag)&&t.type!=='range'&&t.type!=='checkbox';
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();exportFx();return}
+  const t=e.target,tag=t.tagName,typing=/INPUT|TEXTAREA|SELECT/.test(tag)&&t.type!=='range'&&t.type!=='checkbox';
   if((e.ctrlKey||e.metaKey)&&!typing){const k=e.key.toLowerCase();if(k==='z'){e.preventDefault();e.shiftKey?redo():undo();return}if(k==='y'){e.preventDefault();redo();return}if(k==='s'&&S.recipe){e.preventDefault();save();return}}
   if(typing||e.ctrlKey||e.metaKey||e.altKey)return;
   if(e.code==='Space'&&!t.closest('button,summary,a,[role=option],[role=tab],input')){e.preventDefault();play(!S.playing)}
@@ -286,11 +298,12 @@ addEventListener('resize',fit);
 $('#zoom').onchange=e=>{S.zoom=e.target.value;fit()};
 
 // ---------- header
-function setMode(m){if(m==='painted'&&S.code){toast('Painted needs a recipe. This effect is drawn by Python code.');return}S.mode=m;[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));$('#style').hidden=$('#quality').hidden=m!=='painted';S.optsSig='';if(S.recipe)renderEffect();updLook();touch()}
+function setMode(m){S.wantPainted=false;if(m==='painted'&&S.code){toast('Painted needs a recipe. This effect is drawn by Python code.');return}S.mode=m;[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));$('#style').hidden=$('#quality').hidden=m!=='painted';S.optsSig='';if(S.recipe)renderEffect();updLook();touch()}
 $('#modeSeg').onclick=e=>{const b=e.target.closest('button');if(b)setMode(b.dataset.m)};
 $('#style').onchange=e=>{S.style=e.target.value;updLook();touch()};
 $('#quality').onchange=e=>{S.scale=+e.target.value;touch()};
 GROUNDS.forEach(([g,n])=>$('#grounds').append(h('button',{class:'sw',title:n+' ground','aria-label':n+' ground','aria-pressed':'false','data-g':g,style:g==='checker'?'background:conic-gradient(#666 25%,#333 0 50%,#666 0 75%,#333 0) 0 0/8px 8px':'background:'+g,onclick:()=>setGround(g)})));
+$('#bViewT').onclick=e=>{const o=$('#viewGrp').classList.toggle('open');e.currentTarget.setAttribute('aria-expanded',String(o))};
 function setView(v){$('main').dataset.view=v;[...$('#viewSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));fit()}
 $('#viewSeg').onclick=e=>{const b=e.target.closest('button');if(b)setView(b.dataset.v)};
 
@@ -371,7 +384,7 @@ function renderLayers(){
   p.append(h('div',{class:'row',role:'group','aria-label':'Add a layer'},...COMMON_TYPES.map(t=>h('button',{class:'chip',onclick:()=>addLayer(t)},'+ '+t)),more),
     h('div',{class:'hint'},r.layers.length?'Layers draw in this order: the last one is on top. Edit a layer as JSON; the key list under it shows what it accepts.':'No layers yet. Add one above: a glow or a ring is a good start.'));
   r.layers.forEach((l,i)=>{
-    const msgId=uid('lm');const msg=h('div',{class:'fmsg',id:msgId,role:'alert',hidden:true});
+    const msgId=uid('lm');const msg=h('div',{class:'fmsg',id:msgId,role:'status',hidden:true});
     const keys=h('div',{class:'keys'});
     const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' ('+l.type+') JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;if(v.type!==e.target.dataset.type){e.target.dataset.type=v.type;e.target.setAttribute('aria-label','Layer '+(i+1)+' ('+v.type+') JSON');fillKeys(v.type)}edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
     ta.value=fmtLayer(l);ta.dataset.type=l.type;
@@ -403,15 +416,15 @@ async function exportFx(){toast('Exporting...');const r=await api('/api/export',
   for(const[n,b64]of Object.entries(r.files)){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);download(n,new Blob([u]))}toast('Exported. A copy is also in '+r.folder)}
 
 // ---------- check and fix
-function setBadge(cls,n){const b=$('#badge');b.className='badge '+cls;b.textContent=cls==='ok'?'ok':n==null?'...':String(n);$('#badgeSr').textContent='Check result: '+(cls==='ok'?'clean':cls==='bad'?n+' problem(s)':cls==='warn'?n+' note(s)':'running')}
+function setBadge(cls,n){const b=$('#badge');b.className='badge '+cls;b.textContent=cls==='ok'?'ok':n==null?'...':cls==='warn'?'\u2022':String(n);$('#badgeSr').textContent='Check result: '+(cls==='ok'?'clean':cls==='bad'?n+' problem(s)':cls==='warn'?n+' note(s)':'running')}
 function scheduleCheck(){clearTimeout(tC);S.check=null;setBadge('',null);tC=setTimeout(runCheck,500)}
 async function runCheck(){if(S.renderErr)return;const my=seq;const r=await api('/api/check',payload());if(my!==seq)return;S.check=r;if(r.error)setBadge('bad',1);else setBadge(r.problems.length?'bad':r.flags.length?'warn':'ok',r.problems.length||r.flags.length);renderCheck()}
-function msg(cls,text,raw){return h('div',{class:'msg '+cls,role:cls==='bad'?'alert':null},text,raw&&raw!==text?rawDetails(raw):null)}
+function msg(cls,text,raw,quiet){return h('div',{class:'msg '+cls,role:cls==='bad'&&!quiet?'alert':null},text,raw&&raw!==text?rawDetails(raw):null)}
 function renderCheck(){
   const p=$('#p-check');p.replaceChildren();const c=S.check;
   const need=c&&!c.error&&!S.renderErr&&(c.problems.length||c.flags.length);
-  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:need?'primary':'',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. Your recipe changes only if you press Use.')));
-  if(S.renderErr){const f=S.renderErr,d=msg('bad','The effect cannot be drawn. '+f.text,f.raw);if(f.layer!=null&&S.recipe)d.append(h('button',{onclick:()=>{tab('layers');S.sel=f.layer;renderLayers();document.querySelectorAll('#p-layers .card')[f.layer]?.scrollIntoView({block:'nearest'});document.querySelectorAll('#p-layers textarea')[f.layer]?.focus()}},'Go to layer '+(f.layer+1)));p.append(d)}
+  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:need?'primary':'',disabled:!!S.renderErr,title:S.renderErr?'Correct the drawing error first':'',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. Your recipe changes only if you press Use.')));
+  if(S.renderErr){const f=S.renderErr,d=msg('bad','The effect cannot be drawn. '+f.text,f.raw,true);if(f.layer!=null&&S.recipe)d.append(h('button',{onclick:()=>{tab('layers');S.sel=f.layer;renderLayers();document.querySelectorAll('#p-layers .card')[f.layer]?.scrollIntoView({block:'nearest'});document.querySelectorAll('#p-layers textarea')[f.layer]?.focus()}},'Go to layer '+(f.layer+1)));p.append(d)}
   else if(!c)p.append(h('div',{class:'hint'},'Checking...'));
   else if(c.error){const fe=friendly(c.error);p.append(msg('bad',fe.text,fe.raw))}
   else{if(!c.problems.length&&!c.flags.length)p.append(msg('ok','Clean: deterministic, '+(S.loop?'the loop closes':'ends empty')+', nothing touches the edge.'));else if(!c.problems.length)p.append(msg('ok','No blocking problems. '+c.flags.length+' note'+(c.flags.length>1?'s':'')+' below for you to judge.'));
