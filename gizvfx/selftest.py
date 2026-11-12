@@ -138,4 +138,11 @@ def run():
         pf_ = _pt.render(os.path.join(d, "r.json"), {}, scale=2); assert int((np.array(pf_[0])[..., 3] > 40).sum()) > 2 * int((np.array(pf_[-2])[..., 3] > 40).sum())
         json.dump({"id": "test/e", "duration": 1, "size": [40, 40], "pivot": [20, 30], "layers": [{"type": "ring", "radius": 8, "thick": 2}, {"type": "beam", "from": [0, 0], "to": [0, -40], "width": 4}]}, open(os.path.join(d, "e.json"), "w"))
         assert any("layers touching the edge: 1 beam" in b for b in engine.check(os.path.join(d, "e.json")))
+    from . import ui as _ui                                                                    # the UI's API calls, without HTTP
+    with tempfile.TemporaryDirectory() as d:
+        w_ = _ui.Work(d); assert any(e["id"] == "fire/torch" for e in _ui.api_list()["effects"]) and "ring" in _ui.api_meta()["layers"]
+        r_ = _ui.api_render(w_, {"id": "fire/torch"}); assert len(r_["frames"]) > 4
+        rec_ = _ui.api_recipe("holy/smite")["recipe"]; r2_ = _ui.api_render(w_, {"recipe": rec_, "mode": "painted", "scale": 2, "style": "chalk"}); assert r2_["w"] == 2 * r2_["base"][0] and r2_["is_recipe"]
+        assert _ui.api_check(w_, {"recipe": rec_})["problems"] == [] and "problems" in _ui.api_fix(w_, {"recipe": rec_})
+        assert os.path.exists(_ui.api_save(w_, {"name": "x y", "recipe": rec_})["path"])
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

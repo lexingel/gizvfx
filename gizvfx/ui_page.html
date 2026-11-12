@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GizVFX</title>
+<style>
+:root{--bg:#13151b;--panel:#1a1d25;--panel2:#20242e;--line:#2b303c;--text:#e7e9ef;--mut:#8b93a5;--accent:#ffb454;--accent2:#3a2c14;--ok:#7bd88f;--bad:#ff6b6b;--warn:#f2cc60;--r:7px}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:5px 10px;cursor:pointer}
+button:hover{border-color:#44495a}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#1b1306;font-weight:600}
+button.ghost{background:transparent}
+button.icon{padding:3px 7px;line-height:1}
+input,select,textarea{background:#12141a;border:1px solid var(--line);border-radius:6px;padding:5px 7px;min-width:0}
+input[type=checkbox]{accent-color:var(--accent)}
+input[type=range]{accent-color:var(--accent);padding:0}
+label{color:var(--mut)}
+#app{display:grid;grid-template-rows:auto 1fr;height:100%}
+header{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+header h1{font-size:15px;margin:0 6px 0 0;letter-spacing:.3px}
+header h1 span{color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button.on{background:var(--accent2);color:var(--accent)}
+.sp{flex:1}
+main{display:grid;grid-template-columns:250px minmax(0,1fr) 400px;min-height:0}
+aside,section{min-height:0;overflow:auto}
+#list{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
+#list .top{padding:8px;display:flex;gap:6px;position:sticky;top:0;background:var(--panel);z-index:1}
+#list .top input{flex:1}
+#items{overflow:auto;padding:0 6px 12px}
+.cat{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.8px;margin:12px 6px 4px}
+.item{display:block;width:100%;text-align:left;border:1px solid transparent;background:transparent;padding:5px 8px;border-radius:6px}
+.item:hover{background:var(--panel2)}
+.item.on{background:var(--accent2);border-color:#5a4220}
+.item small{color:var(--mut);display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-size:10px;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--mut);margin-left:4px}
+#stagewrap{display:flex;flex-direction:column;min-width:0;min-height:0}
+#stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#1b1d24}
+#stage.checker{background:conic-gradient(#2a2d36 25%,#1f2128 0 50%,#2a2d36 0 75%,#1f2128 0) 0 0/24px 24px}
+#cv{image-rendering:pixelated;max-width:none}
+#cv.smooth{image-rendering:auto}
+#busy{position:absolute;top:10px;right:12px;color:var(--mut);font-size:12px;opacity:0;transition:opacity .15s}
+#busy.on{opacity:1}
+#err{position:absolute;left:12px;right:12px;bottom:10px;background:#3a1618;border:1px solid #7a2b30;color:#ffc9c9;border-radius:var(--r);padding:8px 10px;display:none;white-space:pre-wrap;max-height:35%;overflow:auto}
+#bar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);background:var(--panel)}
+#bar input[type=range]{flex:1}
+#fc{min-width:64px;text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+#strip{display:flex;gap:4px;padding:6px 12px;overflow-x:auto;border-top:1px solid var(--line);background:var(--panel);min-height:78px}
+#strip canvas{height:64px;flex:none;border:1px solid var(--line);border-radius:4px;cursor:pointer;background:#1b1d24;image-rendering:pixelated}
+#strip canvas.on{border-color:var(--accent)}
+#editor{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
+.tabs{display:flex;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.tabs button{flex:1;border:0;border-radius:0;background:transparent;border-bottom:2px solid transparent;padding:9px 4px;color:var(--mut)}
+.tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
+.tabs .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:5px;background:var(--mut)}
+.tabs .dot.ok{background:var(--ok)}.tabs .dot.bad{background:var(--bad)}.tabs .dot.warn{background:var(--warn)}
+.pane{padding:12px;overflow:auto;display:none}
+.pane.on{display:block}
+.grid2{display:grid;grid-template-columns:88px 1fr;gap:6px 10px;align-items:center}
+.row{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap}
+h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin:16px 0 6px;font-weight:600}
+h3:first-child{margin-top:0}
+.card{border:1px solid var(--line);border-radius:var(--r);margin:8px 0;background:var(--panel2)}
+.card.sel{border-color:#6b4d22}
+.card .hd{display:flex;gap:6px;align-items:center;padding:6px 8px;cursor:pointer}
+.card .hd b{font-weight:600}
+.card .hd .s{color:var(--mut);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card textarea{width:calc(100% - 16px);margin:0 8px 8px;font:12px/1.4 ui-monospace,Consolas,monospace;resize:vertical;min-height:70px;white-space:pre-wrap}
+.card textarea.bad{border-color:var(--bad)}
+.keys{margin:0 8px 8px;font-size:12px;color:var(--mut)}
+.keys code{color:var(--accent);cursor:pointer}
+.keys p{margin:2px 0}
+#json{width:100%;height:calc(100vh - 190px);font:12px/1.4 ui-monospace,Consolas,monospace;white-space:pre;resize:none}
+#json.bad{border-color:var(--bad)}
+.msg{margin:6px 0;padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel2)}
+.msg.bad{border-color:#7a2b30;background:#2a1517}.msg.ok{border-color:#2c5a38;background:#14231a}.msg.warn{border-color:#6a5a22;background:#262211}
+.hint{color:var(--mut);font-size:12px;margin:4px 0}
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:80vw;z-index:9}
+#toast.on{opacity:1}
+.sw{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);padding:0}
+.sw.on{outline:2px solid var(--accent)}
+@media(max-width:1100px){main{grid-template-columns:200px minmax(0,1fr) 340px}}
+@media(max-width:820px){main{grid-template-columns:1fr;overflow:auto}#list,#editor{border:0;max-height:60vh}#stage{min-height:50vh}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <h1><span>Giz</span>VFX</h1>
+  <div class="seg" id="modeSeg" role="group" aria-label="Look"><button data-m="pixel" class="on">Pixel</button><button data-m="painted">Painted</button></div>
+  <select id="style" aria-label="Painted style" hidden></select>
+  <select id="quality" aria-label="Painted quality" hidden><option value="2">draft 2x</option><option value="3" selected>3x</option><option value="4">final 4x</option></select>
+  <span class="sp"></span>
+  <span id="grounds" role="group" aria-label="Ground"></span>
+  <label>zoom <select id="zoom"><option value="0">fit</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="6">6x</option><option value="8">8x</option></select></label>
+  <button id="bNew">New</button>
+  <button id="bOpen">Open file</button><input type="file" id="file" accept=".json,application/json" hidden>
+</header>
+<main>
+  <aside id="list">
+    <div class="top"><input id="q" type="search" placeholder="Search effects" aria-label="Search effects"></div>
+    <div id="items"></div>
+  </aside>
+  <section id="stagewrap">
+    <div id="stage"><canvas id="cv" width="96" height="96"></canvas><div id="busy">drawing</div><div id="err" role="alert"></div></div>
+    <div id="bar">
+      <button id="bPlay" class="icon" aria-label="Play or pause (space)">Pause</button>
+      <button id="bPrev" class="icon" aria-label="Previous frame">&#8592;</button>
+      <input id="scrub" type="range" min="0" max="0" value="0" aria-label="Frame">
+      <button id="bNext" class="icon" aria-label="Next frame">&#8594;</button>
+      <span id="fc">0 / 0</span>
+      <span id="kind" class="tag"></span>
+    </div>
+    <div id="strip" aria-label="All frames"></div>
+  </section>
+  <aside id="editor">
+    <div class="tabs" role="tablist">
+      <button data-t="effect" class="on">Effect</button><button data-t="layers">Layers</button><button data-t="json">JSON</button><button data-t="check">Check <i class="dot" id="dot"></i></button>
+    </div>
+    <div class="pane on" id="p-effect"></div>
+    <div class="pane" id="p-layers"></div>
+    <div class="pane" id="p-json"><textarea id="json" spellcheck="false" aria-label="Recipe JSON"></textarea><div class="row"><button id="bFmt">Format</button><button id="bDl">Download JSON</button></div></div>
+    <div class="pane" id="p-check"></div>
+  </aside>
+</main>
+</div>
+<div id="toast" role="status"></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s);
+function h(tag,props={},...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(props||{})){if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(k==='value'||k==='checked'||k==='disabled'||k==='hidden')e[k]=v;else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v)}for(const c of kids.flat())if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(String(c)));return e}
+async function api(path,body){const r=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),3200)}
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
+
+const S={recipe:null,id:null,options:{},mode:'pixel',style:'ink',scale:3,ground:'#1b1d24',zoom:0,frames:[],idx:0,fps:12,loop:true,base:[96,96],playing:true,hold:0,meta:null,effects:[],tab:'effect',sel:-1,optsSig:'',res:null,check:null,fixed:null};
+const GROUNDS=[['#1b1d24','dark'],['#a08c64','mid'],['#f4efe4','light'],['checker','checker']];
+const TEMPL={glow:{type:'glow',radius:[8,30]},ring:{type:'ring',radius:[2,30],thick:[4,0]},particles:{type:'particles',count:20,life:[0.5,0.8],speed:[10,30],size:[3,3]},burst:{type:'burst',radius:[4,24]},beam:{type:'beam',from:[0,0],to:[0,-40],width:6},bolt:{type:'bolt',from:[-20,0],to:[20,0],width:3},rays:{type:'rays',count:8,inner:4,length:14,width:3},orbit:{type:'orbit',count:3,radius:14,size:3},poly:{type:'poly',shape:'crystal'}};
+
+// ---------- rendering pipeline
+let seq=0,tR,tC;
+function payload(extra){const b={mode:S.mode,style:S.style,scale:S.scale,options:S.options,...extra};if(S.recipe)b.recipe=S.recipe;else b.id=S.id;return b}
+function touch(){clearTimeout(tR);$('#busy').classList.add('on');tR=setTimeout(doRender,200)}
+async function doRender(){
+  if(!S.recipe&&!S.id)return;const my=++seq;let res;
+  try{res=await api('/api/render',payload())}catch(e){res={error:String(e)}}
+  if(my!==seq)return;$('#busy').classList.remove('on');
+  if(res.error){showErr(res.error);return}
+  showErr('');const imgs=await Promise.all(res.frames.map(b=>loadImg('data:image/png;base64,'+b)));if(my!==seq)return;
+  S.frames=imgs;S.fps=res.fps;S.loop=res.loop;S.base=res.base;S.res=res;S.idx=Math.min(S.idx,imgs.length-1);
+  $('#cv').classList.toggle('smooth',S.mode==='painted');
+  $('#scrub').max=imgs.length-1;$('#kind').textContent=res.loop?'loop':'one-shot';
+  buildStrip();fit();draw();buildOptions();scheduleCheck();
+}
+function showErr(t){const e=$('#err');e.textContent=t;e.style.display=t?'block':'none'}
+
+// ---------- stage
+function fit(){const st=$('#stage'),[bw,bh]=S.base;let z=+S.zoom;if(!z)z=Math.max(1,Math.floor(Math.min((st.clientWidth-30)/bw,(st.clientHeight-30)/bh)));const cv=$('#cv');cv.style.width=bw*z+'px';cv.style.height=bh*z+'px'}
+function draw(){const im=S.frames[S.idx];if(!im)return;const cv=$('#cv');if(cv.width!==im.width||cv.height!==im.height){cv.width=im.width;cv.height=im.height}const c=cv.getContext('2d');c.imageSmoothingEnabled=S.mode==='painted';c.clearRect(0,0,cv.width,cv.height);c.drawImage(im,0,0);
+  $('#scrub').value=S.idx;$('#fc').textContent=(S.idx+1)+' / '+S.frames.length;[...$('#strip').children].forEach((c,i)=>c.classList.toggle('on',i===S.idx))}
+function buildStrip(){const s=$('#strip');s.replaceChildren();S.frames.forEach((im,i)=>{const c=h('canvas',{width:im.width,height:im.height,title:'frame '+(i+1),onclick:()=>{S.idx=i;S.playing=false;$('#bPlay').textContent='Play';draw()}});c.getContext('2d').drawImage(im,0,0);s.append(c)})}
+function setGround(g){S.ground=g;const st=$('#stage');st.classList.toggle('checker',g==='checker');st.style.background=g==='checker'?'':g;[...$('#grounds').children].forEach(b=>b.classList.toggle('on',b.dataset.g===g));if(S.mode==='painted'&&false)touch()}
+let last=0;function loop(ts){requestAnimationFrame(loop);if(!S.playing||S.frames.length<2)return;if(ts-last<1000/S.fps)return;last=ts;
+  if(S.idx>=S.frames.length-1){if(S.loop){S.idx=0}else{if(++S.hold>4){S.hold=0;S.idx=0}else{draw();return}}}else S.idx++;draw()}
+requestAnimationFrame(loop);
+function play(on){S.playing=on;$('#bPlay').textContent=on?'Pause':'Play'}
+$('#bPlay').onclick=()=>play(!S.playing);
+$('#bPrev').onclick=()=>{play(false);S.idx=(S.idx-1+S.frames.length)%S.frames.length;draw()};
+$('#bNext').onclick=()=>{play(false);S.idx=(S.idx+1)%S.frames.length;draw()};
+$('#scrub').oninput=e=>{play(false);S.idx=+e.target.value;draw()};
+addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)&&e.target.type!=='range')return;if(e.code==='Space'){e.preventDefault();play(!S.playing)}else if(e.key==='ArrowLeft')$('#bPrev').click();else if(e.key==='ArrowRight')$('#bNext').click()});
+addEventListener('resize',fit);
+$('#zoom').onchange=e=>{S.zoom=e.target.value;fit()};
+
+// ---------- header
+function setMode(m){S.mode=m;[...$('#modeSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.m===m));$('#style').hidden=$('#quality').hidden=m!=='painted';touch()}
+$('#modeSeg').onclick=e=>{if(e.target.dataset.m)setMode(e.target.dataset.m)};
+$('#style').onchange=e=>{S.style=e.target.value;touch()};
+$('#quality').onchange=e=>{S.scale=+e.target.value;touch()};
+GROUNDS.forEach(([g,n])=>$('#grounds').append(h('button',{class:'sw',title:n,'data-g':g,style:g==='checker'?'background:conic-gradient(#555 25%,#333 0 50%,#555 0 75%,#333 0) 0 0/8px 8px':'background:'+g,onclick:()=>setGround(g)})));
+
+// ---------- effect list
+function buildList(){
+  const q=$('#q').value.toLowerCase(),box=$('#items');box.replaceChildren();let cat=null;
+  for(const e of S.effects){if(q&&!(e.id+' '+e.name+' '+e.about+' '+e.tags.join(' ')).toLowerCase().includes(q))continue;const c=e.id.split('/')[0];
+    if(c!==cat){cat=c;box.append(h('div',{class:'cat'},c))}
+    box.append(h('button',{class:'item'+(e.id===S.id?' on':''),'data-id':e.id,onclick:()=>openEffect(e.id)},h('span',{},e.id.split('/')[1]),h('span',{class:'tag'},e.loop?'loop':'once'),e.recipe?null:h('span',{class:'tag'},'code'),h('small',{},e.about||e.name)))}}
+$('#q').oninput=buildList;
+async function openEffect(id){
+  const r=await api('/api/recipe?id='+encodeURIComponent(id));if(r.error){toast(r.error);return}
+  S.id=id;S.recipe=r.recipe||null;S.options={};S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.idx=0;buildList();renderEditor();touch()}
+function setRecipe(r,keepOptions){S.recipe=r;S.id=null;if(!keepOptions){S.options={};S.optsSig=''}S.fixed=null;S.idx=0;buildList();renderEditor();touch()}
+$('#bNew').onclick=()=>setRecipe(JSON.parse(JSON.stringify(S.meta.new)));
+$('#bOpen').onclick=()=>$('#file').click();
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{setRecipe(JSON.parse(await f.text()))}catch(x){toast('Not valid JSON: '+x.message)}e.target.value=''};
+
+// ---------- editor
+function edit(){touch();syncJson();renderSummaries()}
+function tab(t){S.tab=t;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t))}
+$('.tabs').onclick=e=>{if(e.target.dataset.t)tab(e.target.dataset.t)};
+const num=(v,d)=>{const n=parseFloat(v);return isFinite(n)?n:d};
+function renderEditor(){renderEffect();renderLayers();syncJson();renderCheck()}
+
+function renderEffect(){
+  const p=$('#p-effect');p.replaceChildren();const r=S.recipe;
+  if(!r){p.append(h('div',{class:'msg'},'This effect is drawn by Python code, so there is no recipe to edit. You can recolour it and change its options below, and watch it in every look.'),h('div',{id:'optsBox'}));buildOptions(true);return}
+  const f=(k,type='text',attrs={})=>h('input',{type,value:r[k]??'',...attrs,oninput:e=>{r[k]=type==='number'?num(e.target.value,r[k]):e.target.value;edit()}});
+  const sz=i=>h('input',{type:'number',min:8,max:256,value:r.size?.[i]??96,style:'width:70px',oninput:e=>{r.size=r.size||[96,96];r.size[i]=Math.round(num(e.target.value,96));edit()}});
+  const pv=i=>h('input',{type:'number',value:r.pivot?.[i]??'',placeholder:'centre',style:'width:70px',oninput:e=>{const v=e.target.value;if(v===''){delete r.pivot}else{r.pivot=r.pivot||[Math.floor((r.size?.[0]||96)/2),Math.floor((r.size?.[1]||96)/2)];r.pivot[i]=Math.round(num(v,0))}edit()}});
+  const pal=h('select',{onchange:e=>{r.palette=e.target.value;edit()}},...S.meta.palettes.map(n=>h('option',{value:n,selected:r.palette===n},n)));
+  if(typeof r.palette!=='string'||!S.meta.palettes.includes(r.palette))pal.prepend(h('option',{value:r.palette,selected:true},'custom'));
+  p.append(h('h3',{},'Effect'),h('div',{class:'grid2'},h('label',{},'name'),f('name'),h('label',{},'id'),f('id'),h('label',{},'about'),f('about'),
+    h('label',{},'duration s'),f('duration','number',{step:0.1,min:0.1}),h('label',{},'fps'),f('fps','number',{min:1,max:60}),h('label',{},'size w x h'),h('div',{class:'row',style:'margin:0'},sz(0),sz(1)),
+    h('label',{},'pivot x, y'),h('div',{class:'row',style:'margin:0'},pv(0),pv(1)),h('label',{},'palette'),pal,h('label',{},'loop'),h('input',{type:'checkbox',checked:!!r.loop,onchange:e=>{r.loop=e.target.checked;edit()}})),
+    h('div',{class:'hint'},'The pivot is where the effect stands (feet, centre of a blast); layers are placed relative to it.'),
+    h('h3',{},'Try options (do not change the recipe)'),h('div',{id:'optsBox'}),
+    h('h3',{},'Save and export'),h('div',{class:'row'},h('input',{id:'saveName',placeholder:'file name',value:(r.id||'effect').split('/').pop(),style:'flex:1'}),h('button',{onclick:save},'Save recipe')),
+    h('div',{class:'row'},h('button',{class:'primary',onclick:()=>exportFx()},'Export GIF + sheet'),h('span',{class:'hint'},'current look: '+S.mode+(S.mode==='painted'?' '+S.style:''))));
+  buildOptions(true)}
+
+function buildOptions(force){
+  const box=$('#optsBox');if(!box||!S.res)return;const o=S.res.options,ro=S.res.recipe_options||{};const sig=JSON.stringify([Object.keys(o),S.id||S.recipe?.id]);if(!force&&sig===S.optsSig&&box.children.length)return;S.optsSig=sig;box.replaceChildren();
+  const set=(k,v)=>{if(v===''||v==null)delete S.options[k];else S.options[k]=v;touch()};
+  const palSel=h('select',{onchange:e=>set('palette',e.target.value||null)},h('option',{value:''},'(recipe default)'),...S.meta.palettes.map(n=>h('option',{value:n,selected:S.options.palette===n},n)));
+  const g=h('div',{class:'grid2'},h('label',{},'palette'),palSel,h('label',{},'seed'),h('input',{type:'number',value:S.options.seed??o.seed??1,oninput:e=>set('seed',num(e.target.value,1))}),
+    h('label',{},'light'),h('input',{type:'number',step:0.1,value:S.options.light??o.light??1,oninput:e=>set('light',num(e.target.value,1))}),
+    h('label',{},'flip'),h('input',{type:'checkbox',checked:!!S.options.flip,onchange:e=>set('flip',e.target.checked||null)}),
+    h('label',{},'colours'),h('input',{type:'number',min:0,max:64,value:S.options.colors??o.colors??24,title:'pixel look: one shared palette of at most N colours, 0 = off',oninput:e=>set('colors',Math.round(num(e.target.value,24)))}));
+  for(const k of Object.keys(ro)){const cur=S.options[k]??o[k]??ro[k];g.append(h('label',{title:'recipe option'},k),h('input',{value:typeof cur==='string'?cur:JSON.stringify(cur),oninput:e=>{let v=e.target.value;try{v=JSON.parse(v)}catch(_){}set(k,v)}}))}
+  box.append(g)}
+
+function fmtLayer(l){return '{'+String.fromCharCode(10)+Object.entries(l).map(([k,v])=>' '+JSON.stringify(k)+': '+JSON.stringify(v)).join(','+String.fromCharCode(10))+String.fromCharCode(10)+'}'}
+function summary(l){const k=Object.keys(l).filter(x=>x!=='type').slice(0,3).map(x=>x+': '+JSON.stringify(l[x])).join('  ');return k}
+function renderSummaries(){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const l=S.recipe?.layers?.[i];if(l)c.querySelector('.s').textContent=summary(l)})}
+function renderLayers(){
+  const p=$('#p-layers');p.replaceChildren();const r=S.recipe;if(!r){p.append(h('div',{class:'msg'},'No layers: this effect is drawn by Python code.'));return}
+  const add=h('select',{'aria-label':'Layer type'},...S.meta.layers.map(t=>h('option',{value:t},t)));
+  p.append(h('div',{class:'row'},add,h('button',{class:'primary',onclick:()=>{r.layers.push(JSON.parse(JSON.stringify(TEMPL[add.value]||{type:add.value})));S.sel=r.layers.length-1;renderLayers();edit()}},'Add layer')),h('div',{class:'hint'},'Layers draw in this order: the last one is on top. Edit a layer as JSON; a click on a key name below it adds the key.'));
+  r.layers.forEach((l,i)=>{
+    const ta=h('textarea',{spellcheck:'false',rows:Math.min(10,Math.max(3,JSON.stringify(l,null,1).split('\n').length)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw 0;r.layers[i]=v;e.target.classList.remove('bad');edit()}catch(_){e.target.classList.add('bad')}}});
+    ta.value=fmtLayer(l);
+    const sc=S.meta.schema[l.type]||{};
+    const keys=h('div',{class:'keys'},h('details',{},h('summary',{},'keys of '+l.type),...Object.entries({...sc}).map(([k,v])=>h('p',{},h('code',{onclick:()=>{try{const cur=JSON.parse(ta.value);if(!(k in cur)){cur[k]=0;ta.value=JSON.stringify(cur);ta.dispatchEvent(new Event('input'))}}catch(_){}}},k),' '+v)),h('p',{},h('b',{},'every layer: '),Object.keys(S.meta.common).join(', '))));
+    const card=h('div',{class:'card'+(i===S.sel?' sel':'')},
+      h('div',{class:'hd',onclick:()=>{S.sel=i;document.querySelectorAll('#p-layers .card').forEach((c,j)=>c.classList.toggle('sel',j===i))}},h('b',{},(i+1)+' '+l.type),h('span',{class:'s'},summary(l)),
+        h('button',{class:'icon ghost',title:'Move up',disabled:i===0,onclick:ev=>{ev.stopPropagation();[r.layers[i-1],r.layers[i]]=[r.layers[i],r.layers[i-1]];renderLayers();edit()}},'↑'),
+        h('button',{class:'icon ghost',title:'Move down',disabled:i===r.layers.length-1,onclick:ev=>{ev.stopPropagation();[r.layers[i+1],r.layers[i]]=[r.layers[i],r.layers[i+1]];renderLayers();edit()}},'↓'),
+        h('button',{class:'icon ghost',title:'Duplicate',onclick:ev=>{ev.stopPropagation();r.layers.splice(i+1,0,JSON.parse(JSON.stringify(l)));renderLayers();edit()}},'+'),
+        h('button',{class:'icon ghost',title:'Delete',onclick:ev=>{ev.stopPropagation();r.layers.splice(i,1);renderLayers();edit()}},'×')),ta,keys);
+    p.append(card)})}
+
+function syncJson(){const j=$('#json');if(document.activeElement===j||!S.recipe)return;j.value=JSON.stringify(S.recipe,null,1);j.classList.remove('bad')}
+$('#json').oninput=e=>{try{S.recipe=JSON.parse(e.target.value);e.target.classList.remove('bad');renderEffect();renderLayers();touch()}catch(_){e.target.classList.add('bad')}};
+$('#json').onblur=()=>syncJson();
+$('#bFmt').onclick=()=>{if(S.recipe){$('#json').blur();syncJson()}};
+$('#bDl').onclick=()=>{if(!S.recipe)return;download((S.recipe.id||'effect').split('/').pop()+'.json',new Blob([JSON.stringify(S.recipe,null,1)],{type:'application/json'}))};
+function download(name,blob){const a=h('a',{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();a.remove()}
+async function save(){const r=await api('/api/save',{name:$('#saveName').value,recipe:S.recipe});toast(r.error||('Saved '+r.path))}
+async function exportFx(){toast('Exporting');const r=await api('/api/export',payload({name:S.recipe?($('#saveName')?.value||''):''}));if(r.error){toast(r.error);return}
+  for(const[n,b64]of Object.entries(r.files)){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);download(n,new Blob([u]))}toast('Exported (also in '+r.folder+')')}
+
+// ---------- check and fix
+function scheduleCheck(){clearTimeout(tC);S.check=null;setDot('');tC=setTimeout(runCheck,500)}
+function setDot(c){$('#dot').className='dot '+c}
+async function runCheck(){const my=seq;const r=await api('/api/check',payload());if(my!==seq)return;S.check=r;setDot(r.error?'bad':r.problems?.length?'bad':r.flags?.length?'warn':'ok');renderCheck()}
+function renderCheck(){
+  const p=$('#p-check');p.replaceChildren();const c=S.check;
+  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:'primary',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. It never changes your recipe unless you press Use.')));
+  if(!c)p.append(h('div',{class:'hint'},'Checking...'));
+  else if(c.error)p.append(h('div',{class:'msg bad'},c.error));
+  else{if(!c.problems.length)p.append(h('div',{class:'msg ok'},'Clean: deterministic, '+(S.loop?'the loop closes':'ends empty')+', nothing touches the edge.'));
+    c.problems.forEach(x=>p.append(h('div',{class:'msg bad'},x)));c.flags.forEach(x=>p.append(h('div',{class:'msg warn'},x)))}
+  const f=S.fixed;if(f){p.append(h('h3',{},'Fix result'));if(f.error)p.append(h('div',{class:'msg bad'},f.error));else{
+    (f.done.length?f.done:['nothing needed fixing']).forEach(x=>p.append(h('div',{class:'msg ok'},x)));f.problems.forEach(x=>p.append(h('div',{class:'msg bad'},'To fix by hand: '+x)));f.notes.forEach(x=>p.append(h('div',{class:'msg'},x)));
+    if(f.fixed_recipe)p.append(h('div',{class:'row'},h('button',{class:'primary',onclick:()=>{setRecipe(f.fixed_recipe,true);S.fixed=null;toast('Using the fixed recipe (canvas resized)')}},'Use the fixed recipe'),h('span',{class:'hint'},'the canvas was changed')))}}}
+async function runFix(){S.fixed=null;const r=await api('/api/fix',payload());S.fixed=r;tab('check');renderCheck()}
+
+// ---------- start
+(async()=>{
+  S.meta=await api('/api/meta');$('#style').append(...S.meta.styles.map(s=>h('option',{value:s},s)));
+  S.effects=(await api('/api/list')).effects;setGround(S.ground);buildList();tab('effect');
+  const first=S.effects.find(e=>e.id==='fire/torch')||S.effects[0];if(first)openEffect(first.id)})();
+</script>
+</body>
+</html>

@@ -123,6 +123,10 @@ Rules that save rounds:
 - Share a recipe by sending the JSON file. The same file renders the same frames anywhere (`gizvfx render my.json`).
 
 
+## The UI
+
+`python gizvfx.py ui [--port 8765] [--folder gizvfx_ui] [--no-open]` opens a local web page (127.0.0.1 only, standard library, nothing leaves the machine). Left: every effect, searchable; middle: the live preview (Pixel or Painted in any style, ground colour, zoom, play, step, every frame as a strip); right: Effect (name, size, pivot, palette, duration, loop; options to try without changing the recipe), Layers (each layer as JSON with its key list, add, move, duplicate, delete), JSON (the whole recipe, format, download), Check (deterministic, loop, edge, flags, and `Fix` with a button to take the fixed recipe). It also saves recipes and exports the GIF + sprite sheet into the `--folder` (default `gizvfx_ui` in the current directory). A recipe error shows under the preview with the same message as the command line. Code effects (the 13 written in Python) can be watched and recoloured but have no recipe to edit; use `recipe ID` on a JSON effect to learn from it.
+
 ## 4. Painted (hi-res) version of a recipe
 
 `python gizvfx.py painted ID|my.json [--scale 4] [--style STYLE] [--bg #hex|none] [--intensity 0..2] [--hold N]` draws the **same recipe** smooth at 4x the size with a real alpha channel: no palette limit, no dither, bristle lanes with a paint body, soft grain, anti-aliased hatch lines and halftone dots.
