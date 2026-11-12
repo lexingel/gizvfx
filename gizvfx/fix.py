@@ -105,13 +105,14 @@ def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=Non
         frames, n = _lone(frames); done.append(f"{n} lone pixels removed")
     px = np.concatenate([np.array(f)[np.array(f)[..., 3] > 0][:, :3] for f in frames])
     if len(np.unique(px, axis=0)) > 40: frames = engine.limit_colors(frames, 24); done.append("colours limited to 24")
-    if not meta["loop"] and np.array(frames[-1])[..., 3].any(): frames = _fade_out(frames); done.append("faded out over the last 3 frames (it did not end empty)")
+    if not meta["loop"] and np.array(frames[-1])[..., 3].any(): frames = _fade_out(frames); done.append("faded out over the last 3 frames (it did not end empty)" + engine._leftover_layers(meta, engine.options(meta, given)) + "; the recipe itself still leaves them, end those layers (a `t` window, `erode`) to fix it at the source")
     mt, fl = engine.report(path, given, frames)
     problems = (["the canvas is already at the 256 px limit and the effect still touches the edge: make the effect smaller, or move the pivot or `at` away from that edge (a `wave` reaches `length` px behind its crest)"] if capped else []) + _frame_problems(frames, meta) + ["seam: " + b for b in engine.check(path, given) if "loop does not close" in b or "deterministic" in b]; notes = list(fl)
     if painted_style and "recipe" not in meta: notes.append(f"painted {painted_style}: skipped, this effect is drawn by Python code, not a recipe")
     elif painted_style:
         from . import painted
-        problems += [f"painted {painted_style}: {b}" for b in painted.check(path, scale, painted_style)]
+        pb = painted.check(path, scale, painted_style); problems += [f"painted {painted_style}: {b}" for b in pb]
+        if not pb: notes.append(f"painted {painted_style}: checked, clean (the painted files themselves come from `painted`, not from fix)")
     if path != eid and path.endswith(".fixed.json"):
         if apply and eid.lower().endswith(".json") and os.path.isfile(eid):                  # --apply: the fixed recipe replaces yours (the old one is kept as .bak)
             shutil.copy(eid, eid + ".bak"); shutil.copy(path, eid); done.append(f"your recipe was replaced by the fixed one (the old one is {os.path.basename(eid)}.bak)")

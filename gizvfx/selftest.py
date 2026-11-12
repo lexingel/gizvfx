@@ -113,4 +113,7 @@ def run():
         assert _cell({"type": "ring", "radius": 10, "thick": 20})[40, 40, 3] > 0 and _cell({"type": "ring", "radius": 10, "thick": 6})[40, 40, 3] == 0
         pc_ = _cell({"type": "poly", "shape": "crystal", "scale": 2}); assert len({tuple(c) for c in pc_[pc_[..., 3] > 0][:, :3]}) > 1
         pc_ = _cell({"type": "poly", "shape": "crystal", "scale": 2, "color": "#ff0000"}); assert len({tuple(c) for c in pc_[pc_[..., 3] > 0][:, :3]}) == 1
+    with tempfile.TemporaryDirectory() as d:                                                       # check names the layer that keeps drawing at the end of a one-shot
+        lp_ = os.path.join(d, "l.json"); json.dump({"id": "test/l", "duration": 0.8, "size": [60, 60], "layers": [{"type": "ring", "radius": [0, 15], "thick": [3, 0]}, {"type": "glow", "radius": 10}]}, open(lp_, "w"))
+        assert any("layers still drawing at t=1: 1 glow" in b for b in engine.check(lp_))
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

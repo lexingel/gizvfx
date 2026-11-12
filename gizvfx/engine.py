@@ -97,6 +97,20 @@ def pt_(a):
     return (a[0], a[1]) if not isinstance(a[0], (list, tuple)) else (a[0][0], a[0][1])
 
 
+def _leftover_layers(meta, o):
+    """' (layers still drawing at t=1: 3 ring 12px, 5 poly 7px)': each layer of a recipe drawn alone at the end"""
+    rec = meta.get("recipe")
+    if not rec: return ""
+    from .spec import load as spec_load
+    out = []
+    for i, l in enumerate(rec["layers"]):
+        try:
+            m2, _ = spec_load(dict(rec, layers=[l])); fr = Frame(*meta["size"]); m2.draw(fr, 1.0, o); n = int((fr.a > 0).sum())
+        except Exception: continue                                   # a layer that needs another layer (an anchor) cannot be drawn alone
+        if n or fr.light.max() > 0.05: out.append(f"{i} {l.get('type')} " + (f"{n}px" if n else "glow light only"))
+    return f" (layers still drawing at t=1: {', '.join(out)})" if out else ""
+
+
 def check(eid, given=None):
     """quality checks; returns a list of problems (empty = clean)"""
     mod, meta = get(eid); o = options(meta, given); n = n_frames(meta); bad = []; w, h = meta["size"]
@@ -107,7 +121,7 @@ def check(eid, given=None):
         if not (np.array_equal(a.a, s.a) and np.array_equal(a.rgb[a.a > 0], s.rgb[s.a > 0])): bad.append("loop does not close: t=1 differs from t=0")
     else:
         e = render_frame(mod, meta, o, 1.0)
-        if (e.a > 0).sum() > 0 or (e.light.max() > 0.05): bad.append(f"one-shot does not end empty: {(e.a > 0).sum()} pixels left at t=1")
+        if (e.a > 0).sum() > 0 or (e.light.max() > 0.05): bad.append(f"one-shot does not end empty: {(e.a > 0).sum()} pixels left at t=1" + _leftover_layers(meta, o))
     edge = 0; first = None; sides = set()
     for i in range(n):
         t = i / n if meta["loop"] else i / (n - 1); f = render_frame(mod, meta, o, t)

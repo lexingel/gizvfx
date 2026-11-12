@@ -124,7 +124,7 @@ Rules that save rounds:
 
 `python gizvfx.py painted ID|my.json [--scale 4] [--style STYLE] [--bg #hex|none] [--intensity 0..2] [--hold N]` draws the **same recipe** smooth at 4x the size with a real alpha channel: no palette limit, no dither, bristle lanes with a paint body, soft grain, anti-aliased hatch lines and halftone dots.
 
-Output in `--out`: `NAME_painted.gif`, `NAME_painted_sheet.png` + `.json` (transparent frames, one row) and `NAME_painted_contact.png` (a wrapped grid on a light ground: open this one).
+Output in `--out`: `NAME_painted.gif` for the default style `ink`, `NAME_STYLE.gif` for any other (`NAME_chalk.gif`), so two styles can share a folder; `NAME_painted_sheet.png` + `.json` (transparent frames, one row) and `NAME_painted_contact.png` (a wrapped grid on a light ground: open this one).
 
 Styles (default `ink`):
 - `ink`: the brush look.
