@@ -4,7 +4,7 @@
 Only these commands touch the network, and only on request. A git clone is updated with `git pull --ff-only`; a copy without .git (a downloaded zip) is replaced from the repository's zip.
 Your own files stay: saved recipes (`~/.gizvfx/recipes`), the `gizvfx_ui` folder, anything you made next to the tool that is not part of it.
 """
-import io, json, os, shutil, subprocess, sys, tempfile, urllib.request, zipfile
+import io, json, os, re, shutil, subprocess, sys, tempfile, urllib.request, zipfile
 
 REPO = "lexingel/gizvfx"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,11 +31,30 @@ def local_sha(root=None):
     return open(p).read().strip() if os.path.exists(p) else ""
 
 
+def _fetch(url, timeout=60):
+    """bytes of a URL: urllib, and curl when Python cannot verify the certificate (an old or proxied Windows Python)"""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "gizvfx-update"}), timeout=timeout) as f: return f.read()
+    except Exception as e:
+        try:
+            r = subprocess.run(["curl", "-fsSL", "--max-time", str(timeout), "-A", "gizvfx-update", url], capture_output=True, timeout=timeout + 10)
+            if r.returncode == 0 and r.stdout: return r.stdout
+        except (OSError, subprocess.SubprocessError): pass
+        raise e
+
+
 def remote_sha():
-    r = _git("ls-remote", f"https://github.com/{REPO}.git", "refs/heads/main")
-    if r and r.returncode == 0 and r.stdout.split(): return r.stdout.split()[0]
-    with urllib.request.urlopen(urllib.request.Request(f"https://api.github.com/repos/{REPO}/commits/main", headers={"User-Agent": "gizvfx-update"}), timeout=30) as f:
-        return json.load(f)["sha"]
+    """the commit sha of main on GitHub: git ls-remote (no local repository needed), else the API, else the commits feed on github.com"""
+    try:
+        r = subprocess.run(["git", "ls-remote", f"https://github.com/{REPO}.git", "refs/heads/main"], capture_output=True, text=True, timeout=60)
+        if r.returncode == 0 and r.stdout.split(): return r.stdout.split()[0]
+    except (OSError, subprocess.SubprocessError): pass
+    err = None
+    for url, parse in ((f"https://api.github.com/repos/{REPO}/commits/main", lambda b: json.loads(b)["sha"]),
+                       (f"https://github.com/{REPO}/commits/main.atom", lambda b: re.search(r"Commit/([0-9a-f]{40})", b).group(1))):
+        try: return parse(_fetch(url, 30).decode("utf-8", "replace"))
+        except Exception as e: err = e
+    raise err
 
 
 def _read(path):
@@ -115,8 +134,7 @@ def update(check=False, force=False, say=print):
     else:
         try:
             tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False); tmp.close()
-            req = urllib.request.Request(f"https://github.com/{REPO}/archive/refs/heads/main.zip", headers={"User-Agent": "gizvfx-update"})
-            with urllib.request.urlopen(req, timeout=60) as f, open(tmp.name, "wb") as out: shutil.copyfileobj(f, out)
+            with open(tmp.name, "wb") as out: out.write(_fetch(f"https://github.com/{REPO}/archive/refs/heads/main.zip", 120))
             n = len(apply_zip(tmp.name, ROOT)); os.remove(tmp.name)
         except Exception as e: say(f"gizvfx update: download or unpack failed ({type(e).__name__}: {e}). The old files may be partly replaced: run the update again."); return 1
         with open(os.path.join(ROOT, ".gizvfx_version"), "w") as fh: fh.write(new)
