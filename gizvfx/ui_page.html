@@ -9,17 +9,17 @@
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button,input,select,textarea{font:inherit;color:inherit}
-button{background:var(--panel2);border:1px solid var(--edge);border-radius:var(--r);padding:5px 10px;cursor:pointer;min-height:28px}
+button{background:var(--panel2);border:1px solid var(--edge);border-radius:var(--r);padding:5px 10px;cursor:pointer;min-height:32px}
 button:hover:not(:disabled){border-color:var(--accent)}
-button:disabled{opacity:.4;cursor:default}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button:disabled{opacity:.55;cursor:default}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:600}
 button.ghost{background:transparent;border-color:transparent}
 button.ghost:hover:not(:disabled){border-color:var(--edge)}
-button.icon{padding:0;width:32px;height:32px;display:inline-grid;place-items:center}
+button.icon{flex:none;padding:0;width:34px;height:34px;display:inline-grid;place-items:center}
 button.icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-button.chip{padding:3px 9px;border-radius:99px;min-height:28px}
-input,select,textarea{background:#12141a;border:1px solid var(--edge);border-radius:6px;padding:5px 7px;min-width:0;min-height:28px}
+button.chip{padding:3px 10px;border-radius:99px;min-height:32px}
+input,select,textarea{background:#12141a;border:1px solid var(--edge);border-radius:6px;padding:5px 7px;min-width:0;min-height:32px}
 input::placeholder{color:var(--mut);opacity:1}
 input[type=checkbox]{accent-color:var(--accent);width:28px;height:28px;min-height:0}
 input[type=range]{accent-color:var(--accent);padding:0;border:0;background:transparent}
@@ -36,7 +36,7 @@ header h1 span{color:var(--accent)}
 .grp{display:inline-flex;gap:6px;align-items:center}
 #viewSeg,#bViewT{display:none}
 #modeNote{font-size:12px;color:var(--mut)}
-.seg button[aria-disabled=true]{opacity:.45;cursor:default}
+.seg button[aria-disabled=true]{opacity:.7;color:var(--mut);cursor:default}
 main{display:grid;grid-template-columns:250px minmax(0,1fr) 400px;min-height:0}
 aside,section{min-height:0;overflow:auto}
 #list{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
@@ -69,7 +69,7 @@ aside,section{min-height:0;overflow:auto}
 #err{position:absolute;left:12px;right:12px;bottom:10px;background:#3a1618;border:1px solid #7a2b30;color:#ffd5d5;border-radius:var(--r);padding:8px 10px;display:none;max-height:40%;overflow:auto}
 #err small{display:block;color:#ffb4b4;opacity:.85;margin-top:3px;word-break:break-word}
 #bar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);background:var(--panel)}
-#bar input[type=range]{flex:1;min-height:28px}
+#bar input[type=range]{flex:1;min-height:32px;height:32px}
 #bPlay{min-width:64px}
 #fc{min-width:64px;text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
 #strip{display:flex;gap:4px;padding:6px 12px;overflow-x:auto;border-top:1px solid var(--line);background:var(--panel);min-height:78px}
@@ -94,7 +94,7 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);
 h2:first-child{margin-top:0}
 details.help{border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;margin-bottom:10px;background:var(--panel2)}
 details.help summary,.keys summary,.msg summary{cursor:pointer;color:var(--accent);padding:5px 0}
-.keys summary{display:list-item;min-height:28px}
+.keys summary{display:list-item;min-height:32px}
 details.help p{margin:6px 0;color:var(--mut)}
 .card{border:1px solid var(--line);border-radius:var(--r);margin:8px 0;background:var(--panel2)}
 .card.sel{border-color:var(--accentline)}
@@ -106,7 +106,7 @@ details.help p{margin:6px 0;color:var(--mut)}
 .card textarea[aria-invalid=true],#json[aria-invalid=true]{border-color:var(--bad)}
 .fmsg{margin:0 8px 8px;color:#ffb4b4;font-size:12px}
 .keys{margin:0 8px 8px;font-size:12px;color:var(--mut)}
-.keys button.key{padding:0 6px;min-height:28px;min-width:28px;color:var(--accent);border-color:transparent;background:transparent;font:12px ui-monospace,Consolas,monospace}
+.keys button.key{padding:0 8px;min-height:32px;min-width:32px;color:var(--accent);border-color:transparent;background:transparent;font:12px ui-monospace,Consolas,monospace}
 .keys button.key:hover{border-color:var(--edge)}
 .keys p{margin:2px 0}
 #json{width:100%;height:calc(100vh - 230px);min-height:200px;font:12px/1.4 ui-monospace,Consolas,monospace;white-space:pre;resize:none}
@@ -134,7 +134,7 @@ details.help p{margin:6px 0;color:var(--mut)}
   main[data-view=list] #editor,main[data-view=edit] #list{display:none}
   #json{height:50vh}
 }
-@media(pointer:coarse){button,input,select,textarea{min-height:44px}button.icon{width:44px;height:44px}.sw{width:44px;height:44px}input[type=checkbox]{width:32px;height:32px}}
+@media(pointer:coarse),(max-width:820px){button,input,select,textarea,.tabs button,.keys summary{min-height:44px}button.icon,.sw{width:44px;height:44px}input[type=checkbox]{width:32px;height:32px;min-height:0}#bar input[type=range]{min-height:44px}.card .hd .title{flex-direction:column;gap:0}.card .hd .title .s{white-space:normal;max-height:2.9em}}
 @media(prefers-reduced-motion:reduce){#busy,#toast{transition:none}}
 </style>
 </head>
@@ -244,7 +244,7 @@ function friendly(raw){let m=String(raw),where='',layer=null,changed=false;const
   if(/not supported between instances|can't multiply|must be real number|unsupported operand|can only concatenate|could not convert|object is not (iterable|subscriptable)/.test(m)){m='a value that should be a number is text, or a list sits where one number goes. Check the numbers in this layer.';changed=true}
   else if(/drawn by Python code; only recipes/.test(m)){m='this effect is drawn by Python code, so it has no painted look.';changed=true}
   if(layer!=null&&S.recipe&&S.meta){const lay=(S.recipe.layers||[])[layer],un=m.match(/type '([^']*)' is unknown/);
-    if(un){const near=[...S.meta.layers].map(t=>[lev(t,un[1]),t]).sort((a,b)=>a[0]-b[0]).slice(0,4).map(x=>x[1]);m+=' Closest types: '+near.join(', ')+'.';changed=true}
+    if(un&&!/did you mean/.test(m)){const near=[...S.meta.layers].map(t=>[lev(t,un[1]),t]).sort((a,b)=>a[0]-b[0]).slice(0,3).map(x=>x[1]);m+=' Closest types: '+near.join(', ')+'.';changed=true}
     else if(m.startsWith('a value that should be a number')&&lay){const bad=Object.entries(lay).filter(([k,v])=>!TXT.has(k)&&(typeof v==='string'||(Array.isArray(v)&&v.some(x=>typeof x==='string')))).map(x=>x[0]);if(bad.length)m+=' Look at: '+bad.join(', ')+'.'}}
   return{text:where+m,layer,raw:changed?String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1)):null}}
 function rawDetails(raw){return raw?h('details',{},h('summary',{},'original message'),h('small',{},raw)):null}
@@ -377,7 +377,7 @@ function updOpts(){const hd=$('#optsHead');if(!hd)return;hd.replaceChildren();co
 function fmtLayer(l){return '{'+String.fromCharCode(10)+Object.entries(l).map(([k,v])=>' '+JSON.stringify(k)+': '+JSON.stringify(v)).join(','+String.fromCharCode(10))+String.fromCharCode(10)+'}'}
 function summary(l){return Object.keys(l).filter(x=>x!=='type').slice(0,3).map(x=>x+': '+JSON.stringify(l[x])).join('  ')}
 function renderSummaries(){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const l=S.recipe?.layers?.[i];if(l){c.querySelector('.s').textContent=summary(l);c.querySelector('.title b').textContent=(i+1)+' '+l.type}})}
-function addLayer(type){const r=S.recipe;r.layers.push(JSON.parse(JSON.stringify(TEMPL[type]||{type})));S.sel=r.layers.length-1;renderLayers();edit(stepKey(),'add '+type+' layer');const cards=document.querySelectorAll('#p-layers .card');cards[cards.length-1]?.scrollIntoView({block:'nearest'});cards[cards.length-1]?.querySelector('textarea').focus()}
+function addLayer(type){const r=S.recipe;const nl=JSON.parse(JSON.stringify(TEMPL[type]||{type}));if(!r.loop&&!nl.t)nl.t=[0,0.9];r.layers.push(nl);S.sel=r.layers.length-1;renderLayers();edit(stepKey(),'add '+type+' layer');const cards=document.querySelectorAll('#p-layers .card');cards[cards.length-1]?.scrollIntoView({block:'nearest'});cards[cards.length-1]?.querySelector('textarea').focus()}
 function renderLayers(){
   const p=$('#p-layers');p.replaceChildren();const r=S.recipe;if(!r){p.append(h('div',{class:'msg'},'No layers to edit: this effect is drawn by Python code.'),h('div',{class:'row'},h('button',{class:'primary',onclick:newRecipe},'New effect')));return}
   const more=h('select',{'aria-label':'Another layer type',onchange:e=>{if(e.target.value){addLayer(e.target.value);e.target.value=''}}},h('option',{value:''},'Other type...'),...S.meta.layers.filter(t=>!COMMON_TYPES.includes(t)).sort().map(t=>h('option',{value:t},t)));
@@ -386,7 +386,7 @@ function renderLayers(){
   r.layers.forEach((l,i)=>{
     const msgId=uid('lm');const msg=h('div',{class:'fmsg',id:msgId,role:'status',hidden:true});
     const keys=h('div',{class:'keys'});
-    const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' ('+l.type+') JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;if(v.type!==e.target.dataset.type){e.target.dataset.type=v.type;e.target.setAttribute('aria-label','Layer '+(i+1)+' ('+v.type+') JSON');fillKeys(v.type)}edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
+    const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' ('+l.type+') JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;if(v.type!==e.target.dataset.type){e.target.dataset.type=v.type;e.target.setAttribute('aria-label','Layer '+(i+1)+' ('+v.type+') JSON');fillKeys(v.type)}edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');if(S.renderErr)showErr(null);msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
     ta.value=fmtLayer(l);ta.dataset.type=l.type;
     function fillKeys(type){const sc=S.meta.schema[type]||{};
       keys.replaceChildren(h('details',{},h('summary',{},'keys of '+type+' ('+Object.keys(sc).length+')'),...Object.entries(sc).map(([k,v])=>h('p',{},h('button',{class:'key',title:'add this key to the layer',onclick:()=>{try{const cur=JSON.parse(ta.value);if(!(k in cur)){cur[k]=0;ta.value=fmtLayer(cur);ta.dispatchEvent(new Event('input'))}}catch(_){}}},k),' '+v)),h('p',{},h('b',{},'every layer: '),Object.keys(S.meta.common).join(', '))))}
@@ -401,8 +401,8 @@ function renderLayers(){
 
 function syncJson(){const j=$('#json');if(document.activeElement===j)return;const off=!S.recipe;j.disabled=off;$('#bFmt').disabled=$('#bDl').disabled=off;if(off){j.value='';j.placeholder='This effect is drawn by Python code, so there is no recipe to edit. Press New effect to make one.';j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true;return}j.placeholder='';j.value=JSON.stringify(S.recipe,null,1);j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true}
 function shapeErr(v){if(!v||typeof v!=='object'||Array.isArray(v))return'a recipe is an object like { "layers": [ ... ] }';if(!Array.isArray(v.layers))return'a recipe needs a "layers" list, for example "layers": [ { "type": "glow" } ]';if(!v.layers.length)return'a recipe needs at least one layer';if(v.layers.some(l=>!l||typeof l!=='object'||Array.isArray(l)))return'every layer must be an object like { "type": "glow" }';return null}
-$('#json').oninput=e=>{const m=$('#jsonmsg');let v;try{v=JSON.parse(e.target.value)}catch(x){e.target.setAttribute('aria-invalid','true');m.hidden=false;m.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version; your text stays as you typed it.';return}
-  const se=shapeErr(v);if(se){e.target.setAttribute('aria-invalid','true');m.hidden=false;m.textContent='This is JSON, but not a recipe yet: '+se+'. The recipe and the preview stay as they were.';return}
+$('#json').oninput=e=>{const m=$('#jsonmsg');let v;try{v=JSON.parse(e.target.value)}catch(x){e.target.setAttribute('aria-invalid','true');if(S.renderErr)showErr(null);m.hidden=false;m.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version; your text stays as you typed it.';return}
+  const se=shapeErr(v);if(se){e.target.setAttribute('aria-invalid','true');m.hidden=false;if(S.renderErr)showErr(null);m.textContent='This is JSON, but not a recipe yet: '+se+'. The recipe and the preview stay as they were.';return}
   try{S.recipe=v;S.code=false;e.target.removeAttribute('aria-invalid');m.hidden=true;renderEffect();renderLayers();edit('json','edit JSON')}catch(x){m.hidden=false;m.textContent=String(x.message)}};
 $('#json').onblur=()=>{if(!$('#json').getAttribute('aria-invalid'))syncJson()};
 $('#bFmt').onclick=()=>{if(S.recipe&&!$('#json').getAttribute('aria-invalid')){$('#json').blur();syncJson()}};
@@ -423,7 +423,7 @@ function msg(cls,text,raw,quiet){return h('div',{class:'msg '+cls,role:cls==='ba
 function renderCheck(){
   const p=$('#p-check');p.replaceChildren();const c=S.check;
   const need=c&&!c.error&&!S.renderErr&&(c.problems.length||c.flags.length);
-  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:need?'primary':'',disabled:!!S.renderErr,title:S.renderErr?'Correct the drawing error first':'',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. Your recipe changes only if you press Use.')));
+  p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:need?'primary':'',disabled:!!S.renderErr,title:S.renderErr?'Correct the drawing error first':'Check and repair; the recipe changes only when you press Use',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. Your recipe changes only if you press Use.')));
   if(S.renderErr){const f=S.renderErr,d=msg('bad','The effect cannot be drawn. '+f.text,f.raw,true);if(f.layer!=null&&S.recipe)d.append(h('button',{onclick:()=>{tab('layers');S.sel=f.layer;renderLayers();document.querySelectorAll('#p-layers .card')[f.layer]?.scrollIntoView({block:'nearest'});document.querySelectorAll('#p-layers textarea')[f.layer]?.focus()}},'Go to layer '+(f.layer+1)));p.append(d)}
   else if(!c)p.append(h('div',{class:'hint'},'Checking...'));
   else if(c.error){const fe=friendly(c.error);p.append(msg('bad',fe.text,fe.raw))}
