@@ -9,7 +9,7 @@ block (glow, disc, ring, star, particles, blob, bolt, rays, orbit, beam, arc) wi
   "$radius"    the recipe's option of that name (so `-o radius=30` works)
 Coordinates are pixels from the recipe's pivot, y down. Everything random comes from the seed, so the same recipe gives the same frames.
 Part of GizVFX; `python gizvfx.py schema` lists every layer and key."""
-import difflib, json, math, os, hashlib, shutil
+import difflib, json, math, os, hashlib, shutil, re
 from types import SimpleNamespace
 import numpy as np
 from .core import BAYER, Frame, TAU, Rng, clamp, lerp, seg, ramp_at, out_expo, out_quart, in_quad, smooth, disc_mask, hex2rgb
@@ -63,15 +63,24 @@ SCHEMA = {
 }
 
 
+_OPT = re.compile(r"^(-?)\$(\w+)(?:([*+\-/])(-?[0-9]*\.?[0-9]+))?$")
+
+
 def sub(x, o):
     """replace "$name" strings by the option's value, recursively"""
     if isinstance(x, str) and x.lstrip("-").startswith("$"):
-        sign = -1 if x.startswith("-") else 1
-        name, _, mul = x.lstrip("-")[1:].partition("*")                                # "$reach", "$reach*0.55" or "-$height"
+        m = _OPT.match(x)                                                              # "$reach", "$reach*0.55", "-$height", "$cloud+4", "$w-6", "$w/2"
+        if not m: raise ValueError(f"'{x}': an option is written $name, optionally with a sign in front and one of * + - / and a number after: \"$w*0.5\", \"-$h\", \"$w+4\"")
+        sign, name, op, num = m.groups()
         if name not in o: raise KeyError(f"'{x}' is not an option of this recipe (options: {', '.join(sorted(o))})")
         v = o[name]
-        if (sign < 0 or mul) and not isinstance(v, (int, float)): raise ValueError(f"'{x}': option '{name}' is {v!r}, not a number, so it cannot be negated or scaled")
-        return sign * v * float(mul) if mul else (-v if sign < 0 else v)
+        if (sign or op) and not isinstance(v, (int, float)) or isinstance(v, bool) and (sign or op): raise ValueError(f"'{x}': option '{name}' is {v!r}, not a number, so it cannot be negated or calculated with")
+        if sign: v = -v
+        if op:
+            n = float(num)
+            if op == "/" and n == 0: raise ValueError(f"'{x}': division by zero")
+            v = v * n if op == "*" else v + n if op == "+" else v - n if op == "-" else v / n
+        return v
     if isinstance(x, list): return [sub(i, o) for i in x]
     if isinstance(x, dict): return {k: sub(v, o) for k, v in x.items()}
     return x
@@ -521,7 +530,7 @@ def _post(f, g, d, main, e, roles=None):
     m = g.a > 0; er = val(d.get("erode", 0), e) if d["type"] != "blob" else 0; ramp = _ramp(d, main, roles)
     if er > 0 and m.any():
         m = m & (distance_transform_edt(np.pad(m, 1))[1:-1, 1:-1] > er); g.a[~m] = 0
-    if d.get("rim"):
+    if isinstance(d.get("rim"), (list, tuple)):                                        # (a bolt's rim is a colour: that is drawn by the bolt itself)
         dx, dy = d["rim"]; rm = m & ~np.roll(m, (-int(np.sign(dy)), -int(np.sign(dx))), (0, 1)); g.rgb[rm] = ramp[-2] if len(ramp) > 2 else ramp[-1]
     if d.get("outline"):
         oc = ramp[0] if d["outline"] == "auto" else hex2rgb(d["outline"]); ol = binary_dilation(m) & ~m; g.rgb[ol] = oc; g.a[ol] = 255
@@ -546,7 +555,7 @@ def draw_spec(spec, f, t, o):
     for i, d in enumerate(spec["layers"]):
         try:
             d = sub(d, o); t0, t1 = d.get("t", [0, 1]); sm = d.get("smear"); S = 7 if sm else 0
-            post = any(k in d for k in ("outline", "rim")) or ("erode" in d and d["type"] != "blob"); g = Frame(f.w, f.h) if post else f
+            post = ("outline" in d) or isinstance(d.get("rim"), (list, tuple)) or ("erode" in d and d["type"] != "blob"); g = Frame(f.w, f.h) if post else f
             for k in range(S, -1, -1):                                                 # the oldest copy of a smear first, the real layer last
                 tk = t
                 if k:

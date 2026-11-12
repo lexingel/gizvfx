@@ -104,11 +104,13 @@ def check(eid, given=None):
     else:
         e = render_frame(mod, meta, o, 1.0)
         if (e.a > 0).sum() > 0 or (e.light.max() > 0.05): bad.append(f"one-shot does not end empty: {(e.a > 0).sum()} pixels left at t=1")
-    edge = 0
+    edge = 0; first = None; sides = set()
     for i in range(n):
         t = i / n if meta["loop"] else i / (n - 1); f = render_frame(mod, meta, o, t)
-        edge += int((f.a[0] > 0).sum() + (f.a[-1] > 0).sum() + (f.a[:, 0] > 0).sum() + (f.a[:, -1] > 0).sum())
-    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation (cropped? make the canvas bigger)")
+        s = {"top": int((f.a[0] > 0).sum()), "bottom": int((f.a[-1] > 0).sum()), "left": int((f.a[:, 0] > 0).sum()), "right": int((f.a[:, -1] > 0).sum())}
+        if sum(s.values()) and first is None: first = i
+        edge += sum(s.values()); sides |= {k for k, v in s.items() if v}
+    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation: {', '.join(sorted(sides))} edge, first at frame {first} of {n} (cropped? make the canvas bigger, or move the pivot away from that edge)")
     return bad
 
 

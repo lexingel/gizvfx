@@ -11,6 +11,8 @@ The user describes an effect in words ("a frost nova for my mage", "an ink slash
 3. `python gizvfx.py render my.json --out fx` and OPEN `fx/my_contact.png`; fix numbers; `python gizvfx.py check my.json --report`.
 4. If the user wants a painted look: `python gizvfx.py painted my.json --style watercolor --out fx` (section 4).
 
+Defaults: `render` and `fix` draw at `--scale 4` (pixel sprites enlarged 4x for the GIF and contact sheet; the sprite sheet is enlarged too), `painted` at 4x smooth; `--out` is `gizvfx_out` (`gizvfx_fix` for `fix`); a one-shot GIF holds 4 blank frames before it restarts. Contact sheets are grids of about the shape of a page; tiles shrink when the sheet would be wider than 1800 px.
+
 Commands: `fix ID|FILE.json|--all` (check + repair + write, see below), `list [WORD]`, `show ID`, `palettes`, `schema [LAYER]`, `recipe ID`, `render ID|FILE.json`, `painted ID|FILE.json`, `check [ID ...] [--report]`, `import FILE.json`, `gallery out.png`, `selftest`. Run from any folder; paths resolve from `gizvfx.py`.
 
 ## 2. Shipped effects
@@ -78,10 +80,10 @@ Rules that save rounds:
 - Coordinates are pixels from `pivot`, y down; `angle` 0 = right, 90 = down, -90 = up. Put the pivot where the effect is anchored (feet for ground effects, centre for orbs) and leave 8 px of canvas around everything, or `check` reports cropping.
 - Windows: a layer draws only inside `t: [start, end]` (fractions of the duration). A one-shot is a few overlapping windows: flash 0 to 0.25, body 0 to 0.8, aftermath to 1. **Everything must shrink or fade to nothing by t = 1** (`thick: [3, 0]`, `size: [x, 0]`, `strength: [k, 0]`, `scale: [1, 0]`), or `check` says "does not end empty".
 - When one body continues in a second layer (a blob that grows, then shrinks), give both layers the same `"seed"` or they draw different shapes.
-- Loops: use only `{"wave": [lo, hi, whole_cycles]}`, particles `stream` with whole `cycles`, orbits with whole `turns`, a `poly` `rotate` of a full turn (`[0, 360]`) and `funnel` `turns`. Things that run on window progress break the seam: `arc` `sweep`, `blob` `drift` and a `rise` that does not return, `smear` on a one-way move. (`blob` `stagger` is ignored in loops for that reason.)
+- Loops: use only `{"wave": [lo, hi, whole_cycles]}`, particles `stream` with whole `cycles`, orbits with whole `turns`, a `poly` `rotate` of a full turn (`[0, 360]`) and `funnel` `turns`. Things that run on window progress break the seam: `arc` `sweep`, `blob` `drift` and a `rise` that does not return (both are fine in a one-shot; the tool does not stop you in a loop, the seam just shows), `smear` on a one-way move. (`blob` `stagger` is ignored in loops for that reason.)
 - `blob` bands: `depth` about 1.3 times the radius gives layered colour; a small depth gives a flat pale blob. `cover` below 0.3 looks like a mesh at 1x: prefer thin layers, a stepped `glow` or a `ring` to dithered fills.
-- A value can have more than two keys: `"size": [0, 20, 0]` grows then shrinks in ONE layer (no second layer needed). `"$reach*0.5"` scales an option. `blob` takes `lit: [-1, -1]` for sphere-like shading, `bolt` takes `rim: "#hex"` (cracks on dark ground), `beam` takes `shade: flat` (no stripes), `blob` takes `erode: [0, 0, 16]` (the body is eaten from its edge: the clean way to dissolve; avoid `cover`), `glow` and `rays` take `squash` (lying on the floor), `particles` take `shape: star` (twinkles).
-- Option values may be negated or scaled: `"to": [0, "-$height"]`, `"$reach*0.5"`, `"-$height*0.5"`. Only numeric options can; anything else is a one-line error.
+- A value can have more than two keys: `"size": [0, 20, 0]` grows then shrinks in ONE layer (no second layer needed). `"$reach*0.5"` scales an option. `blob` takes `lit: [-1, -1]` for sphere-like shading, `bolt` takes `rim: "#hex"` (a colour: the lighter edge under the stroke; the generic `rim: [dx, dy]` is for the other layers) (cracks on dark ground), `beam` takes `shade: flat` (no stripes), `blob` takes `erode: [0, 0, 16]` (the body is eaten from its edge: the clean way to dissolve; avoid `cover`), `glow` and `rays` take `squash` (lying on the floor), `particles` take `shape: star` (twinkles).
+- Option values may be negated or calculated with: one sign and one operator (`* + - /`) and a number, written without spaces: `"-$height"`, `"$cloud+4"`, `"$w/2"`; two operators (`$a+$b`, `$w*2+4`) are not supported: make it a second option.
 - `-o palette=NAME` recolours the layers that use the recipe's own palette. A layer that names its own `palette` (a ramp name or a role like `"@accent"`) keeps it; change those in the recipe.
 - Options make a recipe reusable: `"options": {"radius": 24}` and `"radius": "$radius"` inside; the user then runs `-o radius=40`. `-o palette=NAME` recolours the whole thing.
 - `python gizvfx.py check my.json --report` prints numbers and FLAG lines (mesh dithering, flat colour, lone pixels, empty frames, motion pops) with the fix for each; run it after every render, then still LOOK at the contact sheet. A motion pop on a hit that lands after a flight is intended.
@@ -117,6 +119,8 @@ Glows are added as light on top of everything and fall off in the same bands as 
 
 Check it: `python -c "from gizvfx import painted; print(painted.check('melee/ink-slash'))"` (deterministic, one-shot ends empty, nothing touches the edge).
 
+Known looks: a `smear` trail is drawn as 24 softened copies (a streak, not stacked discs; in `comic`, `linocut` and `stencil` the trail copies have no outline of their own). `glow` and `bolt` are pale by design and fade almost to white on a light background: use `--bg` with a mid or dark colour, or the `lineart` and `glitch` styles, for those.
+
 It is not pixel art: use it for HD or non-pixel projects, and `gizvfx render` for pixel sprites. Pigment is drawn on transparent, so it reads best on light backgrounds (except `lineart` and `glitch`).
 
 ## 5. `fix`: check, repair, write
@@ -124,5 +128,6 @@ It is not pixel art: use it for HD or non-pixel projects, and `gizvfx render` fo
 `python gizvfx.py fix ID|my.json ... [--all] [--out DIR] [--painted STYLE]` renders the effect, repairs what a machine can repair, writes the GIF, sprite sheet, JSON and contact sheet to `--out` plus `NAME_fix.txt`, and prints what is left. Exit 1 when something is left. The original recipe is never changed.
 
 Repaired: a cropped effect gets a bigger canvas (`NAME.fixed.json` is the new recipe; glow counts); one-pixel holes are filled (skipped when there are so many that it is dithering); lone pixels are removed when `check --report` flags them; more than 40 colours are limited to 24; a one-shot that does not end empty fades out over its last 3 frames.
+A canvas is at most 256 px: when the effect still touches the edge at that size, `fix` stops growing it and lists that as something to fix by hand (make the effect smaller or move the pivot). `check` and `fix` name the edge (top, bottom, left, right) and the first frame that touches it.
 Exit code: 0 when nothing must be fixed by hand, 1 when something must be (cropped Python effect, no empty end, loop seam, painted check). Advisory `note:` lines never change the exit code.
 To fix by hand (the fix is named in the line): loop that does not close and Python-code effects that touch the edge (they cannot be resized). Notes (advisory): mesh dithering, flat colour, empty frames, lone pixels, motion pops; a motion pop on a hit that lands after a flight is meant. `--painted STYLE` also runs the painted check for that style (recipes only).

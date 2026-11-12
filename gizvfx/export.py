@@ -32,10 +32,15 @@ def write_all(frames, out_dir, name, meta, opts, fps, scale=1, gif=True, sheet=T
 
 
 def contact_sheet(frames, path, scale=3, cols=None, bg=DARK, maxw=1800):
-    n = len(frames); w, h = frames[0].size; cols = cols or max(1, min(n, maxw // (w * scale + 6)))
-    rows = -(-n // cols); S = Image.new("RGB", (cols * (w * scale + 6) + 6, rows * (h * scale + 20) + 6), (22, 22, 28)); d = ImageDraw.Draw(S)
-    for i, f in enumerate(frames):
-        x, y = 6 + (i % cols) * (w * scale + 6), 6 + (i // cols) * (h * scale + 20)
-        tile = Image.alpha_composite(Image.new("RGBA", f.size, tuple(bg) + (255,)), f.convert("RGBA")).resize((w * scale, h * scale), Image.NEAREST)
+    """frames in a grid of about the shape of a page (not one long column); tiles are shrunk when the sheet would be wider than maxw"""
+    import math
+    n = len(frames); w, h = frames[0].size; tw, th = w * scale, h * scale
+    cols = cols or max(1, min(n, math.ceil(math.sqrt(n * th / tw)), maxw // (tw + 6) if tw + 6 <= maxw else 1))
+    f = min(1.0, (maxw - 6) / (cols * (tw + 6))) if cols * (tw + 6) > maxw else 1.0                           # one tile wider than maxw: shrink them all
+    tw, th = max(1, int(tw * f)), max(1, int(th * f)); rows = -(-n // cols)
+    S = Image.new("RGB", (cols * (tw + 6) + 6, rows * (th + 20) + 6), (22, 22, 28)); d = ImageDraw.Draw(S)
+    for i, fr in enumerate(frames):
+        x, y = 6 + (i % cols) * (tw + 6), 6 + (i // cols) * (th + 20)
+        tile = Image.alpha_composite(Image.new("RGBA", fr.size, tuple(bg) + (255,)), fr.convert("RGBA")).resize((tw, th), Image.NEAREST if (scale > 1 and f == 1.0) else Image.LANCZOS)
         S.paste(tile.convert("RGB"), (x, y + 14)); d.text((x, y), str(i), fill=(160, 170, 165))
     S.save(path); return path

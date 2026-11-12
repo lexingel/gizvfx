@@ -58,4 +58,16 @@ def run():
         from .fix import fix
         done, problems, notes, _ = fix(rp, out=os.path.join(d, "o"), scale=1)
         assert done and not problems, (done, problems)
+    from . import spec                                                                           # option arithmetic and a bolt colour rim next to the generic rim
+    o = {"w": 10, "s": "x"}
+    assert [spec.sub(t, o) for t in ("$w", "-$w", "$w*0.5", "$w+4", "$w-6", "$w/4")] == [10, -10, 5.0, 14.0, 4.0, 2.5]
+    for bad_ in ("$s+1", "$w + 4", "$q"):
+        try: spec.sub(bad_, o); raise AssertionError(bad_)
+        except (ValueError, KeyError): pass
+    with tempfile.TemporaryDirectory() as d:
+        rp = os.path.join(d, "b.json"); json.dump({"id": "test/b", "duration": 0.5, "size": [60, 60], "layers": [{"type": "bolt", "from": [0, -20], "to": [0, 20], "rim": "#223355"}, {"type": "disc", "radius": 5, "rim": [-1, -1]}]}, open(rp, "w"))
+        assert len(engine.render(rp)) > 1
+        sp = os.path.join(d, "big.json"); json.dump({"id": "test/big", "duration": 0.5, "size": [250, 250], "pivot": [5, 5], "layers": [{"type": "ring", "radius": [0, 80], "thick": [3, 0]}]}, open(sp, "w"))
+        from .fix import fix
+        _, problems, _, _ = fix(sp, out=os.path.join(d, "o"), scale=1); assert any("256" in x for x in problems), problems       # the canvas limit is reported, not crashed on
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

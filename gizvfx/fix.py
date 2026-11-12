@@ -49,14 +49,17 @@ def _fade_out(frames, k=3):
 def _frame_problems(frames, meta):
     bad = []; arr = [np.array(f)[..., 3] > 0 for f in frames]
     if not meta["loop"] and arr[-1].any(): bad.append(f"one-shot does not end empty: {int(arr[-1].sum())} pixels left in the last frame")
-    edge = sum(int(o[0].sum() + o[-1].sum() + o[:, 0].sum() + o[:, -1].sum()) for o in arr)
-    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation")
+    per = [{"top": int(o[0].sum()), "bottom": int(o[-1].sum()), "left": int(o[:, 0].sum()), "right": int(o[:, -1].sum())} for o in arr]
+    edge = sum(sum(p.values()) for p in per)
+    if edge and not meta.get("tile"):
+        sides = sorted({k for p in per for k, v in p.items() if v}); first = next(i for i, p in enumerate(per) if sum(p.values()))
+        bad.append(f"{edge} pixels touch the canvas edge over the animation: {', '.join(sides)} edge, first at frame {first} of {len(per)}")
     return bad
 
 
-def _pad_recipe(meta, out, name, pad=8):
+def _pad_recipe(meta, out, name, padx=8, pady=8):
     r = {k: v for k, v in meta["recipe"].items() if k != "_dir"}
-    r["size"] = [meta["size"][0] + 2 * pad, meta["size"][1] + 2 * pad]; r["pivot"] = [meta["pivot"][0] + pad, meta["pivot"][1] + pad]
+    r["size"] = [meta["size"][0] + 2 * padx, meta["size"][1] + 2 * pady]; r["pivot"] = [meta["pivot"][0] + padx, meta["pivot"][1] + pady]
     r.setdefault("id", meta["id"]); dest = os.path.join(out, name + ".fixed.json"); os.makedirs(out, exist_ok=True)
     src = meta["recipe"].get("_dir")
     for l in r.get("layers", []):                                                                # stamp PNGs sit next to the recipe: bring only those
@@ -68,11 +71,13 @@ def _pad_recipe(meta, out, name, pad=8):
 
 def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=None):
     """returns (done, problems, notes, written paths): problems are what a user must fix (cropping, does not end empty, loop seam, painted check); notes are advisory (mesh, flat colour, motion pops, empty frames, lone pixels)"""
-    m, meta = engine.get(eid); name = name or meta["id"].split("/")[-1]; path = eid; done = []
+    m, meta = engine.get(eid); name = name or meta["id"].split("/")[-1]; path = eid; done = []; capped = False
     if "recipe" in meta and not meta.get("tile"):
         for _ in range(4):
             if not any("canvas edge" in b for b in _frame_problems(engine.render(path, given), meta)): break         # the real frames, glow included
-            path = _pad_recipe(meta, out, name); m, meta = engine.get(path); done.append(f"canvas grown to {meta['size'][0]}x{meta['size'][1]} (it was cropped)")
+            px_, py_ = min(8, (256 - meta["size"][0]) // 2), min(8, (256 - meta["size"][1]) // 2)                # a canvas is at most 256 px
+            if px_ <= 0 and py_ <= 0: capped = True; break
+            path = _pad_recipe(meta, out, name, max(px_, 0), max(py_, 0)); m, meta = engine.get(path); done.append(f"canvas grown to {meta['size'][0]}x{meta['size'][1]} (it was cropped)")
     frames = engine.render(path, given); tile = bool(meta.get("tile"))
     if not tile:
         fixed, n = _pinholes(frames); solid = sum(int((np.array(f)[..., 3] > 0).sum()) for f in frames)
@@ -85,7 +90,7 @@ def fix(eid, given=None, out="gizvfx_fix", name=None, scale=4, painted_style=Non
     if len(np.unique(px, axis=0)) > 40: frames = engine.limit_colors(frames, 24); done.append("colours limited to 24")
     if not meta["loop"] and np.array(frames[-1])[..., 3].any(): frames = _fade_out(frames); done.append("faded out over the last 3 frames (it did not end empty)")
     mt, fl = engine.report(path, given, frames)
-    problems = _frame_problems(frames, meta) + ["seam: " + b for b in engine.check(path, given) if "loop does not close" in b or "deterministic" in b]; notes = list(fl)
+    problems = (["the canvas is already at the 256 px limit and the effect still touches the edge: make the effect smaller, or move the pivot away from that edge"] if capped else []) + _frame_problems(frames, meta) + ["seam: " + b for b in engine.check(path, given) if "loop does not close" in b or "deterministic" in b]; notes = list(fl)
     if painted_style and "recipe" not in meta: notes.append(f"painted {painted_style}: skipped, this effect is drawn by Python code, not a recipe")
     elif painted_style:
         from . import painted
