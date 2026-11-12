@@ -115,7 +115,7 @@ def run():
         pc_ = _cell({"type": "poly", "shape": "crystal", "scale": 2, "color": "#ff0000"}); assert len({tuple(c) for c in pc_[pc_[..., 3] > 0][:, :3]}) == 1
     with tempfile.TemporaryDirectory() as d:                                                       # check names the layer that keeps drawing at the end of a one-shot
         lp_ = os.path.join(d, "l.json"); json.dump({"id": "test/l", "duration": 0.8, "size": [60, 60], "layers": [{"type": "ring", "radius": [0, 15], "thick": [3, 0]}, {"type": "glow", "radius": 10}]}, open(lp_, "w"))
-        assert any("layers still drawing at t=1: 1 glow" in b for b in engine.check(lp_))
+        assert any("layers still drawing at t=1: layer 2 glow" in b for b in engine.check(lp_))
     with tempfile.TemporaryDirectory() as d:                                                       # flash flares a layer white at a hit; clip keeps a layer inside another layer's pixels
         fp_ = os.path.join(d, "f.json"); json.dump({"id": "test/f", "duration": 1.0, "size": [80, 80], "pivot": [40, 60], "palette": "ice", "layers": [
             {"id": "col", "type": "beam", "from": [0, 0], "to": [0, -40], "width": 10},
@@ -137,7 +137,7 @@ def run():
         from . import painted as _pt
         pf_ = _pt.render(os.path.join(d, "r.json"), {}, scale=2); assert int((np.array(pf_[0])[..., 3] > 40).sum()) > 2 * int((np.array(pf_[-2])[..., 3] > 40).sum())
         json.dump({"id": "test/e", "duration": 1, "size": [40, 40], "pivot": [20, 30], "layers": [{"type": "ring", "radius": 8, "thick": 2}, {"type": "beam", "from": [0, 0], "to": [0, -40], "width": 4}]}, open(os.path.join(d, "e.json"), "w"))
-        assert any("layers touching the edge: 1 beam" in b for b in engine.check(os.path.join(d, "e.json")))
+        assert any("layers touching the edge: layer 2 beam" in b for b in engine.check(os.path.join(d, "e.json")))
     from . import ui as _ui                                                                    # the UI's API calls, without HTTP
     with tempfile.TemporaryDirectory() as d:
         w_ = _ui.Work(d); assert any(e["id"] == "fire/torch" for e in _ui.api_list()["effects"]) and "ring" in _ui.api_meta()["layers"]

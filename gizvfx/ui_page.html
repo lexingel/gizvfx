@@ -225,7 +225,7 @@ function load(st,keepOpts){S.recipe=st.recipe||null;S.id=st.id||null;S.openedId=
   S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.renderErr=null;S.res=null;S.idx=0;clearTimeout(editT);editT=null;
   const forced=S.code&&S.mode==='painted';if(forced)forcePixel();S.last=snap();afterLoad();return forced}
 const PYTOAST='Painted needs a recipe. This effect is drawn by Python, so it is shown as Pixel.';
-function restore(str){const forced=load(JSON.parse(str),true);updHist();if(forced)toast(PYTOAST);else if(!S.code&&S.wantPainted){S.wantPainted=false;setMode('painted')}}
+function restore(str){const forced=load(JSON.parse(str),true);S.dirty=true;setTitle();updHist();if(forced)toast(PYTOAST);else if(!S.code&&S.wantPainted){S.wantPainted=false;setMode('painted')}}
 function undo(){if(!HI.stack.length)return;const e=HI.stack.pop();HI.redo.push({s:snap(),l:e.l});restore(e.s)}
 function redo(){if(!HI.redo.length)return;const e=HI.redo.pop();HI.stack.push({s:snap(),l:e.l});restore(e.s)}
 $('#bUndo').onclick=undo;$('#bRedo').onclick=redo;setIcon($('#bUndo'),'undo');setIcon($('#bRedo'),'redo');setIcon($('#bPrev'),'prev');setIcon($('#bNext'),'next');
@@ -434,6 +434,7 @@ function renderCheck(){
     if(f.fixed_recipe)p.append(h('div',{class:'row'},h('button',{class:'primary',onclick:()=>{replaceWith({recipe:f.fixed_recipe,options:S.options,openedId:S.openedId},'Fixed recipe in use (canvas resized)')}},f.problems.length?'Use the fixed recipe ('+f.problems.length+' left)':'Use the fixed recipe'),h('span',{class:'hint'},'The canvas size changes; Undo brings the old one back.')))}}}
 async function runFix(){S.fixed=null;if(S.renderErr){S.fixed={blocked:true};tab('check');renderCheck();return}const r=await api('/api/fix',payload());S.fixed=r;tab('check');renderCheck()}
 
+addEventListener('beforeunload',e=>{if(S.dirty){e.preventDefault();e.returnValue=''}});
 $('#skip').onclick=e=>{e.preventDefault();document.querySelector('.tabs [aria-selected=true]').focus()};
 // ---------- start
 (async()=>{

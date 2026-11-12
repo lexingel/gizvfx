@@ -98,7 +98,7 @@ def pt_(a):
 
 
 def _leftover_layers(meta, o):
-    """' (layers still drawing at t=1: 3 ring 12px, 5 poly 7px)': each layer of a recipe drawn alone at the end"""
+    """' (layers still drawing at t=1: layer 3 ring 12px, layer 5 poly 7px)': each layer of a recipe drawn alone at the end"""
     rec = meta.get("recipe")
     if not rec: return ""
     from .spec import load as spec_load
@@ -107,12 +107,12 @@ def _leftover_layers(meta, o):
         try:
             m2, _ = spec_load(dict(rec, layers=[l])); fr = Frame(*meta["size"]); m2.draw(fr, 1.0, o); n = int((fr.a > 0).sum())
         except Exception: continue                                   # a layer that needs another layer (an anchor) cannot be drawn alone
-        if n or fr.light.max() > 0.05: out.append(f"{i} {l.get('type')} " + (f"{n}px" if n else "glow light only"))
+        if n or fr.light.max() > 0.05: out.append(f"layer {i + 1} {l.get('type')} " + (f"{n}px" if n else "glow light only"))
     return f" (layers still drawing at t=1: {', '.join(out)})" if out else ""
 
 
 def _edge_layers(meta, o, n):
-    """' (touching layers: 0 glow 12px, 3 particles 40px)': each layer of a recipe drawn alone over the animation, edge pixels counted"""
+    """' (layers touching the edge: layer 1 glow 12px, layer 3 particles 40px)': each layer of a recipe drawn alone over the animation, edge pixels counted"""
     rec = meta.get("recipe")
     if not rec: return ""
     from .spec import load as spec_load
@@ -124,7 +124,7 @@ def _edge_layers(meta, o, n):
                 t = k / n if meta["loop"] else k / (n - 1); fr = Frame(*meta["size"]); m2.draw(fr, t, o); a_ = fr.a
                 tot += int((a_[0] > 0).sum() + (a_[-1] > 0).sum() + (a_[:, 0] > 0).sum() + (a_[:, -1] > 0).sum())
         except Exception: continue
-        if tot: out.append(f"{i} {l.get('type')} {tot}px")
+        if tot: out.append(f"layer {i + 1} {l.get('type')} {tot}px")
     return f" (layers touching the edge: {', '.join(out)})" if out else ""
 
 
