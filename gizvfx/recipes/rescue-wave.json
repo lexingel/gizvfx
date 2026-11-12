@@ -1,0 +1,269 @@
+{
+ "id": "water/rescue-wave",
+ "name": "Rescue wave",
+ "loop": false,
+ "duration": 2.0,
+ "fps": 14,
+ "size": [
+  170,
+  100
+ ],
+ "pivot": [
+  90,
+  76
+ ],
+ "palette": "water",
+ "options": {
+  "height": 34,
+  "ringc": "fire"
+ },
+ "palettes": {
+  "rope": "$ringc"
+ },
+ "layers": [
+  {
+   "id": "w",
+   "type": "wave",
+   "height": [
+    "$height*0.25",
+    "$height",
+    "$height",
+    "$height*0.3",
+    0
+   ],
+   "curl": [
+    0,
+    0.35,
+    1,
+    1,
+    0.8
+   ],
+   "length": "$height*1.4",
+   "foam": [
+    0,
+    2,
+    3,
+    3,
+    0
+   ],
+   "at": [
+    [
+     -18,
+     0
+    ],
+    [
+     -4,
+     0
+    ],
+    [
+     12,
+     0
+    ]
+   ],
+   "t": [
+    0,
+    0.82
+   ]
+  },
+  {
+   "id": "s",
+   "type": "water",
+   "width": 150,
+   "depth": [
+    10,
+    10,
+    0
+   ],
+   "ripple": 1.4,
+   "flow": 2,
+   "taper": 14
+  },
+  {
+   "type": "poly",
+   "points": [
+    [
+     -3,
+     -2
+    ],
+    [
+     3,
+     -2
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     -3,
+     2
+    ]
+   ],
+   "at": {
+    "on": "w",
+    "point": "slope",
+    "u": [
+     0.92,
+     0.35
+    ],
+    "dy": -2,
+    "tilt": true
+   },
+   "t": [
+    0.2,
+    0.74
+   ],
+   "color": "#e74c3c"
+  },
+  {
+   "type": "bolt",
+   "from": {
+    "on": "w",
+    "point": "crest",
+    "dy": -1
+   },
+   "to": {
+    "on": "w",
+    "point": "slope",
+    "u": [
+     0.92,
+     0.35
+    ],
+    "dy": -2
+   },
+   "width": 1,
+   "rough": 0.05,
+   "depth": 2,
+   "palette": "@rope",
+   "t": [
+    0.2,
+    0.74
+   ]
+  },
+  {
+   "type": "poly",
+   "points": [
+    [
+     -3,
+     -4
+    ],
+    [
+     3,
+     -4
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     -3,
+     0
+    ]
+   ],
+   "at": {
+    "on": "s",
+    "x": [
+     40,
+     40
+    ],
+    "dy": 0,
+    "tilt": true
+   },
+   "anchor": "base",
+   "color": "#f1c40f",
+   "t": [
+    0.05,
+    0.95
+   ]
+  },
+  {
+   "type": "particles",
+   "mode": "stream",
+   "cycles": 1,
+   "count": 24,
+   "at": {
+    "on": "w",
+    "point": "lip"
+   },
+   "drop": true,
+   "angle": [
+    -130,
+    -30
+   ],
+   "speed": [
+    8,
+    22
+   ],
+   "life": [
+    0.25,
+    0.4
+   ],
+   "size": [
+    4,
+    1
+   ],
+   "gravity": 30,
+   "t": [
+    0.38,
+    0.84
+   ]
+  },
+  {
+   "type": "particles",
+   "mode": "burst",
+   "count": 10,
+   "at": {
+    "on": "w",
+    "point": "lip",
+    "dx": 2
+   },
+   "angle": [
+    -110,
+    -50
+   ],
+   "speed": [
+    20,
+    34
+   ],
+   "lob": true,
+   "life": [
+    0.35,
+    0.65
+   ],
+   "size": [
+    3,
+    1
+   ],
+   "t": [
+    0.55,
+    1
+   ]
+  },
+  {
+   "type": "ring",
+   "at": [
+    16,
+    1
+   ],
+   "radius": [
+    4,
+    38
+   ],
+   "thick": [
+    3,
+    0
+   ],
+   "squash": 0.3,
+   "t": [
+    0.62,
+    1
+   ]
+  }
+ ],
+ "about": "A wave curls over a sea; a lifebuoy slides down its slope on a rope tied at the crest, spray streams off the lip, a marker buoy floats on the ripples.",
+ "tags": [
+  "water",
+  "wave",
+  "sea",
+  "rescue"
+ ]
+}

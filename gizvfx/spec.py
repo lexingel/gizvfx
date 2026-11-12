@@ -42,8 +42,8 @@ SCHEMA = {
     "rays": {"count": "int", "inner": "px from centre, animatable", "length": "px, animatable", "width": "px at the root", "rotate": "degrees over the window", "jitter": "0..1 random length", "squash": "0.1..1: rays lying on the floor (1 = round)"},
     "orbit": {"count": "int", "radius": "px, animatable", "squash": "1 = circle", "turns": "whole turns over the window (whole number for loops)", "size": "px, animatable", "trail": "dots behind each one", "shade": "flat | core"},
     "beam": {"from": "[x, y]", "to": "[x, y]", "width": "px, animatable", "tip": "width at the far end", "extend": "fraction of the window spent growing from `from` to `to`", "shade": "flat = one colour, no stripes", "core": "0..0.9 share of the width at the brightest step (default 0.45)"},
-    "wave": {"height": "px of the crest above the water line, animatable (the wave rises)", "curl": "0..1, animatable: 0 = a steep face, 1 = the lip curls over a hollow barrel", "length": "px of the back slope behind the crest (default 1.5 x height)", "dir": "1 = breaks to the right, -1 = to the left", "foam": "px of bright foam along the crest and lip (default 2, 0 = none)", "streaks": "short foam dashes on the back slope under the crest (default 4, 0 = none)", "id": "give the layer a name, then another layer can sit on its surface: \"at\": {\"on\": \"w\", \"point\": \"slope\", \"u\": 0.7, \"dy\": -2, \"tilt\": true}; points: crest, lip, foot, trough, slope (u 0..1), face, barrel", "deep": "px of water below `at` (default 4)", "depth": "px of the dark edge line (default 2)", "lit": "[x, y] light direction (default [-1, -1])", "bias": "shift the colour, animatable (default -0.35: a mid-blue body, light crest)", "cover": "0..1 dither"},
-    "water": {"width": "px of sea along the water line, animatable (default 80)", "depth": "px of water below the line, animatable: [10, 10, 0] lets it drain away (default 10)", "ripple": "px height of the surface ripples (default 1.2)", "wavelength": "px between ripples (default 14)", "flow": "whole number of ripple cycles over the effect (default 1; keeps a loop closed)", "taper": "px at each end where it thins to nothing (default 10)", "foam": "px of bright line on the surface (default 1)", "edge": "px of the dark edge line (default 1.5)", "bias": "colour shift (default -0.35)", "cover": "0..1 dither"},
+    "wave": {"height": "px of the crest above the water line, animatable (the wave rises)", "curl": "0..1, animatable: 0 = a steep face, 1 = the lip curls over a hollow barrel", "length": "px of the back slope behind the crest (default 1.5 x height)", "dir": "1 = breaks to the right, -1 = to the left", "foam": "px of bright foam along the crest and lip (default 2, 0 = none)", "streaks": "short foam dashes on the back slope under the crest (default 4, 0 = none)", "id": "give the layer a name, then another layer can sit on its surface: \"at\": {\"on\": \"w\", \"point\": \"slope\", \"u\": 0.7, \"dy\": -2, \"tilt\": true}; points: crest, lip, foot, trough, slope (u 0..1), face, barrel. u, dx and dy may be [from, to] over the asking layer's window, so a thing can travel along the wave. A bolt or beam may use the same dict for `from` and `to`, particles for `target`", "deep": "px of water below `at` (default 4)", "depth": "px of the dark edge line (default 2)", "lit": "[x, y] light direction (default [-1, -1])", "bias": "shift the colour, animatable (default -0.35: a mid-blue body, light crest)", "cover": "0..1 dither"},
+    "water": {"width": "px of sea along the water line, animatable (default 80); `at` is the MIDDLE of the stretch, it reaches width/2 to each side", "depth": "px of water below the line, animatable: [10, 10, 0] lets it drain away (default 10)", "ripple": "px height of the surface ripples (default 1.2)", "wavelength": "px between ripples (default 14)", "id": "a name: another layer can float on the surface: \"at\": {\"on\": \"s\", \"x\": 10, \"dy\": -1, \"tilt\": true} (x px from the middle of the sea, may be [from, to])", "flow": "whole number of ripple cycles over the effect (default 1; keeps a loop closed)", "taper": "px at each end where it thins to nothing (default 10)", "foam": "px of bright line on the surface (default 1)", "edge": "px of the dark edge line (default 1.5)", "bias": "colour shift (default -0.35)", "cover": "0..1 dither"},
     "poly": {"shape": "crystal | shard | rock | diamond | arrow | heart (ready-made outlines)", "points": "[[x, y], ...] your own outline, px from `at` (3 to 24 points)", "rotate": "degrees, animatable (a full turn [0, 360] over a loop closes it)", "scale": "animatable", "anchor": "center (default) | base: the lowest point sits on `at`",
              "depth": "band width px (default 4)", "lit": "[dx, dy] light direction (default [-1, -1])", "lit_strength": "0..1, default 0.35", "bias": "dark(-)..bright(+)", "cover": "0..1 dither"},
     "stamp": {"image": "a PNG next to the recipe file, at most 32x32 px (your own sprite: a coin, a leaf)", "scale": "whole number 1 to 4", "flip": "true = mirror", "rotate": "0 | 90 | 180 | 270"},
@@ -506,17 +506,43 @@ def wave_anchor(d, e, point="crest", u=0.75):
     return x * P["sgn"], y, a
 
 
-def at_xy(spec, d, t, e, o):
-    """((x, y), tilt): where a layer is. `at` is a point or a path; or {"on": "<id of a wave layer>", "point": "slope", "u": 0.7, "dx": 0, "dy": 0, "tilt": true}: a point on that wave's surface at this moment"""
-    a = d.get("at", [0, 0])
-    if not isinstance(a, dict): return pt(a, e), 0.0
+def water_anchor(d, e, t, x=0.0):
+    """a point on the surface of a `water` layer at x px from its `at` (its middle): (x, y, angle); the surface moves with time, so a float follows the ripples"""
+    W = val(d.get("width", 80), e); amp = val(d.get("ripple", 1.2), e); wl = max(d.get("wavelength", 14), 2); ph = TAU * d.get("flow", 1) * t; tp = max(d.get("taper", 10), 1)
+    x = max(-W / 2, min(W / 2, x))
+    def y_at(xx): return -amp * math.sin(TAU * xx / wl - ph) * smooth(min(xx + W / 2, W / 2 - xx) / tp)
+    h = 0.5; ang = math.degrees(math.atan2(y_at(x + h) - y_at(x - h), 2 * h))
+    return x, y_at(x), ang
+
+
+def _anchor(spec, a, t, e, o):
     tid = a.get("on"); tgt = next((l for l in spec["layers"] if l.get("id") == tid), None)
     if tgt is None: raise ValueError(f"at: no layer has \"id\": \"{tid}\"")
-    if tgt.get("type") != "wave": raise ValueError("at.on: only a wave layer has surface points")
+    if tgt.get("type") not in ("wave", "water"): raise ValueError("`on`: only a wave or a water layer has surface points (give it an \"id\")")
     d2 = sub(tgt, o); t0, t1 = d2.get("t", [0, 1]); p2 = seg(t, t0, t1); saved = _SEG[0]; _SEG[0] = d2["ease"] if isinstance(d2.get("ease"), list) else None
     e2 = _efn(d2)(p2); bx, by = pt(d2.get("at", [0, 0]), e2); _SEG[0] = saved
-    x, y, ang = wave_anchor(d2, e2, a.get("point", "crest"), a.get("u", 0.75))
-    return (bx + x + a.get("dx", 0), by + y + a.get("dy", 0)), (ang if a.get("tilt") else 0.0)
+    if tgt["type"] == "wave": x, y, ang = wave_anchor(d2, e2, a.get("point", "crest"), val(a.get("u", 0.75), e))
+    else: x, y, ang = water_anchor(d2, e2, t, val(a.get("x", 0), e))
+    return (bx + x + val(a.get("dx", 0), e), by + y + val(a.get("dy", 0), e)), (ang if a.get("tilt") else 0.0)
+
+
+def at_xy(spec, d, t, e, o):
+    """((x, y), tilt): where a layer is. `at` is a point or a path; or an anchor on a wave or water layer (see `_anchor`): a point on that surface at this moment"""
+    a = d.get("at", [0, 0])
+    if not isinstance(a, dict): return pt(a, e), 0.0
+    return _anchor(spec, a, t, e, o)
+
+
+def resolve_pts(spec, d, t, o):
+    """a copy of the layer in which `from`, `to` (bolt, beam; they are measured from the layer's `at`) and `target` (particles; measured from the pivot) given as anchors are plain points of this moment"""
+    ks = [k for k in ("from", "to", "target") if isinstance(d.get(k), dict) and "on" in d[k]]
+    if not ks: return d
+    t0, t1 = d.get("t", [0, 1]); p = seg(t, t0, t1); saved = _SEG[0]; _SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None
+    try: e = _efn(d)(p); (ox, oy), _ = at_xy(spec, d, t, e, o); d = dict(d)
+    finally: _SEG[0] = saved
+    for k in ks:
+        (x, y), _ = _anchor(spec, d[k], t, e, o); d[k] = [x, y] if k == "target" else [x - ox, y - oy]
+    return d
 
 
 def water_geometry(d, e, t):
@@ -626,16 +652,21 @@ def validate(spec):
         if any(x not in EASE for x in (es if isinstance(es, list) else [es])): raise ValueError(f"layer {i} ({ty}): ease must be one of {', '.join(EASE)} (or a list of them, one per key step)")
 
 
+def _roles(spec, o):
+    r = spec.get("palettes"); return sub(r, o) if r else r
+
+
 def _near(k, pool):
     m = difflib.get_close_matches(k, list(pool), 1, 0.6); return f" (did you mean '{m[0]}'?)" if m else ""
 
 
 def _one(spec, g, d, i, t, px, py, main, o, sc, vs):
+    d = resolve_pts(spec, d, t, o)
     t0, t1 = d.get("t", [0, 1]); p = seg(t, t0, t1); _SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None; e = _efn(d)(p); (ox, oy), tilt = at_xy(spec, d, t, e, o); wob = d.get("wobble")
     if d.get("spin"): ox += d["spin"][0] * math.cos(TAU * d["spin"][1] * p); oy += d["spin"][0] * math.sin(TAU * d["spin"][1] * p)
     if wob: ox += wob[0] * math.sin(TAU * (t * wob[2])); oy += wob[1] * math.sin(TAU * (t * wob[2] + 0.25))
     vv = d.get("v")
-    c = SimpleNamespace(f=g, t=t, p=p, e=e, px0=px, py0=py, ox=px + ox, oy=py + oy, ramp=_ramp(d, main, spec.get("palettes")), seed=int(o.seed) * 131 + int(d.get("seed", i)) * 17, rng=None, sc=sc, dir=spec.get("_dir"), loop=bool(spec.get("loop")),
+    c = SimpleNamespace(f=g, t=t, p=p, e=e, px0=px, py0=py, ox=px + ox, oy=py + oy, ramp=_ramp(d, main, _roles(spec, o)), seed=int(o.seed) * 131 + int(d.get("seed", i)) * 17, rng=None, sc=sc, dir=spec.get("_dir"), loop=bool(spec.get("loop")),
                         v=lambda default, vv=vv, e=e: val(default if vv is None else vv, e) + vs)
     def _atf(tt):                                                                                 # where this layer is at another moment (a `drop` of particles asks)
         sv = _SEG[0]; _SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None
@@ -683,7 +714,7 @@ def draw_spec(spec, f, t, o):
                     dt = k / S * sm[0] * (t1 - t0); tk = (t - dt) % 1.0 if spec["loop"] else t - dt
                 if tk < t0 or (tk > t1 and not d.get("hold")): continue
                 _one(spec, g, d, i, tk, px, py, main, o, 1 - (1 - sm[1]) * k / S if k else 1.0, -0.45 * k / S if k else 0.0)
-            if post: _post(f, g, d, main, _efn(d)(seg(t, t0, t1)), spec.get("palettes"))
+            if post: _post(f, g, d, main, _efn(d)(seg(t, t0, t1)), _roles(spec, o))
         except (TypeError, KeyError, IndexError, ValueError, ZeroDivisionError) as ex:
             raise ValueError(f"layer {i} ({d.get('type')}): {type(ex).__name__}: {ex}") from None
     if spec.get("style"): _style(f, spec["style"], main)

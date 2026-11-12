@@ -90,4 +90,15 @@ def run():
         json.dump({"id": "test/w2", "duration": 0.6, "size": [120, 80], "layers": [{"type": "poly", "at": {"on": "nope"}}]}, open(os.path.join(d, "w2.json"), "w"))
         try: engine.render(os.path.join(d, "w2.json")); raise AssertionError("an unknown id should be an error")
         except ValueError: pass
+    from .spec import water_anchor                                                               # a float on the sea tilts with the ripples; anchors move, bolt ends and palette roles take them
+    x0_, y0_, a0_ = water_anchor({"width": 80, "ripple": 2, "wavelength": 12}, 0.5, 0.0, 5.0); assert abs(y0_) <= 2 and -90 < a0_ < 90 and water_anchor({"width": 80}, 0.5, 0.0, 500.0)[0] == 40.0
+    with tempfile.TemporaryDirectory() as d:
+        rp = os.path.join(d, "r.json"); json.dump({"id": "test/r", "duration": 0.8, "size": [120, 80], "pivot": [60, 60], "options": {"c": "fire"}, "palettes": {"rope": "$c"}, "layers": [
+            {"id": "w", "type": "wave", "height": 30, "curl": 0.5}, {"id": "s", "type": "water", "width": 100},
+            {"type": "poly", "shape": "arrow", "at": {"on": "w", "point": "slope", "u": [0.9, 0.3], "tilt": True}, "scale": 0.4},
+            {"type": "bolt", "from": {"on": "w", "point": "crest"}, "to": {"on": "w", "point": "slope", "u": [0.9, 0.3]}, "palette": "@rope"},
+            {"type": "poly", "shape": "diamond", "at": {"on": "s", "x": 20, "tilt": True}, "scale": 0.4}]}, open(rp, "w"))
+        fa = engine.render(rp, {"colors": 0}); assert len(fa) > 1 and np.array(fa[3])[..., 3].any()
+        from . import painted
+        assert len(painted.render(rp, {}, scale=2)) > 1                                         # the painted renderer resolves the same anchors
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

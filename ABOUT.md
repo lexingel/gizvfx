@@ -12,7 +12,7 @@ Every effect is a list of layers (glow, ring, particles, bolt, beam and so on) w
 
 ## What ships with it
 
-There are 46 effects: 13 drawn in Python (torch, fireball, small explosion, hit spark, shockwave, lightning bolt, frost nova, heal, magic circle, coin sparkle, slash, rain, snow) and 33 JSON recipes (energy orb, poison cloud, tornado, smite, portal, teleport, shield bubble, meteor impact, ink slash, claw scratch, paint splat, pop burst, speed dash, breaking wave, surfer's wave and others). The 33 recipes have a painted version in all eight styles. The 13 Python effects are pixel only.
+There are 47 effects: 13 drawn in Python (torch, fireball, small explosion, hit spark, shockwave, lightning bolt, frost nova, heal, magic circle, coin sparkle, slash, rain, snow) and 34 JSON recipes (energy orb, poison cloud, tornado, smite, portal, teleport, shield bubble, meteor impact, ink slash, claw scratch, paint splat, pop burst, speed dash, breaking wave, surfer's wave, rescue wave and others). The 34 recipes have a painted version in all eight styles. The 13 Python effects are pixel only.
 
 ## Making a new effect
 

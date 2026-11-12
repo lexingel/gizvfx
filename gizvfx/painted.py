@@ -444,7 +444,7 @@ def _ctx(meta, d, i, t, o, S, main, vs=0.0):
     spec = meta["recipe"]; px, py = spec["pivot"]; t0, t1 = d.get("t", [0, 1]); p = seg(t, t0, t1); sp._SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None; e = sp._efn(d)(p); (ox, oy), tilt = sp.at_xy(spec, d, t, e, o)
     if d.get("spin"): ox += d["spin"][0] * math.cos(sp.TAU * d["spin"][1] * p); oy += d["spin"][0] * math.sin(sp.TAU * d["spin"][1] * p)
     if d.get("wobble"): w_ = d["wobble"]; ox += w_[0] * math.sin(sp.TAU * (t * w_[2])); oy += w_[1] * math.sin(sp.TAU * (t * w_[2] + 0.25))
-    vv = d.get("v"); seed = int(o.seed) * 131 + int(d.get("seed", i)) * 17; ramp = sp._ramp(d, main, spec.get("palettes")); vf = lambda default, vv=vv, e=e: sp.val(default if vv is None else vv, e) + vs
+    vv = d.get("v"); seed = int(o.seed) * 131 + int(d.get("seed", i)) * 17; ramp = sp._ramp(d, main, sp._roles(spec, o)); vf = lambda default, vv=vv, e=e: sp.val(default if vv is None else vv, e) + vs
     u = type("C", (), {})(); u.t, u.p, u.e = t, p, e; u.ox, u.oy = px + ox, py + oy; u.px0, u.py0 = px, py; u.ramp, u.seed, u.sc, u.v, u.loop, u.dir = ramp, seed, 1.0, vf, bool(spec.get("loop")), spec.get("_dir"); u.rng = Rng(seed)
     def _atf(tt):                                                                                                       # where this layer is at another moment (a `drop` of particles asks)
         sv = sp._SEG[0]; sp._SEG[0] = d["ease"] if isinstance(d.get("ease"), list) else None
@@ -490,7 +490,8 @@ def render_frame(meta, o, t, S, style="ink", opts=None, tick=0, inner=False):
                 if not spec["loop"] and t >= t1: continue
                 tk = (t - k / n * sm[0] * (t1 - t0)) % 1.0 if spec["loop"] else t - k / n * sm[0] * (t1 - t0); alpha = 1 - (1 - sm[1]) * k / n; vs = -0.45 * k / n
             if tk < t0 or (tk > t1 and not d.get("hold")): continue
-            for kind, lay in (_layers(meta, d, i, tk, o, S, main, ("ink" if k and style in ("comic", "linocut", "stencil") else style), opts, tick, vs) if d["type"] != "include" else [("solid", _include(meta, d, _ctx(meta, d, i, tk, o, S, main, vs), S, style, opts, tick, o))]):
+            dk = sp.resolve_pts(spec, d, tk, o)
+            for kind, lay in (_layers(meta, dk, i, tk, o, S, main, ("ink" if k and style in ("comic", "linocut", "stencil") else style), opts, tick, vs) if d["type"] != "include" else [("solid", _include(meta, dk, _ctx(meta, dk, i, tk, o, S, main, vs), S, style, opts, tick, o))]):
                 arr = np.asarray(lay)
                 if kind == "light": light += arr[..., :3].astype(np.float32) / 255 * (arr[..., 3:4].astype(np.float32) / 255) * alpha                         # light is added to everything under it at the end, as in the pixel renderer
                 else:

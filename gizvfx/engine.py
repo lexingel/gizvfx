@@ -93,6 +93,10 @@ def limit_colors(frames, n):
     return out
 
 
+def pt_(a):
+    return (a[0], a[1]) if not isinstance(a[0], (list, tuple)) else (a[0][0], a[0][1])
+
+
 def check(eid, given=None):
     """quality checks; returns a list of problems (empty = clean)"""
     mod, meta = get(eid); o = options(meta, given); n = n_frames(meta); bad = []; w, h = meta["size"]
@@ -110,7 +114,17 @@ def check(eid, given=None):
         s = {"top": int((f.a[0] > 0).sum()), "bottom": int((f.a[-1] > 0).sum()), "left": int((f.a[:, 0] > 0).sum()), "right": int((f.a[:, -1] > 0).sum())}
         if sum(s.values()) and first is None: first = i
         edge += sum(s.values()); sides |= {k for k, v in s.items() if v}
-    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation: {', '.join(sorted(sides))} edge, first at frame {first} of {n} (cropped? make the canvas bigger, or move the pivot or `at` away from that edge; a `wave` reaches `length` px behind its crest)")
+    hint = ""
+    if edge and meta.get("recipe"):
+        w_, h_ = meta["size"]
+        for li, l in enumerate(meta["recipe"]["layers"]):
+            if l.get("type") != "water" or isinstance(l.get("at"), dict): continue
+            try: ax = pt_(l.get("at", [0, 0]))[0]; W2 = max(v for v in (l.get("width", 80) if isinstance(l.get("width", 80), list) else [l.get("width", 80)]) if isinstance(v, (int, float))) / 2
+            except (TypeError, ValueError): continue
+            lft, rgt = meta["pivot"][0] + ax - W2, meta["pivot"][0] + ax + W2
+            if lft <= 0: hint += f"; layer {li} (water) reaches {-lft:.0f} px past the left edge: `at` is its MIDDLE, `width` is the whole width"
+            if rgt >= w_: hint += f"; layer {li} (water) reaches {rgt - w_:.0f} px past the right edge: `at` is its MIDDLE, `width` is the whole width"
+    if edge and not meta.get("tile"): bad.append(f"{edge} pixels touch the canvas edge over the animation: {', '.join(sorted(sides))} edge, first at frame {first} of {n} (cropped? make the canvas bigger, or move the pivot or `at` away from that edge; a `wave` reaches `length` px behind its crest)" + hint)
     return bad
 
 
