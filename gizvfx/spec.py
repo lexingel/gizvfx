@@ -49,7 +49,7 @@ SCHEMA = {
     "poly": {"shape": "crystal | shard | rock | diamond | arrow | heart (ready-made outlines)", "points": "[[x, y], ...] your own outline, px from `at` (3 to 24 points)", "rotate": "degrees, animatable (a full turn [0, 360] over a loop closes it)", "scale": "animatable", "anchor": "center (default) | base: the lowest point sits on `at`",
              "depth": "band width px (default 4)", "lit": "[dx, dy] light direction (default [-1, -1])", "lit_strength": "0..1, default 0.35", "bias": "dark(-)..bright(+)", "cover": "0..1 dither"},
     "stamp": {"image": "a PNG next to the recipe file, at most 32x32 px (your own sprite: a coin, a leaf)", "scale": "whole number 1 to 4", "flip": "true = mirror", "rotate": "0 | 90 | 180 | 270"},
-    "include": {"recipe": "id of a recipe (`gizvfx list`) or the path of a .json file; its time is stretched over this layer's window and it is drawn at this layer's `at`", "options": "{name: value} for that recipe's options"},
+    "include": {"repeat": "plays the included recipe this many times over the window (a loop recipe as the charge-up before a release)", "recipe": "id of a recipe (`gizvfx list`) or the path of a .json file (looked up next to your recipe file first); its time is stretched over this layer's window and it is drawn at this layer's `at`", "options": "{name: value} for that recipe's options"},
     "funnel": {"height": "px, animatable", "base": "half-width at the bottom px", "top": "half-width at the top px", "stripes": "swirl stripes around it (default 3)", "twist": "how much the stripes lean up the column (default 0.15)",
                "turns": "whole turns over the window (loops close)", "lean": "px the column sways sideways", "fade": "0..1 dithers the top away (looks like mesh: prefer `erode`)", "profile": "half-widths bottom to top as keys, e.g. [3, 4, 9, 22] (replaces base/top)", "bend": "sideways offsets bottom to top as keys, e.g. [0, 5, -3, 6]", "ripple": "[amp, cycles]: the width pulses up the column"},
     "brush": {"path": "[[x, y], ...] 3+ points from `at`: the stroke follows a smooth curve through them", "width": "px at the fattest, animatable", "tail": "how much of the path stays visible behind the head, 0..1 (default 0.7)",
@@ -614,15 +614,26 @@ def L_stamp(f, d, c):
 _DEPTH = [0]
 
 
+def _inc_ref(ref, rdir):
+    """a .json path in `include` is looked up next to the recipe file first, then as given"""
+    if ref.lower().endswith(".json") and rdir and not os.path.isabs(ref) and os.path.exists(os.path.join(rdir, ref)): return os.path.join(rdir, ref)
+    return ref
+
+
+def _inc_t(d, p):
+    """time inside an included recipe: `repeat` plays it that many times over the layer's window (a loop recipe stays closed)"""
+    n = d.get("repeat", 1); return p if n == 1 else (p * n) % 1.0 if p < 1 else 1.0
+
+
 def L_include(f, d, c):
     from . import engine
     if _DEPTH[0] >= 2: raise ValueError("include is nested more than 2 deep")
-    mod, meta = engine.get(d["recipe"])
+    mod, meta = engine.get(_inc_ref(d["recipe"], c.dir))
     if "recipe" not in meta: raise ValueError(f"include: '{d['recipe']}' is drawn by Python code; only recipes can be included (`gizvfx list`: those with the tag 'recipe')")
     sub = dict(meta["recipe"]); sub["pivot"] = [c.ox, c.oy]; o2 = engine.options(meta, d.get("options")); o2.seed = c.seed
     if d.get("palette") not in (None, "main"): o2.palette = d["palette"]
     _DEPTH[0] += 1
-    try: draw_spec(sub, f, c.p, o2)
+    try: draw_spec(sub, f, _inc_t(d, c.p), o2)
     finally: _DEPTH[0] -= 1
 
 

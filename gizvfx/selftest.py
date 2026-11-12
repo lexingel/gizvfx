@@ -126,4 +126,9 @@ def run():
         bad_ = dict(json.load(open(fp_)), layers=[{"type": "ring", "radius": 5, "clip": "nope"}]); json.dump(bad_, open(fp_, "w"))
         try: engine.render(fp_, {"colors": 0}); raise SystemExit("clip to a missing id must fail")
         except (KeyError, ValueError) as ex_: assert "no layer has" in str(ex_)
+    with tempfile.TemporaryDirectory() as d:                                                       # include: a .json next to the recipe, `repeat` plays a loop several times in a window
+        json.dump({"id": "test/idle", "loop": True, "duration": 1, "size": [60, 60], "layers": [{"type": "orbit", "count": 1, "radius": 15, "size": 3, "turns": 1}]}, open(os.path.join(d, "idle.json"), "w"))
+        json.dump({"id": "test/rel", "duration": 2, "size": [60, 60], "layers": [{"type": "include", "recipe": "idle.json", "repeat": 2, "t": [0, 0.5]}]}, open(os.path.join(d, "rel.json"), "w"))
+        fr_ = engine.render(os.path.join(d, "rel.json"), {"colors": 0}); n_ = len(fr_); assert n_ > 8 and np.array(fr_[0])[..., 3].any() and not np.array(fr_[-1])[..., 3].any()
+        i1_, i2_ = int(0.25 * (n_ - 1)), int(0.5 * (n_ - 1)); assert np.array_equal(np.array(fr_[0]), np.array(fr_[min(i2_, n_ - 1)])) or np.array(fr_[i1_])[..., 3].any()   # it plays and loops inside the window
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

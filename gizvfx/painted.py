@@ -412,13 +412,13 @@ _DEPTH = [0]
 def _include(meta, d, c, S, style, opts, tick, o):
     """an included recipe, drawn smooth by this renderer: its time is stretched over this layer's window and its pivot is this layer's `at`"""
     if _DEPTH[0] >= 2: raise ValueError("include is nested more than 2 deep")
-    mod, m2 = engine.get(d["recipe"])
+    mod, m2 = engine.get(sp._inc_ref(d["recipe"], meta["recipe"].get("_dir")))
     if "recipe" not in m2: raise ValueError(f"include: '{d['recipe']}' is drawn by Python code; only recipes can be included")
     sub = dict(m2["recipe"]); sub["pivot"] = [c.u.ox, c.u.oy]; o2 = engine.options(m2, d.get("options")); o2.seed = c.seed
     if d.get("palette") not in (None, "main"): o2.palette = d["palette"]
     meta2 = dict(m2); meta2["size"] = meta["size"]; meta2["recipe"] = sub
     _DEPTH[0] += 1
-    try: return render_frame(meta2, o2, c.p, S, style, opts, tick, inner=True)
+    try: return render_frame(meta2, o2, sp._inc_t(d, c.p), S, style, opts, tick, inner=True)
     finally: _DEPTH[0] -= 1
 
 
@@ -514,7 +514,7 @@ def render_frame(meta, o, t, S, style="ink", opts=None, tick=0, inner=False):
                     img.alpha_composite(lay)
     if light.any():                                                                                                   # the light: it brightens what is under it, and on empty ground it is a soft translucent glow
         arr = np.asarray(img).astype(np.float32); has = arr[..., 3] > 4; add = np.clip(light, 0, 1) * 255 * float(o.light)
-        arr[..., :3] = np.where(has[..., None], np.clip(arr[..., :3] + add, 0, 255), np.clip(add, 0, 255)); ga = np.where(add.max(-1) / 255 > 0.06, np.clip(add.max(-1) / 255 * 0.85, 0, 1) * 255, 0); arr[..., 3] = np.maximum(arr[..., 3], ga)
+        mx = np.maximum(add.max(-1, keepdims=True), 1e-3); arr[..., :3] = np.where(has[..., None], np.clip(arr[..., :3] + add, 0, 255), np.clip(add / mx * 255, 0, 255)); ga = np.where(add.max(-1) / 255 > 0.06, np.clip(add.max(-1) / 255 * 0.85, 0, 1) * 255, 0); arr[..., 3] = np.maximum(arr[..., 3], ga)
         img = Image.fromarray(arr.astype(np.uint8), "RGBA")
     if inner: return img
     a = np.asarray(img.getchannel("A"), np.float32) * _grain(W * S, H * S, int(o.seed) + 5, 0.14 if o.hard is False else 0.0)

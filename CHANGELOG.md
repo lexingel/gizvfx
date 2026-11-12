@@ -27,6 +27,8 @@ GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, pa
 
 - Layer keys `flash` (flares white at given moments: the reaction to a hit) and `clip` (a layer is drawn only inside another layer's pixels), in the pixel and painted renderers.
 
+- `include`: a `.json` path is found next to the recipe file, new key `repeat` (play the included loop N times in the window: a charge-up before a release; both renderers). Painted: a glow on empty ground keeps its hue instead of turning grey on a light `--bg`.
+
 History carried over from Gizpix 0.2.0:
 - Painted: glows fall off in the pixel renderer's bands (soft edges), watercolor has more body and colour on dark grounds. Beam colours across the width match the pixel beam.
 - Painted, the last small differences from the pixel frames: `rim`, a true gradient across a `beam` with a white-hot line, core-shaded dots (coin-burst is gold again), thicker speed lines, a glow with the pixel renderer's flat first step (shield-bubble, bomb-fuse), crossing-line sparkles for `star`, more body in watercolor.
