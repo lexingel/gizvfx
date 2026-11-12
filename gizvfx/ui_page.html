@@ -105,6 +105,20 @@ details.help p{margin:6px 0;color:var(--mut)}
 .card textarea{display:block;width:calc(100% - 16px);margin:0 8px 6px;font:12px/1.4 ui-monospace,Consolas,monospace;resize:vertical;min-height:70px;white-space:pre-wrap}
 .card textarea[aria-invalid=true],#json[aria-invalid=true]{border-color:var(--bad)}
 .fmsg{margin:0 8px 8px;color:#ffb4b4;font-size:12px}
+.rows{padding:6px 10px 0}
+.krow{display:grid;grid-template-columns:84px minmax(0,1fr) 34px;gap:6px;align-items:center;margin:4px 0}
+.krow>label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cc{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cc .sub{color:var(--mut);font-size:12px}
+.cc input[type=range]{flex:1;min-width:70px}
+.cc input[type=color]{padding:0;width:34px}
+.krow.bad input,.krow.bad select{border-color:var(--bad)}
+.mono{font:12px ui-monospace,Consolas,monospace}
+.card.rerr{border-color:#7a2b30}
+.addrow{padding:0 10px 6px}.addrow select{width:100%}
+details.rawjson{margin:2px 8px 8px}
+details.rawjson summary{cursor:pointer;color:var(--accent);min-height:32px;display:list-item;padding:5px 0}
+details.rawjson textarea{width:100%;margin:0}
 .keys{margin:0 8px 8px;font-size:12px;color:var(--mut)}
 .keys button.key{padding:0 8px;min-height:32px;min-width:32px;color:var(--accent);border-color:transparent;background:transparent;font:12px ui-monospace,Consolas,monospace}
 .keys button.key:hover{border-color:var(--edge)}
@@ -243,13 +257,19 @@ function friendly(raw){let m=String(raw),where='',layer=null,changed=false;const
   const t=m.replace(/\. (Types|Keys): [\s\S]*$/,'.');if(t!==m){m=t;changed=true}
   if(/not supported between instances|can't multiply|must be real number|unsupported operand|can only concatenate|could not convert|object is not (iterable|subscriptable)/.test(m)){m='a value that should be a number is text, or a list sits where one number goes. Check the numbers in this layer.';changed=true}
   else if(/drawn by Python code; only recipes/.test(m)){m='this effect is drawn by Python code, so it has no painted look.';changed=true}
+  let keys=null,sug=null;
   if(layer!=null&&S.recipe&&S.meta){const lay=(S.recipe.layers||[])[layer],un=m.match(/type '([^']*)' is unknown/);
-    if(un&&!/did you mean/.test(m)){const near=[...S.meta.layers].map(t=>[lev(t,un[1]),t]).sort((a,b)=>a[0]-b[0]).slice(0,3).map(x=>x[1]);m+=' Closest types: '+near.join(', ')+'.';changed=true}
-    else if(m.startsWith('a value that should be a number')&&lay){const bad=Object.entries(lay).filter(([k,v])=>!TXT.has(k)&&(typeof v==='string'||(Array.isArray(v)&&v.some(x=>typeof x==='string')))).map(x=>x[0]);if(bad.length)m+=' Look at: '+bad.join(', ')+'.'}}
-  return{text:where+m,layer,raw:changed?String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1)):null}}
+    if(un){const dm=m.match(/did you mean '([^']+)'/);if(dm)sug=dm[1];else{const near=[...S.meta.layers].map(t=>[lev(t,un[1]),t]).sort((a,b)=>a[0]-b[0]).slice(0,3).map(x=>x[1]);sug=near[0];m+=' Closest types: '+near.join(', ')+'.';changed=true}}
+    else if(m.startsWith('a value that should be a number')&&lay){const bad=Object.entries(lay).filter(([k,v])=>!TXT.has(k)&&(typeof v==='string'||(Array.isArray(v)&&v.some(x=>typeof x==='string')))).map(x=>x[0]);if(bad.length){keys=bad;m+=' Look at: '+bad.join(', ')+'.'}}}
+  return{text:where+m,layer,keys,sug,raw:changed?String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1)):null}}
 function rawDetails(raw){return raw?h('details',{},h('summary',{},'original message'),h('small',{},raw)):null}
-function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';e.append(f.text);const d=rawDetails(f.raw);if(d)e.append(d)}
-function markLayer(f){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const ta=c.querySelector('textarea'),m=c.querySelector('.fmsg');if(!ta)return;const mine=!!f&&f.layer===i;if(mine){ta.setAttribute('aria-invalid','true');m.hidden=false;m.textContent=f.text}else if(ta.dataset.rerr){ta.removeAttribute('aria-invalid');m.hidden=true}ta.dataset.rerr=mine?'1':''})}
+function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';
+  if(f.layer!=null&&S.recipe){e.append('Layer '+(f.layer+1)+' cannot be drawn. ',h('button',{onclick:()=>goLayer(f.layer)},'Go to layer '+(f.layer+1)));return}
+  e.append(f.text);const d=rawDetails(f.raw);if(d)e.append(d)}
+function markLayer(f){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const ta=c.querySelector('textarea'),m=c.querySelector('.fmsg');if(!ta)return;const mine=!!f&&f.layer===i;
+  c.querySelectorAll('.krow').forEach(r=>r.classList.toggle('bad',mine&&(f.keys||[]).includes(r.dataset.k)));
+  if(mine){ta.setAttribute('aria-invalid','true');m.hidden=false;m.replaceChildren(f.text);if(f.sug)m.append(' ',h('button',{onclick:()=>c._setType(f.sug)},"Use '"+f.sug+"'"));const d=rawDetails(f.raw);if(d)m.append(d);c.classList.add('rerr');ta.dataset.rerr='1'}
+  else if(ta.dataset.rerr){ta.removeAttribute('aria-invalid');m.hidden=true;m.replaceChildren();c.classList.remove('rerr');ta.dataset.rerr=''}})}
 
 // ---------- rendering pipeline
 let seq=0,tR,tC;
@@ -374,30 +394,67 @@ function buildOptions(force){
   box.append(g);updOpts()}
 function updOpts(){const hd=$('#optsHead');if(!hd)return;hd.replaceChildren();const n=Object.keys(S.options).length;if(n)hd.append(h('span',{class:'hint'},n+' override'+(n>1?'s':'')+' active'),h('button',{onclick:()=>{S.options={};S.optsSig='';buildOptions(true);touch()}},'Reset preview options'))}
 
+const PXKEYS=new Set(['radius','thick','width','size','length','inner','tip','depth']);
+function parseEnum(desc){const head=String(desc).split(/:\s/)[0];if(!/ \| /.test(head))return null;const parts=head.split(' | ').map(p=>p.trim().split(/[ (=]/)[0]).filter(Boolean);return parts.length>1&&parts.every(p=>/^[a-z0-9_\-]+$/i.test(p))?parts:null}
+function labelsOf(desc,n){const m=String(desc).match(/\[\[?\s*([a-z][a-z0-9_]*)\s*,\s*([a-z][a-z0-9_]*)(?:\s*,\s*([a-z][a-z0-9_]*))?/i);if(m){const L=m.slice(1).filter(Boolean);if(L.length===n)return L}return null}
+function rangeOf(k,desc,v){const m=String(desc).match(/(-?\d+(?:\.\d+)?)\.\.(\d+(?:\.\d+)?)(\+?)/);if(m){const lo=+m[1],hi=+m[2];return[lo,m[3]?hi*2:hi]}if(PXKEYS.has(k))return[0,Math.max(64,Math.ceil(Math.abs(v)*2))];return null}
+function defaultFor(k,desc){const e=parseEnum(desc),d=String(desc);if(e)return e[0];if(/^true\b|true =/.test(d))return true;
+  if(/\[lo, hi\]/.test(d))return[1,2];if(/\[start, end\]/.test(d))return[2,0];if(/\[a0, a1\]/.test(d))return[0,360];if(/\[w, h\]/.test(d))return[8,8];if(/\[dx, dy\]/.test(d))return[-1,-1];if(/\[\[?x/.test(d)||/\[from, to\]/.test(d))return[0,0];
+  if(/\b0\.\.1/.test(d))return 0.5;if(/\bint\b/.test(d))return 3;if(/\bpx\b/.test(d)||PXKEYS.has(k))return 8;if(/#rrggbb|ramp name|name for/.test(d))return'';return 1}
+function numInput(v,id,label,onNum,w){return h('input',{type:'number',id,step:'any','aria-label':label,value:v,style:'width:'+(w||78)+'px',oninput:e=>{const n=parseFloat(e.target.value);if(isFinite(n))onNum(n)}})}
+function mkCtl(cur,k,desc,id,commit,build){
+  const v=cur()[k],set=nv=>{cur()[k]=nv;commit(k)},isNum=x=>typeof x==='number',anim=/animatable|number or \[from, to\]/.test(desc);
+  if(typeof v==='boolean')return h('input',{type:'checkbox',id,checked:v,onchange:e=>set(e.target.checked)});
+  if(isNum(v)){let rg=null;const n=numInput(v,id,k,x=>{set(x);if(rg)rg.value=x}),r=rangeOf(k,desc,v);
+    if(r)rg=h('input',{type:'range',min:r[0],max:r[1],step:(r[1]-r[0])/100,value:v,'aria-label':k+' slider',oninput:e=>{const x=parseFloat(e.target.value);n.value=x;set(x)}});
+    return h('span',{class:'cc'},n,rg,anim?h('button',{class:'chip',title:'Animate: change over the life of the effect',onclick:()=>{cur()[k]=[v,v];build();commit(k,true)}},'animate'):null)}
+  if(Array.isArray(v)&&v.length>=2&&v.length<=4&&v.every(isNum)){
+    const labs=labelsOf(desc,v.length)||(v.length===2?['from','to']:v.length===3?['from','mid','to']:v.map((_,j)=>String(j+1))),cc=h('span',{class:'cc'});
+    v.forEach((x,j)=>{cc.append(h('span',{class:'sub'},labs[j]),numInput(x,j?null:id,k+' '+labs[j],n=>{const a=[...cur()[k]];a[j]=n;set(a)},64))});
+    if(anim&&v.length<=3)cc.append(h('button',{class:'chip',title:'Fixed: one value for the whole effect',onclick:()=>{cur()[k]=v[0];build();commit(k,true)}},'fixed'));return cc}
+  if(typeof v==='string'){let opts=null;
+    if(k==='palette')opts=['main',...S.meta.palettes];else if(k==='clip')opts=['',...S.recipe.layers.map(x=>x.id).filter(x=>x&&x!==cur().id)];else opts=parseEnum(desc);
+    if(opts){if(!opts.includes(v))opts=[v,...opts];return h('select',{id,onchange:e=>set(e.target.value)},...opts.map(o=>h('option',{value:o,selected:o===v},o||'(none)')))}
+    let c=null;const t=h('input',{type:'text',id,value:v,spellcheck:'false',oninput:e=>{set(e.target.value);if(c&&/^#[0-9a-f]{6}$/i.test(e.target.value))c.value=e.target.value}});
+    if((k==='color'||k==='outline')&&/^#[0-9a-f]{6}$/i.test(v))c=h('input',{type:'color',value:v,'aria-label':k+' picker',oninput:e=>{t.value=e.target.value;set(e.target.value)}});
+    return h('span',{class:'cc'},t,c)}
+  return h('input',{type:'text',id,class:'mono',value:JSON.stringify(v),spellcheck:'false',oninput:e=>{try{set(JSON.parse(e.target.value));e.target.removeAttribute('aria-invalid')}catch(_){e.target.setAttribute('aria-invalid','true')}}})}
+function goLayer(i){tab('layers');S.sel=i;const cards=document.querySelectorAll('#p-layers .card');cards.forEach((c,j)=>c.classList.toggle('sel',j===i));const c=cards[i];if(c){c.scrollIntoView({block:'nearest'});c.querySelector('.rows input,.rows select,.rows button')?.focus()}}
 function fmtLayer(l){return '{'+String.fromCharCode(10)+Object.entries(l).map(([k,v])=>' '+JSON.stringify(k)+': '+JSON.stringify(v)).join(','+String.fromCharCode(10))+String.fromCharCode(10)+'}'}
 function summary(l){return Object.keys(l).filter(x=>x!=='type').slice(0,3).map(x=>x+': '+JSON.stringify(l[x])).join('  ')}
 function renderSummaries(){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const l=S.recipe?.layers?.[i];if(l){c.querySelector('.s').textContent=summary(l);c.querySelector('.title b').textContent=(i+1)+' '+l.type}})}
-function addLayer(type){const r=S.recipe;const nl=JSON.parse(JSON.stringify(TEMPL[type]||{type}));if(!r.loop&&!nl.t)nl.t=[0,0.9];r.layers.push(nl);S.sel=r.layers.length-1;renderLayers();edit(stepKey(),'add '+type+' layer');const cards=document.querySelectorAll('#p-layers .card');cards[cards.length-1]?.scrollIntoView({block:'nearest'});cards[cards.length-1]?.querySelector('textarea').focus()}
+function addLayer(type){const r=S.recipe;const nl=JSON.parse(JSON.stringify(TEMPL[type]||{type}));if(!r.loop&&!nl.t)nl.t=[0,0.9];r.layers.push(nl);S.sel=r.layers.length-1;renderLayers();edit(stepKey(),'add '+type+' layer');const cards=document.querySelectorAll('#p-layers .card');cards[cards.length-1]?.scrollIntoView({block:'nearest'});cards[cards.length-1]?.querySelector('.rows select,.rows input')?.focus()}
 function renderLayers(){
   const p=$('#p-layers');p.replaceChildren();const r=S.recipe;if(!r){p.append(h('div',{class:'msg'},'No layers to edit: this effect is drawn by Python code.'),h('div',{class:'row'},h('button',{class:'primary',onclick:newRecipe},'New effect')));return}
   const more=h('select',{'aria-label':'Another layer type',onchange:e=>{if(e.target.value){addLayer(e.target.value);e.target.value=''}}},h('option',{value:''},'Other type...'),...S.meta.layers.filter(t=>!COMMON_TYPES.includes(t)).sort().map(t=>h('option',{value:t},t)));
   p.append(h('div',{class:'row',role:'group','aria-label':'Add a layer'},...COMMON_TYPES.map(t=>h('button',{class:'chip',onclick:()=>addLayer(t)},'+ '+t)),more),
     h('div',{class:'hint'},r.layers.length?'Layers draw in this order: the last one is on top. Edit a layer as JSON; the key list under it shows what it accepts.':'No layers yet. Add one above: a glow or a ring is a good start.'));
-  r.layers.forEach((l,i)=>{
-    const msgId=uid('lm');const msg=h('div',{class:'fmsg',id:msgId,role:'status',hidden:true});
-    const keys=h('div',{class:'keys'});
-    const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' ('+l.type+') JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;if(v.type!==e.target.dataset.type){e.target.dataset.type=v.type;e.target.setAttribute('aria-label','Layer '+(i+1)+' ('+v.type+') JSON');fillKeys(v.type)}edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');if(S.renderErr)showErr(null);msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
-    ta.value=fmtLayer(l);ta.dataset.type=l.type;
-    function fillKeys(type){const sc=S.meta.schema[type]||{};
-      keys.replaceChildren(h('details',{},h('summary',{},'keys of '+type+' ('+Object.keys(sc).length+')'),...Object.entries(sc).map(([k,v])=>h('p',{},h('button',{class:'key',title:'add this key to the layer',onclick:()=>{try{const cur=JSON.parse(ta.value);if(!(k in cur)){cur[k]=0;ta.value=fmtLayer(cur);ta.dispatchEvent(new Event('input'))}}catch(_){}}},k),' '+v)),h('p',{},h('b',{},'every layer: '),Object.keys(S.meta.common).join(', '))))}
-    fillKeys(l.type);
+  r.layers.forEach((l0,i)=>{
+    const cur=()=>r.layers[i],msgId=uid('lm'),msg=h('div',{class:'fmsg',id:msgId,role:'status',hidden:true}),rows=h('div',{class:'rows'}),addBox=h('div',{class:'addrow'});
+    const descOf=(l,k)=>(S.meta.schema[l.type]||{})[k]||S.meta.common[k]||'';
+    const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' raw JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l0).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;build();edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');if(S.renderErr)showErr(null);msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
+    ta.value=fmtLayer(l0);
+    const commit=(k,struct)=>{if(document.activeElement!==ta)ta.value=fmtLayer(cur());edit(struct?stepKey():'l'+i+'.'+k,(struct?'change':'edit')+' layer '+(i+1)+' '+k)};
+    function typeRow(){const l=cur(),id=uid('c');let types=[...S.meta.layers].sort();if(!types.includes(l.type))types=[l.type,...types];
+      return h('div',{class:'krow','data-k':'type'},h('label',{for:id},'type'),h('select',{id,onchange:e=>{cur().type=e.target.value;build();commit('type',true)}},...types.map(t=>h('option',{value:t,selected:t===l.type},t))),h('span'))}
+    function keyRow(k){const id=uid('c'),l=cur(),d=descOf(l,k);
+      const del=h('button',{class:'icon ghost',title:'Remove '+k,'aria-label':'Remove '+k+' (layer '+(i+1)+')',onclick:()=>{delete cur()[k];build();commit(k,true)}});setIcon(del,'del');
+      return h('div',{class:'krow','data-k':k},h('label',{for:id,title:d},k),mkCtl(cur,k,d,id,commit,build),del)}
+    function build(){const l=cur();rows.replaceChildren(typeRow(),...Object.keys(l).filter(k=>k!=='type').map(keyRow));
+      const all={...(S.meta.schema[l.type]||{})};for(const k of Object.keys(S.meta.common))if(!(k in all))all[k]=S.meta.common[k];
+      const free=Object.keys(all).filter(k=>k!=='type'&&!(k in l));
+      addBox.replaceChildren(free.length?h('select',{'aria-label':'Add a setting to layer '+(i+1),onchange:e=>{const k=e.target.value;if(!k)return;cur()[k]=defaultFor(k,all[k]);build();commit(k,true);rows.querySelector('[data-k="'+k+'"] input,[data-k="'+k+'"] select')?.focus()}},h('option',{value:''},'Add a setting...'),...free.map(k=>h('option',{value:k,title:all[k]},k+': '+String(all[k]).slice(0,48)))):'')}
+    build();
     const ib=(n,label,fn,dis)=>{const b=h('button',{class:'icon ghost',title:label,'aria-label':label+' (layer '+(i+1)+')',disabled:dis,onclick:fn});setIcon(b,n);return b};
-    p.append(h('div',{class:'card'+(i===S.sel?' sel':'')},
-      h('div',{class:'hd'},h('button',{class:'title',onclick:()=>{S.sel=i;document.querySelectorAll('#p-layers .card').forEach((c,j)=>c.classList.toggle('sel',j===i));ta.focus()}},h('b',{},(i+1)+' '+l.type),h('span',{class:'s'},summary(l))),
+    const card=h('div',{class:'card'+(i===S.sel?' sel':'')},
+      h('div',{class:'hd'},h('button',{class:'title',onclick:()=>{S.sel=i;document.querySelectorAll('#p-layers .card').forEach((c,j)=>c.classList.toggle('sel',j===i));rows.querySelector('select,input')?.focus()}},h('b',{},(i+1)+' '+l0.type),h('span',{class:'s'},summary(l0))),
         ib('up','Move up',()=>{[r.layers[i-1],r.layers[i]]=[r.layers[i],r.layers[i-1]];renderLayers();edit(stepKey(),'move layer '+(i+1)+' up')},i===0),
         ib('down','Move down',()=>{[r.layers[i+1],r.layers[i]]=[r.layers[i],r.layers[i+1]];renderLayers();edit(stepKey(),'move layer '+(i+1)+' down')},i===r.layers.length-1),
-        ib('dup','Duplicate',()=>{r.layers.splice(i+1,0,JSON.parse(JSON.stringify(l)));renderLayers();edit(stepKey(),'duplicate layer '+(i+1))}),
-        ib('del','Delete',()=>{r.layers.splice(i,1);renderLayers();edit(stepKey(),'delete layer '+(i+1));toast('Layer '+(i+1)+' deleted.',{label:'Undo',fn:undo});const t=document.querySelectorAll('#p-layers .card .title');(t[Math.min(i,t.length-1)]||document.querySelector('#p-layers .chip'))?.focus()})),ta,msg,keys))});if(S.renderErr)markLayer(S.renderErr)}
+        ib('dup','Duplicate',()=>{r.layers.splice(i+1,0,JSON.parse(JSON.stringify(cur())));renderLayers();edit(stepKey(),'duplicate layer '+(i+1))}),
+        ib('del','Delete',()=>{r.layers.splice(i,1);renderLayers();edit(stepKey(),'delete layer '+(i+1));toast('Layer '+(i+1)+' deleted.',{label:'Undo',fn:undo});const t=document.querySelectorAll('#p-layers .card .title');(t[Math.min(i,t.length-1)]||document.querySelector('#p-layers .chip'))?.focus()})),
+      rows,addBox,msg,h('details',{class:'rawjson'},h('summary',{},'Raw JSON'),ta));
+    card._setType=t=>{cur().type=t;build();commit('type',true);markLayer(null)};
+    p.append(card)});if(S.renderErr)markLayer(S.renderErr)}
 
 function syncJson(){const j=$('#json');if(document.activeElement===j)return;const off=!S.recipe;j.disabled=off;$('#bFmt').disabled=$('#bDl').disabled=off;if(off){j.value='';j.placeholder='This effect is drawn by Python code, so there is no recipe to edit. Press New effect to make one.';j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true;return}j.placeholder='';j.value=JSON.stringify(S.recipe,null,1);j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true}
 function shapeErr(v){if(!v||typeof v!=='object'||Array.isArray(v))return'a recipe is an object like { "layers": [ ... ] }';if(!Array.isArray(v.layers))return'a recipe needs a "layers" list, for example "layers": [ { "type": "glow" } ]';if(!v.layers.length)return'a recipe needs at least one layer';if(v.layers.some(l=>!l||typeof l!=='object'||Array.isArray(l)))return'every layer must be an object like { "type": "glow" }';return null}
@@ -424,7 +481,7 @@ function renderCheck(){
   const p=$('#p-check');p.replaceChildren();const c=S.check;
   const need=c&&!c.error&&!S.renderErr&&(c.problems.length||c.flags.length);
   p.append(h('div',{class:'row'},h('button',{onclick:runCheck},'Check again'),h('button',{class:need?'primary':'',disabled:!!S.renderErr,title:S.renderErr?'Correct the drawing error first':'Check and repair; the recipe changes only when you press Use',onclick:runFix},'Fix'),h('span',{class:'hint'},'Fix repairs what can be repaired and shows what is left. Your recipe changes only if you press Use.')));
-  if(S.renderErr){const f=S.renderErr,d=msg('bad','The effect cannot be drawn. '+f.text,f.raw,true);if(f.layer!=null&&S.recipe)d.append(h('button',{onclick:()=>{tab('layers');S.sel=f.layer;renderLayers();document.querySelectorAll('#p-layers .card')[f.layer]?.scrollIntoView({block:'nearest'});document.querySelectorAll('#p-layers textarea')[f.layer]?.focus()}},'Go to layer '+(f.layer+1)));p.append(d)}
+  if(S.renderErr){const f=S.renderErr,d=msg('bad','The effect cannot be drawn. '+f.text,f.raw,true);if(f.layer!=null&&S.recipe)d.append(h('button',{onclick:()=>goLayer(f.layer)},'Go to layer '+(f.layer+1)));p.append(d)}
   else if(!c)p.append(h('div',{class:'hint'},'Checking...'));
   else if(c.error){const fe=friendly(c.error);p.append(msg('bad',fe.text,fe.raw))}
   else{if(!c.problems.length&&!c.flags.length)p.append(msg('ok','Clean: deterministic, '+(S.loop?'the loop closes':'ends empty')+', nothing touches the edge.'));else if(!c.problems.length)p.append(msg('ok','No blocking problems. '+c.flags.length+' note'+(c.flags.length>1?'s':'')+' below for you to judge.'));
