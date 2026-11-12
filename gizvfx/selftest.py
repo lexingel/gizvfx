@@ -106,4 +106,11 @@ def run():
         from .fix import fix as _fix
         _, pr_, _, _ = _fix(ap_, out=os.path.join(d, "o"), scale=1, apply=True)
         assert not pr_ and os.path.exists(ap_ + ".bak") and json.load(open(ap_))["size"][0] > 40 and json.load(open(ap_ + ".bak"))["size"] == [40, 40]
+    with tempfile.TemporaryDirectory() as d:                                                       # what the handout says about a thick ring and a poly
+        cp_ = os.path.join(d, "c.json")
+        def _cell(layer):
+            json.dump({"id": "test/c", "duration": 0.5, "size": [80, 80], "pivot": [40, 40], "layers": [layer]}, open(cp_, "w")); return np.array(engine.render(cp_, {"colors": 0})[2])
+        assert _cell({"type": "ring", "radius": 10, "thick": 20})[40, 40, 3] > 0 and _cell({"type": "ring", "radius": 10, "thick": 6})[40, 40, 3] == 0
+        pc_ = _cell({"type": "poly", "shape": "crystal", "scale": 2}); assert len({tuple(c) for c in pc_[pc_[..., 3] > 0][:, :3]}) > 1
+        pc_ = _cell({"type": "poly", "shape": "crystal", "scale": 2, "color": "#ff0000"}); assert len({tuple(c) for c in pc_[pc_[..., 3] > 0][:, :3]}) == 1
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0
