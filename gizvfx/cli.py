@@ -51,7 +51,7 @@ def main(argv=None):
             for eid, (m, meta) in sorted(engine.registry().items()):
                 if w and w not in (eid + " " + meta["name"] + " " + meta.get("about", "") + " " + " ".join(meta.get("tags", []))).lower(): continue
                 if eid.split("/")[0] != cat: cat = eid.split("/")[0]; print(f"\n[{cat}]")
-                print(f"  {eid:26s} {'loop' if meta['loop'] else 'once'} {meta['duration']:>4}s {meta['size'][0]}x{meta['size'][1]:<4} {meta['about']}")
+                print(f"  {eid:26s} {'loop' if meta['loop'] else 'once'} {meta['duration']:>4}s {meta['size'][0]}x{meta['size'][1]:<4} {'recipe' if 'recipe' in meta else 'code  '} {meta['about']}")
             print("\nPalettes: " + ", ".join(sorted(RAMPS))); return 0
         if cmd == "palettes":
             print(", ".join(sorted(RAMPS))); return 0
@@ -82,12 +82,12 @@ def main(argv=None):
             return 1 if bad else 0
         if cmd == "fix":                                                                         # check, repair what can be repaired, write the files, list what is left
             ap = argparse.ArgumentParser(prog="gizvfx fix"); ap.add_argument("ids", nargs="*"); ap.add_argument("--all", action="store_true"); ap.add_argument("-o", "--opt", action="append")
-            ap.add_argument("--out", default="gizvfx_fix"); ap.add_argument("--scale", type=int, default=4); ap.add_argument("--painted", choices=["ink", "watercolor", "comic", "chalk", "linocut", "stencil", "glitch", "lineart"]); a = ap.parse_args(rest)
+            ap.add_argument("--out", default="gizvfx_fix"); ap.add_argument("--name"); ap.add_argument("--scale", type=int, default=4); ap.add_argument("--painted", choices=["ink", "watercolor", "comic", "chalk", "linocut", "stencil", "glitch", "lineart"]); a = ap.parse_args(rest)
             from .fix import fix
             ids = sorted(engine.registry()) if a.all else a.ids; left_n = 0
             if not ids: raise ValueError("fix: give an effect id, a recipe .json, or --all")
             for eid in ids:
-                done, problems, notes, paths = fix(eid, _opts(a.opt), out=a.out, scale=a.scale, painted_style=a.painted); left_n += bool(problems)
+                done, problems, notes, paths = fix(eid, _opts(a.opt), out=a.out, name=(a.name if len(ids) == 1 else None), scale=a.scale, painted_style=a.painted); left_n += bool(problems)
                 print(f"{eid}: " + ("; ".join(done) if done else "nothing to fix") + (f"  | TO FIX: {len(problems)}" if problems else "  | clean") + (f" ({len(notes)} notes)" if notes else ""))
                 for x in problems: print("   - " + x)
                 for x in notes: print("   note: " + x)

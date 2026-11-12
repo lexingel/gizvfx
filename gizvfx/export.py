@@ -31,11 +31,11 @@ def write_all(frames, out_dir, name, meta, opts, fps, scale=1, gif=True, sheet=T
     return paths
 
 
-def contact_sheet(frames, path, scale=3, cols=None, bg=DARK, maxw=1800):
-    """frames in a grid of about the shape of a page (not one long column); tiles are shrunk when the sheet would be wider than maxw"""
+def contact_sheet(frames, path, scale=3, cols=None, bg=DARK, maxw=2400):
+    """frames in a grid of about the shape of a page (not one long column); tiles are shrunk when the sheet would be wider than maxw (2400 px)"""
     import math
     n = len(frames); w, h = frames[0].size; tw, th = w * scale, h * scale
-    cols = cols or max(1, min(n, math.ceil(math.sqrt(n * th / tw)), maxw // (tw + 6) if tw + 6 <= maxw else 1))
+    cols = cols or max(1, min(n, math.ceil(math.sqrt(n * th / tw))))                                           # about as wide as tall; tiles shrink to fit maxw
     f = min(1.0, (maxw - 6) / (cols * (tw + 6))) if cols * (tw + 6) > maxw else 1.0                           # one tile wider than maxw: shrink them all
     tw, th = max(1, int(tw * f)), max(1, int(th * f)); rows = -(-n // cols)
     S = Image.new("RGB", (cols * (tw + 6) + 6, rows * (th + 20) + 6), (22, 22, 28)); d = ImageDraw.Draw(S)

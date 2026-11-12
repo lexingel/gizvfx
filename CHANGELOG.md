@@ -9,6 +9,8 @@ GizVFX is the former `pixfx` of Gizpix, moved into its own tool (`gizvfx.py`, pa
 
 - Second blind test: `$a+4`, `$a-4`, `$a/2` in recipes; a `bolt` colour `rim` no longer clashes with the generic `rim`; `check` and `fix` name the edge and the first frame that touches it; `fix` stops at the 256 px canvas limit and says so instead of crashing; contact sheets are page-shaped grids (painted ones no longer one 21000 px strip); a painted `smear` is a soft streak, not stacked discs; docs: defaults, light-background note, `drift` in one-shots.
 
+- Third blind test: contact sheets are about as wide as tall (tiles shrink instead of the sheet becoming a 4000 px column); `fix` cuts a cropped canvas to what the effect really covers in one step; `list` marks recipe or code; `fix --name`; the motion pop note says when it is expected; docs: `beam` and `erode`, particle star colour, output names.
+
 History carried over from Gizpix 0.2.0:
 - Painted: glows fall off in the pixel renderer's bands (soft edges), watercolor has more body and colour on dark grounds. Beam colours across the width match the pixel beam.
 - Painted, the last small differences from the pixel frames: `rim`, a true gradient across a `beam` with a white-hot line, core-shaded dots (coin-burst is gold again), thicker speed lines, a glow with the pixel renderer's flat first step (shield-bubble, bomb-fuse), crossing-line sparkles for `star`, more body in watercolor.

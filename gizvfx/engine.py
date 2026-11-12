@@ -135,6 +135,6 @@ def report(eid, given=None, frames=None):
     if m["flat"] > 0.7 and not tile: fl.append(f"flat {m['flat']}: one colour fills most of the effect; widen `depth`, use `lit`, or more ramp steps (`v`)")
     if m["lone_px_mean"] > 14 and not tile: fl.append(f"lone pixels {m['lone_px_mean']} per frame: fewer or larger particles (size >= 2) read better")
     if n > 4 and empty > n * 0.35: fl.append(f"{empty} of {n} frames are empty: shorten `duration` or start earlier")
-    if jumps and mx > 4 * med + 10: fl.append(f"motion pops: the centre of the effect jumps {mx:.0f} px in one frame (median {med:.0f}); check overlapping windows and shared `seed`")
+    if jumps and mx > 4 * med + 10: fl.append(f"motion pops: the centre of the effect jumps {mx:.0f} px in one frame (median {med:.0f}); expected when a shape appears or changes size by design (a growing blob); otherwise check overlapping windows and shared `seed`")
     if m["colors"] > 40: fl.append(f"{m['colors']} colours: raise nothing, lower `-o colors=` or avoid layered glows")
     return m, fl
