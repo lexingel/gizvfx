@@ -67,6 +67,7 @@ Turn the description into layers (each line is one layer type):
 | a paint or slime splat with droplets and drips | `splat` (`radius`, `drops`, `reach`, `drips`, `drip_len`; bursts out, runs, then dries away) |
 | comic dots, a spatter or burst of dots that shrink away | `halftone` (`size`, `cell`, `angle`, `tone` = dot size, `fade` + `fade_dir`) |
 | a trail of sparkles, snowflakes or embers left behind a flying bolt, orb or arrow | `particles` `mode: stream` with `drop: true` on the same `at` path as the thing that flies (a one-shot): each particle stays where the layer was when it was born; `speed` small, `life` 0.2-0.4 |
+| a sea wave that rises, curls and crashes, a breaking wave, a swell | `wave` (`height` animatable, `curl` 0..1 animatable: 0 steep face, 1 hollow barrel, `length` of the back slope, `dir` 1 or -1, `foam` px; move it with `at`; the water line is at `at`): see `recipe water/breaking-wave` for the spray, droplets and ripple that go with it |
 | wisps that fly from A to B, energy sucked into a portal | `particles` with `target` (and `curve`, one number of px, to bow them) |
 | crystals, rocks, shards, spikes | `poly` (`shape: crystal | shard | rock | diamond | arrow | heart`, or `points`; animate `scale` and `rotate`) |
 | the user's own small sprite (a coin, a leaf) | `stamp` (a PNG of at most 32x32 next to the recipe file; `scale` 1 to 4) |

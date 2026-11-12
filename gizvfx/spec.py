@@ -42,6 +42,7 @@ SCHEMA = {
     "rays": {"count": "int", "inner": "px from centre, animatable", "length": "px, animatable", "width": "px at the root", "rotate": "degrees over the window", "jitter": "0..1 random length", "squash": "0.1..1: rays lying on the floor (1 = round)"},
     "orbit": {"count": "int", "radius": "px, animatable", "squash": "1 = circle", "turns": "whole turns over the window (whole number for loops)", "size": "px, animatable", "trail": "dots behind each one", "shade": "flat | core"},
     "beam": {"from": "[x, y]", "to": "[x, y]", "width": "px, animatable", "tip": "width at the far end", "extend": "fraction of the window spent growing from `from` to `to`", "shade": "flat = one colour, no stripes", "core": "0..0.9 share of the width at the brightest step (default 0.45)"},
+    "wave": {"height": "px of the crest above the water line, animatable (the wave rises)", "curl": "0..1, animatable: 0 = a steep face, 1 = the lip curls over a hollow barrel", "length": "px of the back slope behind the crest (default 1.5 x height)", "dir": "1 = breaks to the right, -1 = to the left", "foam": "px of bright foam along the crest and lip (default 2, 0 = none)", "deep": "px of water below `at` (default 4)", "depth": "px of the dark edge line (default 2)", "lit": "[x, y] light direction (default [-1, -1])", "bias": "shift the colour, animatable (default -0.35: a mid-blue body, light crest)", "cover": "0..1 dither"},
     "poly": {"shape": "crystal | shard | rock | diamond | arrow | heart (ready-made outlines)", "points": "[[x, y], ...] your own outline, px from `at` (3 to 24 points)", "rotate": "degrees, animatable (a full turn [0, 360] over a loop closes it)", "scale": "animatable", "anchor": "center (default) | base: the lowest point sits on `at`",
              "depth": "band width px (default 4)", "lit": "[dx, dy] light direction (default [-1, -1])", "lit_strength": "0..1, default 0.35", "bias": "dark(-)..bright(+)", "cover": "0..1 dither"},
     "stamp": {"image": "a PNG next to the recipe file, at most 32x32 px (your own sprite: a coin, a leaf)", "scale": "whole number 1 to 4", "flip": "true = mirror", "rotate": "0 | 90 | 180 | 270"},
@@ -450,6 +451,43 @@ def L_poly(f, d, c):
     f.fill(m, c.ramp, depth=d.get("depth", 4), grad=grad, bias=val(d.get("bias", 0), c.e), cover=val(d.get("cover", 1), c.e))
 
 
+def wave_geometry(d, e):
+    """one frame of a breaking wave: (body outline, crest line), both [(x, y)] in px from `at` (the water line under the crest, y down).
+    A back slope rises to the crest, the lip curls forward and down over a hollow barrel, the face drops to the trough; shared by the pixel and the painted renderer"""
+    H = val(d.get("height", 24), e); curl = clamp(val(d.get("curl", 0.6), e)); L = val(d.get("length", max(H * 1.5, 1)), e); deep = d.get("deep", 4); sgn = -1 if d.get("dir", 1) < 0 else 1
+    if H < 1: return [], []
+    r = curl * H / 1.55; ri = 0.55 * r; cx, cy = 0.0, -H + r                                       # the barrel circle: top of the outer arc is the crest, r + ri reaches the water at full curl
+    back = [(-L * (1 - u), -H * (u ** 1.8)) for u in [i / 14 for i in range(15)]]                   # gentle at the foot, steep at the crest
+    if r < 0.8:                                                                                    # no curl: a steep face straight down
+        outer, inner, foot = [], [], (0.28 * H, 0.0)
+    else:
+        te = math.radians(-90 + 120 * curl)                                                        # how far round the lip goes (more curl: further, down and back under)
+        outer = [(cx + r * math.cos(a), cy + r * math.sin(a)) for a in [math.radians(-90) + (te - math.radians(-90)) * i / 14 for i in range(1, 15)]]
+        inner = [(cx + ri * math.cos(a), cy + ri * math.sin(a)) for a in [te + (math.radians(-270) - te) * i / 14 for i in range(0, 15)]]
+        foot = (ri + 0.25 * H, 0.0)
+    body = back + outer + inner + [foot, (foot[0], deep), (-L, deep)]
+    crest = back[-5:] + outer
+    if sgn < 0: body = [(-x, y) for x, y in body]; crest = [(-x, y) for x, y in crest]
+    return body, crest
+
+
+def L_wave(f, d, c):
+    from PIL import Image, ImageDraw
+    body, crest = wave_geometry(d, c.e)
+    if not body: return
+    P = [(c.ox + x * c.sc, c.oy + y * c.sc) for x, y in body]
+    im = Image.new("L", (f.w, f.h), 0); ImageDraw.Draw(im).polygon(P, fill=255); m = np.array(im) > 0
+    if not m.any(): return
+    lx, ly = d.get("lit", [-1, -1]); yy, xx = np.mgrid[0:f.h, 0:f.w]; R = max(max(abs(x), abs(y)) for x, y in body) * c.sc + 1
+    Hc = max(val(d.get("height", 24), c.e) * c.sc, 1.0)
+    grad = d.get("lit_strength", 0.35) * ((xx + 0.5 - c.ox) * lx + (yy + 0.5 - c.oy) * ly) / (math.hypot(lx, ly) * R) + 0.6 * (c.oy - yy - 0.5) / Hc - 0.25      # darker down at the water, lighter up at the crest
+    f.fill(m, c.ramp, depth=d.get("depth", 2), grad=grad, bias=val(d.get("bias", -0.35), c.e), cover=val(d.get("cover", 1), c.e))
+    fo = val(d.get("foam", 2), c.e) * c.sc
+    if fo >= 0.5:                                                                                  # foam: a bright line along the crest and the lip
+        col = c.ramp[-1]
+        for (x0, y0), (x1, y1) in zip(crest, crest[1:]): f.line(c.ox + x0 * c.sc, c.oy + y0 * c.sc, c.ox + x1 * c.sc, c.oy + y1 * c.sc, col, max(1, int(round(fo))))
+
+
 _IMG = {}
 
 
@@ -486,7 +524,7 @@ def L_include(f, d, c):
     finally: _DEPTH[0] -= 1
 
 
-LAYERS = {"glow": L_glow, "disc": L_disc, "ring": L_ring, "star": L_star, "particles": L_particles, "blob": L_blob, "bolt": L_bolt, "rays": L_rays, "orbit": L_orbit, "funnel": L_funnel, "brush": L_brush, "hatch": L_hatch, "halftone": L_halftone, "burst": L_burst, "speedlines": L_speedlines, "splat": L_splat, "poly": L_poly, "stamp": L_stamp, "include": L_include, "beam": L_beam, "arc": L_arc}
+LAYERS = {"wave": L_wave, "glow": L_glow, "disc": L_disc, "ring": L_ring, "star": L_star, "particles": L_particles, "blob": L_blob, "bolt": L_bolt, "rays": L_rays, "orbit": L_orbit, "funnel": L_funnel, "brush": L_brush, "hatch": L_hatch, "halftone": L_halftone, "burst": L_burst, "speedlines": L_speedlines, "splat": L_splat, "poly": L_poly, "stamp": L_stamp, "include": L_include, "beam": L_beam, "arc": L_arc}
 
 
 # ---- validation, drawing, loading ---------------------------------------------------------------------------------------

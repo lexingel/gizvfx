@@ -2,7 +2,7 @@
 
 Effects drawn from code, in two looks from one recipe:
 
-- **Pixel**: palette-limited sprites with dithered glow, GIF + sprite sheet + JSON (44 effects: 13 in Python, 31 JSON recipes).
+- **Pixel**: palette-limited sprites with dithered glow, GIF + sprite sheet + JSON (45 effects: 13 in Python, 32 JSON recipes).
 - **Painted**: the same recipe drawn smooth at 4x with a real alpha channel, in eight styles: `ink`, `watercolor`, `comic`, `chalk`, `linocut`, `stencil`, `glitch`, `lineart`.
 
 No reference image, no AI call, no network. See `ABOUT.md` for what it does in plain words. Describe a new effect in words, an agent turns it into a small JSON recipe of layers, you look at the contact sheet and adjust (see `HANDOUT.md`).

@@ -77,4 +77,7 @@ def run():
     with tempfile.TemporaryDirectory() as d:                                                       # an animated squash, options inside paths, an unused option is flagged
         qp = os.path.join(d, "q.json"); json.dump({"id": "test/q", "duration": 0.5, "size": [60, 60], "options": {"h": 20, "foam": 1}, "layers": [{"type": "ring", "radius": 14, "thick": 5, "squash": [1, 0.15, 1], "at": [[0, 0], [0, "-$h"], [0, 0]]}]}, open(qp, "w"))
         assert len(engine.render(qp)) > 1 and any("'foam' is never used" in x for x in engine.report(qp)[1])
+    from .spec import wave_geometry                                                              # the wave layer: a body and a crest, a curl makes the outline longer, dir mirrors it
+    b0, c0 = wave_geometry({"height": 30, "curl": 0}, 0.5); b1, c1 = wave_geometry({"height": 30, "curl": 1}, 0.5); bm, _ = wave_geometry({"height": 30, "curl": 1, "dir": -1}, 0.5)
+    assert b0 and c0 and len(b1) > len(b0) and not wave_geometry({"height": 0}, 0.5)[0] and sorted(x for x, _ in bm) == sorted(-x for x, _ in b1)
     print(f"gizvfx selftest ok ({len(reg)} effects)"); return 0

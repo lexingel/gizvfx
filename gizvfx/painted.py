@@ -9,7 +9,7 @@ from . import engine, spec as sp
 from .core import Rng, seg, lerp, clamp
 from .ramps import resolve
 
-PAINTED = ("brush", "hatch", "halftone", "glow", "disc", "ring", "burst", "speedlines", "splat", "particles", "blob", "star", "orbit", "beam", "funnel", "bolt", "rays", "poly")
+PAINTED = ("wave", "brush", "hatch", "halftone", "glow", "disc", "ring", "burst", "speedlines", "splat", "particles", "blob", "star", "orbit", "beam", "funnel", "bolt", "rays", "poly")
 STYLES = ("ink", "watercolor", "comic", "chalk", "linocut", "stencil", "glitch", "lineart")
 
 
@@ -212,7 +212,7 @@ def _splat(img, d, c, S):
     return lay.filter(ImageFilter.GaussianBlur(0.35 * S / 2))
 
 
-DRAW = {"funnel": lambda i, d, c, S: _funnel(i, d, c, S), "bolt": lambda i, d, c, S: _bolt(i, d, c, S), "rays": lambda i, d, c, S: _rays(i, d, c, S), "poly": lambda i, d, c, S: _poly(i, d, c, S), "orbit": lambda i, d, c, S: _orbit(i, d, c, S), "beam": lambda i, d, c, S: _beam(i, d, c, S), "particles": lambda i, d, c, S: _particles(i, d, c, S), "blob": lambda i, d, c, S: _blob(i, d, c, S), "star": lambda i, d, c, S: _star(i, d, c, S), "burst": _burst, "speedlines": _speed, "splat": _splat, "brush": _brush, "hatch": _hatch, "halftone": _halftone, "glow": _glow, "disc": _disc, "ring": lambda i, d, c, S: _disc(i, d, c, S, True)}
+DRAW = {"wave": lambda i, d, c, S: _wave(i, d, c, S), "funnel": lambda i, d, c, S: _funnel(i, d, c, S), "bolt": lambda i, d, c, S: _bolt(i, d, c, S), "rays": lambda i, d, c, S: _rays(i, d, c, S), "poly": lambda i, d, c, S: _poly(i, d, c, S), "orbit": lambda i, d, c, S: _orbit(i, d, c, S), "beam": lambda i, d, c, S: _beam(i, d, c, S), "particles": lambda i, d, c, S: _particles(i, d, c, S), "blob": lambda i, d, c, S: _blob(i, d, c, S), "star": lambda i, d, c, S: _star(i, d, c, S), "burst": _burst, "speedlines": _speed, "splat": _splat, "brush": _brush, "hatch": _hatch, "halftone": _halftone, "glow": _glow, "disc": _disc, "ring": lambda i, d, c, S: _disc(i, d, c, S, True)}
 
 
 def _ramp_rgb(v, ramp):
@@ -354,6 +354,24 @@ def _rays(img, d, c, S):
         nx, ny = -(y1 - y0), (x1 - x0); m = math.hypot(nx, ny) or 1.0; nx, ny = nx / m * wd / 2, ny / m * wd / 2
         dr.polygon([(x0 + nx, y0 + ny), (x0 - nx, y0 - ny), (x1, y1)], fill=col)                                    # a wedge, fat at the root and a point at the tip
     return lay.filter(ImageFilter.GaussianBlur(0.3 * S / 2))
+
+
+def _wave(img, d, c, S):
+    body, crest = sp.wave_geometry(d, c.e)
+    if not body: return
+    P = [(c.ox + x * S, c.oy + y * S) for x, y in body]
+    m = Image.new("L", img.size, 0); ImageDraw.Draw(m).polygon(P, fill=255); mk = np.asarray(m) > 127
+    if not mk.any(): return
+    from scipy.ndimage import distance_transform_edt
+    h, w = mk.shape; dist = distance_transform_edt(np.pad(mk, 1))[1:-1, 1:-1]; yy, xx = np.mgrid[0:h, 0:w]; lx, ly = d.get("lit", [-1, -1]); R = max(max(abs(x), abs(y)) for x, y in body) * S + 1
+    Hc = max(sp.val(d.get("height", 24), c.e) * S, 1.0)
+    v = np.clip(dist / max(d.get("depth", 2) * S, 1e-6), 0, 1) * 0.999 + d.get("lit_strength", 0.35) * ((xx + 0.5 - c.ox) * lx + (yy + 0.5 - c.oy) * ly) / (math.hypot(lx, ly) * R) + 0.6 * (c.oy - yy - 0.5) / Hc - 0.25 + sp.val(d.get("bias", -0.35), c.e)
+    rgb = _ramp_rgb(v, c.ramp); al = np.asarray(m.filter(ImageFilter.GaussianBlur(0.35 * S / 2)), np.float32) / 255 * float(sp.val(d.get("cover", 1), c.e))
+    lay = Image.fromarray(np.dstack([rgb, al * 255]).astype(np.uint8), "RGBA"); fo = sp.val(d.get("foam", 2), c.e)
+    if fo >= 0.5:                                                                                  # foam along the crest and the lip
+        dr = ImageDraw.Draw(lay); col = tuple(int(q) for q in c.ramp[-1]) + (255,); pts = [(c.ox + x * S, c.oy + y * S) for x, y in crest]
+        dr.line(pts, fill=col, width=max(1, int(fo * S * 0.8)), joint="curve"); lay = lay.filter(ImageFilter.GaussianBlur(0.3 * S / 2))
+    return lay
 
 
 def _poly(img, d, c, S):
