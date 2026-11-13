@@ -132,7 +132,7 @@ details.help p{margin:6px 0;color:var(--mut)}
 .krow.bad input,.krow.bad select{border-color:var(--bad)}
 .mono{font:12px ui-monospace,Consolas,monospace}
 .card.rerr{border-color:#7a2b30}
-.addrow{padding:0 10px 6px}.addrow select{width:100%}
+.addrow{padding:0 10px 6px}.addrow .cc{flex-wrap:nowrap}.addrow select{flex:1;min-width:0}
 details.rawjson{margin:2px 8px 8px}
 details.rawjson summary{cursor:pointer;color:var(--accent);min-height:32px;display:list-item;padding:5px 0}
 details.rawjson textarea{width:100%;margin:0}
@@ -277,18 +277,19 @@ function friendly(raw){let m=String(raw),where='',layer=null,changed=false;const
   const t=m.replace(/\. (Types|Keys): [\s\S]*$/,'.');if(t!==m){m=t;changed=true}
   if(/not supported between instances|can't multiply|must be real number|unsupported operand|can only concatenate|could not convert|object is not (iterable|subscriptable)/.test(m)){m='a value that should be a number is text, or a list sits where one number goes. Check the numbers in this layer.';changed=true}
   else if(/drawn by Python code; only recipes/.test(m)){m='this effect is drawn by Python code, so it has no painted look.';changed=true}
-  let keys=null,sug=null;
+  let keys=null,sug=null,rmKey=null;
   if(layer!=null&&S.recipe&&S.meta){const lay=(S.recipe.layers||[])[layer],un=m.match(/type '([^']*)' is unknown/);
     if(un){const dm=m.match(/did you mean '([^']+)'/);if(dm)sug=dm[1];else{const near=[...S.meta.layers].map(t=>[lev(t,un[1]),t]).sort((a,b)=>a[0]-b[0]).slice(0,3).map(x=>x[1]);sug=near[0];m+=' Closest types: '+near.join(', ')+'.';changed=true}}
     else if(m.startsWith('a value that should be a number')&&lay){const bad=Object.entries(lay).filter(([k,v])=>!TXT.has(k)&&(typeof v==='string'||(Array.isArray(v)&&v.some(x=>typeof x==='string')))).map(x=>x[0]);if(bad.length){keys=bad;m+=' Look at: '+bad.join(', ')+'.'}}}
-  return{text:where+m,layer,keys,sug,raw:changed?String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1)):null}}
+  if(layer!=null){const uk=m.match(/key '([^']+)' is unknown/);if(uk){keys=[uk[1]];rmKey=uk[1]}}
+  return{text:where+m,layer,keys,sug,rmKey,raw:changed?String(raw).replace(/^layer (\d+)/,(x,n)=>'layer '+(+n+1)):null}}
 function rawDetails(raw){return raw?h('details',{},h('summary',{},'original message'),h('small',{},raw)):null}
 function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';
   if(f.layer!=null&&S.recipe){e.append('Layer '+(f.layer+1)+' cannot be drawn. ',h('button',{onclick:()=>goLayer(f.layer)},'Go to layer '+(f.layer+1)));return}
   e.append(f.text);const d=rawDetails(f.raw);if(d)e.append(d)}
 function markLayer(f){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const ta=c.querySelector('textarea'),m=c.querySelector('.fmsg');if(!ta)return;const mine=!!f&&f.layer===i;
   c.querySelectorAll('.krow').forEach(r=>r.classList.toggle('bad',mine&&(f.keys||[]).includes(r.dataset.k)));
-  if(mine){ta.setAttribute('aria-invalid','true');m.hidden=false;m.replaceChildren(f.text);if(f.sug)m.append(' ',h('button',{onclick:()=>c._setType(f.sug)},"Use '"+f.sug+"'"));const d=rawDetails(f.raw);if(d)m.append(d);c.classList.add('rerr');ta.dataset.rerr='1'}
+  if(mine){ta.setAttribute('aria-invalid','true');m.hidden=false;m.replaceChildren(f.text);if(f.sug)m.append(' ',h('button',{onclick:()=>c._setType(f.sug)},"Use '"+f.sug+"'"));if(f.rmKey)m.append(' ',h('button',{onclick:()=>c._removeKey(f.rmKey)},"Remove '"+f.rmKey+"'"));const d=rawDetails(f.raw);if(d)m.append(d);c.classList.add('rerr');ta.dataset.rerr='1'}
   else if(ta.dataset.rerr){ta.removeAttribute('aria-invalid');m.hidden=true;m.replaceChildren();c.classList.remove('rerr');ta.dataset.rerr=''}})}
 
 // ---------- rendering pipeline
@@ -418,20 +419,25 @@ const PXKEYS=new Set(['radius','thick','width','size','length','inner','tip','de
 function parseEnum(desc){const head=String(desc).split(/:\s/)[0];if(!/ \| /.test(head))return null;const parts=head.split(' | ').map(p=>p.trim().split(/[ (=]/)[0]).filter(Boolean);return parts.length>1&&parts.every(p=>/^[a-z0-9_\-]+$/i.test(p))?parts:null}
 function labelsOf(desc,n){const m=String(desc).match(/\[\[?\s*([a-z][a-z0-9_]*)\s*,\s*([a-z][a-z0-9_]*)(?:\s*,\s*([a-z][a-z0-9_]*))?/i);if(m){const L=m.slice(1).filter(Boolean);if(L.length===n)return L}return null}
 function rangeOf(k,desc,v){const m=String(desc).match(/(-?\d+(?:\.\d+)?)\.\.(\d+(?:\.\d+)?)(\+?)/);if(m){const lo=+m[1],hi=+m[2];return[lo,m[3]?hi*2:hi]}if(PXKEYS.has(k))return[0,Math.max(64,Math.ceil(Math.abs(v)*2))];return null}
-function defaultFor(k,desc){const e=parseEnum(desc),d=String(desc);if(e)return e[0];if(/^true\b|true =/.test(d))return true;
+function defaultFor(k,desc){const e=parseEnum(desc),d=String(desc);if(e)return e[0];const dd=d.match(/default (-?\d+(?:\.\d+)?)/);if(dd)return+dd[1];if(/^true\b|true =/.test(d))return true;
   if(/\[lo, hi\]/.test(d))return[1,2];if(/\[start, end\]/.test(d))return[2,0];if(/\[a0, a1\]/.test(d))return[0,360];if(/\[w, h\]/.test(d))return[8,8];if(/\[dx, dy\]/.test(d))return[-1,-1];if(/\[\[?x/.test(d)||/\[from, to\]/.test(d))return[0,0];
   if(/\b0\.\.1/.test(d))return 0.5;if(/\bint\b/.test(d))return 3;if(/\bpx\b/.test(d)||PXKEYS.has(k))return 8;if(/#rrggbb|ramp name|name for/.test(d))return'';return 1}
-function numInput(v,id,label,onNum,w){return h('input',{type:'number',id,step:'any','aria-label':label,value:v,style:'width:'+(w||78)+'px',oninput:e=>{const n=parseFloat(e.target.value);if(isFinite(n))onNum(n)}})}
+function cut(t,n){t=String(t);return t.length<=n?t:t.slice(0,n).replace(/\s+\S*$/,'')+'\u2026'}
+const ANIMK=new Set([...PXKEYS,'squash','scale','rotate','strength','erode','v']);
+function limOf(k,desc){const m=String(desc).match(/(-?\d+(?:\.\d+)?)\.\.(\d+(?:\.\d+)?)(\+?)/);if(m)return[+m[1],m[3]?Infinity:+m[2]];if(PXKEYS.has(k))return[0,Infinity];return null}
+function animSeg(isAnim,toAnim,toFixed){return h('span',{class:'seg',role:'group','aria-label':'Value over time'},h('button',{'aria-pressed':String(!isAnim),onclick:isAnim?toFixed:null,title:'One value for the whole effect'},'fixed'),h('button',{'aria-pressed':String(isAnim),onclick:isAnim?null:toAnim,title:'Changes over the life of the effect'},'animates'))}
+function numInput(v,id,label,onNum,w,lim,cur){const el=h('input',{type:'number',id,step:'any','aria-label':label,value:v,style:'width:'+(w||78)+'px',min:lim&&isFinite(lim[0])?lim[0]:null,max:lim&&isFinite(lim[1])?lim[1]:null,oninput:e=>{const n=parseFloat(e.target.value);if(!isFinite(n))return;if(lim&&(n<lim[0]||n>lim[1])){e.target.setAttribute('aria-invalid','true');return}e.target.removeAttribute('aria-invalid');onNum(n)}});
+  el.addEventListener('change',()=>{let n=parseFloat(el.value);const c=cur?cur():v;el.removeAttribute('aria-invalid');if(!isFinite(n)){el.value=c;return}if(lim){const k=Math.min(lim[1],Math.max(lim[0],n));if(k!==n){el.value=k;onNum(k)}}});return el}
 function mkCtl(cur,k,desc,id,commit,build){
-  const v=cur()[k],set=nv=>{cur()[k]=nv;commit(k)},isNum=x=>typeof x==='number',anim=/animatable|number or \[from, to\]/.test(desc);
+  const v=cur()[k],set=nv=>{cur()[k]=nv;commit(k)},isNum=x=>typeof x==='number',anim=/animatable|number or \[from, to\]/.test(desc)||(ANIMK.has(k)&&!/\[/.test(desc)),lim=limOf(k,desc);
   if(typeof v==='boolean')return h('input',{type:'checkbox',id,checked:v,onchange:e=>set(e.target.checked)});
-  if(isNum(v)){let rg=null;const n=numInput(v,id,k,x=>{set(x);if(rg)rg.value=x}),r=rangeOf(k,desc,v);
+  if(isNum(v)){let rg=null;const n=numInput(v,id,k,x=>{set(x);if(rg)rg.value=x},undefined,lim,()=>cur()[k]),r=rangeOf(k,desc,v);
     if(r)rg=h('input',{type:'range',min:r[0],max:r[1],step:(r[1]-r[0])/100,value:v,'aria-label':k+' slider',oninput:e=>{const x=parseFloat(e.target.value);n.value=x;set(x)}});
-    return h('span',{class:'cc'},n,rg,anim?h('button',{class:'chip',title:'Animate: change over the life of the effect',onclick:()=>{cur()[k]=[v,v];build();commit(k,true)}},'animate'):null)}
+    return h('span',{class:'cc'},n,rg,anim?animSeg(false,()=>{cur()[k]=[v,v];build();commit(k,true,'animate')},null):null)}
   if(Array.isArray(v)&&v.length>=2&&v.length<=4&&v.every(isNum)){
     const labs=labelsOf(desc,v.length)||(v.length===2?['from','to']:v.length===3?['from','mid','to']:v.map((_,j)=>String(j+1))),cc=h('span',{class:'cc'});
-    v.forEach((x,j)=>{cc.append(h('span',{class:'sub'},labs[j]),numInput(x,j?null:id,k+' '+labs[j],n=>{const a=[...cur()[k]];a[j]=n;set(a)},64))});
-    if(anim&&v.length<=3)cc.append(h('button',{class:'chip',title:'Fixed: one value for the whole effect',onclick:()=>{cur()[k]=v[0];build();commit(k,true)}},'fixed'));return cc}
+    v.forEach((x,j)=>{cc.append(h('span',{class:'sub'},labs[j]),numInput(x,j?null:id,k+' '+labs[j],n=>{const a=[...cur()[k]];a[j]=n;set(a)},64,lim,()=>cur()[k][j]))});
+    if(anim&&v.length<=3)cc.append(animSeg(true,null,()=>{cur()[k]=v[0];build();commit(k,true,'fix')}));return cc}
   if(typeof v==='string'){let opts=null;
     if(k==='palette')opts=['main',...S.meta.palettes];else if(k==='clip')opts=['',...S.recipe.layers.map(x=>x.id).filter(x=>x&&x!==cur().id)];else opts=parseEnum(desc);
     if(opts){if(!opts.includes(v))opts=[v,...opts];return h('select',{id,onchange:e=>set(e.target.value)},...opts.map(o=>h('option',{value:o,selected:o===v},o||'(none)')))}
@@ -473,22 +479,23 @@ function renderLayers(){
   const p=$('#p-layers');p.replaceChildren();const r=S.recipe;if(!r){p.append(h('div',{class:'msg'},'No layers to edit: this effect is drawn by Python code.'),h('div',{class:'row'},h('button',{class:'primary',onclick:newRecipe},'New effect')));buildTl();buildMk();return}
   const more=h('select',{'aria-label':'Another layer type',onchange:e=>{if(e.target.value){addLayer(e.target.value);e.target.value=''}}},h('option',{value:''},'Other type...'),...S.meta.layers.filter(t=>!COMMON_TYPES.includes(t)).sort().map(t=>h('option',{value:t},t)));
   p.append(h('div',{class:'row',role:'group','aria-label':'Add a layer'},...COMMON_TYPES.map(t=>h('button',{class:'chip',onclick:()=>addLayer(t)},'+ '+t)),more),
-    h('div',{class:'hint'},r.layers.length?'Layers draw in this order: the last one is on top. Edit a layer as JSON; the key list under it shows what it accepts.':'No layers yet. Add one above: a glow or a ring is a good start.'));
+    h('div',{class:'hint'},r.layers.length?'Layers draw in this order: the last one is on top. Each layer has typed settings; its raw JSON is under it.':'No layers yet. Add one above: a glow or a ring is a good start.'));
   r.layers.forEach((l0,i)=>{
     const cur=()=>r.layers[i],msgId=uid('lm'),msg=h('div',{class:'fmsg',id:msgId,role:'status',hidden:true}),rows=h('div',{class:'rows'}),addBox=h('div',{class:'addrow'});
     const descOf=(l,k)=>(S.meta.schema[l.type]||{})[k]||S.meta.common[k]||'';
     const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' raw JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l0).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;build();edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');if(S.renderErr)showErr(null);msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
     ta.value=fmtLayer(l0);
-    const commit=(k,struct)=>{if(document.activeElement!==ta)ta.value=fmtLayer(cur());edit(struct?stepKey():'l'+i+'.'+k,(struct?'change':'edit')+' layer '+(i+1)+' '+k)};
+    const commit=(k,struct,verb)=>{if(document.activeElement!==ta)ta.value=fmtLayer(cur());edit(struct?stepKey():'l'+i+'.'+k,(verb||(struct?'change':'edit'))+' layer '+(i+1)+' '+k)};
     function typeRow(){const l=cur(),id=uid('c');let types=[...S.meta.layers].sort();if(!types.includes(l.type))types=[l.type,...types];
-      return h('div',{class:'krow','data-k':'type'},h('label',{for:id},'type'),h('select',{id,onchange:e=>{cur().type=e.target.value;build();commit('type',true)}},...types.map(t=>h('option',{value:t,selected:t===l.type},t))),h('span'))}
+      return h('div',{class:'krow','data-k':'type'},h('label',{for:id},'type'),h('select',{id,onchange:e=>{const l=cur(),nt=e.target.value,ok=new Set([...Object.keys(S.meta.schema[nt]||{}),...Object.keys(S.meta.common),'type']),gone=Object.keys(l).filter(x=>!ok.has(x));gone.forEach(x=>delete l[x]);l.type=nt;build();commit('type',true);if(gone.length)toast('Removed '+gone.join(', ')+': not used by '+nt+'.',{label:'Undo',fn:undo})}},...types.map(t=>h('option',{value:t,selected:t===l.type},t))),h('span'))}
     function keyRow(k){const id=uid('c'),l=cur(),d=descOf(l,k);
-      const del=h('button',{class:'icon ghost',title:'Remove '+k,'aria-label':'Remove '+k+' (layer '+(i+1)+')',onclick:()=>{delete cur()[k];build();commit(k,true)}});setIcon(del,'del');
+      const del=h('button',{class:'icon ghost',title:'Remove '+k,'aria-label':'Remove '+k+' (layer '+(i+1)+')',onclick:()=>{delete cur()[k];build();commit(k,true,'remove');(rows.querySelector('.krow:not([data-k=type]) input,.krow:not([data-k=type]) select')||addBox.querySelector('select'))?.focus()}});setIcon(del,'del');
       return h('div',{class:'krow','data-k':k},h('label',{for:id,title:d},k),mkCtl(cur,k,d,id,commit,build),del)}
     function build(){const l=cur();rows.replaceChildren(typeRow(),...Object.keys(l).filter(k=>k!=='type').map(keyRow));
       const all={...(S.meta.schema[l.type]||{})};for(const k of Object.keys(S.meta.common))if(!(k in all))all[k]=S.meta.common[k];
       const free=Object.keys(all).filter(k=>k!=='type'&&!(k in l));
-      addBox.replaceChildren(free.length?h('select',{'aria-label':'Add a setting to layer '+(i+1),onchange:e=>{const k=e.target.value;if(!k)return;cur()[k]=defaultFor(k,all[k]);build();commit(k,true);rows.querySelector('[data-k="'+k+'"] input,[data-k="'+k+'"] select')?.focus()}},h('option',{value:''},'Add a setting...'),...free.map(k=>h('option',{value:k,title:all[k]},k+': '+String(all[k]).slice(0,48)))):'')}
+      addBox.replaceChildren(free.length?(()=>{const sel=h('select',{'aria-label':'Setting to add to layer '+(i+1)},h('option',{value:''},'Add a setting...'),...free.map(k=>h('option',{value:k,title:all[k]},k+': '+cut(all[k],44))));
+        return h('span',{class:'cc'},sel,h('button',{onclick:()=>{const k=sel.value;if(!k)return;cur()[k]=defaultFor(k,all[k]);build();commit(k,true,'add');rows.querySelector('[data-k="'+k+'"] input,[data-k="'+k+'"] select')?.focus()}},'Add'))})():'')}
     build();
     const ib=(n,label,fn,dis)=>{const b=h('button',{class:'icon ghost',title:label,'aria-label':label+' (layer '+(i+1)+')',disabled:dis,onclick:fn});setIcon(b,n);return b};
     const card=h('div',{class:'card'+(i===S.sel?' sel':'')},
@@ -499,6 +506,7 @@ function renderLayers(){
         ib('del','Delete',()=>{r.layers.splice(i,1);renderLayers();edit(stepKey(),'delete layer '+(i+1));toast('Layer '+(i+1)+' deleted.',{label:'Undo',fn:undo});const t=document.querySelectorAll('#p-layers .card .title');(t[Math.min(i,t.length-1)]||document.querySelector('#p-layers .chip'))?.focus()})),
       rows,addBox,msg,h('details',{class:'rawjson'},h('summary',{},'Raw JSON'),ta));
     card._setType=t=>{cur().type=t;build();commit('type',true);markLayer(null)};
+    card._removeKey=k=>{delete cur()[k];build();commit(k,true,'remove');markLayer(null)};
     p.append(card)});if(S.renderErr)markLayer(S.renderErr);buildTl();buildMk()}
 
 function syncJson(){const j=$('#json');if(document.activeElement===j)return;const off=!S.recipe;j.disabled=off;$('#bFmt').disabled=$('#bDl').disabled=off;if(off){j.value='';j.placeholder='This effect is drawn by Python code, so there is no recipe to edit. Press New effect to make one.';j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true;return}j.placeholder='';j.value=JSON.stringify(S.recipe,null,1);j.removeAttribute('aria-invalid');$('#jsonmsg').hidden=true}
