@@ -105,7 +105,7 @@ details.help p{margin:6px 0;color:var(--mut)}
 .card textarea{display:block;width:calc(100% - 16px);margin:0 8px 6px;font:12px/1.4 ui-monospace,Consolas,monospace;resize:vertical;min-height:70px;white-space:pre-wrap}
 .card textarea[aria-invalid=true],#json[aria-invalid=true]{border-color:var(--bad)}
 .fmsg{margin:0 8px 8px;color:#ffb4b4;font-size:12px}
-#tl{border-top:1px solid var(--line);background:var(--panel);padding:6px 12px;max-height:150px;overflow:auto;position:relative}
+#tl{border-top:1px solid var(--line);background:var(--panel);padding:6px 12px;max-height:min(260px,34vh);overflow:auto;position:relative}
 #tl[hidden]{display:none}
 .tlrow{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center;height:24px}
 .tlrow .nm{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;border:0;background:transparent;padding:0;min-height:0;height:22px;cursor:pointer}
@@ -128,6 +128,7 @@ details.help p{margin:6px 0;color:var(--mut)}
 .cc{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .cc .sub{color:var(--mut);font-size:12px}
 .cc input[type=range]{flex:1;min-width:70px}
+.cc select{flex:1;min-width:0}
 .cc input[type=color]{padding:0;width:34px}
 .krow.bad input,.krow.bad select{border-color:var(--bad)}
 .mono{font:12px ui-monospace,Consolas,monospace}
@@ -247,24 +248,24 @@ const COMMON_TYPES=['glow','ring','particles','burst','beam','bolt'];
 // ---------- history (undo/redo) and title
 const snap=()=>JSON.stringify({recipe:S.recipe,id:S.id,openedId:S.openedId||null});
 function updHist(){const u=$('#bUndo'),r=$('#bRedo'),us=HI.stack[HI.stack.length-1],rs=HI.redo[HI.redo.length-1];u.disabled=!us;r.disabled=!rs;const lu='Undo'+(us?': '+us.l:'')+' (Ctrl+Z)',lr='Redo'+(rs?': '+rs.l:'')+' (Ctrl+Shift+Z)';u.title=lu;u.setAttribute('aria-label',lu);r.title=lr;r.setAttribute('aria-label',lr)}
-function checkpoint(){S.last=snap();S.dirty=false;setTitle()}
+function checkpoint(){S.last=snap();S.saved=S.last;S.dirty=false;setTitle()}
 function setTitle(){document.title=(S.dirty?'* ':'')+(S.name?S.name+' - ':'')+'GizVFX'}
 let editT=null,editK=null;
 function edit(key,label){key=key||'x';if(editT&&key!==editK){clearTimeout(editT);editT=null}
   if(!editT){HI.stack.push({s:S.last,l:label||'edit'});if(HI.stack.length>80)HI.stack.shift();HI.redo.length=0;updHist()}
-  editK=key;clearTimeout(editT);editT=setTimeout(()=>{editT=null},800);S.last=snap();S.dirty=true;setTitle();touch();syncJson();renderSummaries();if(!tlDrag&&!mkDrag){buildTl();buildMk()}}
+  editK=key;clearTimeout(editT);editT=setTimeout(()=>{editT=null},800);S.last=snap();S.dirty=S.last!==S.saved;setTitle();touch();syncJson();renderSummaries();if(!tlDrag&&!mkDrag){buildTl();buildMk()}}
 const stepKey=()=>'s'+(++uidN);
 function forcePixel(){S.wantPainted=S.mode==='painted';S.mode='pixel';[...$('#modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.m==='pixel'));$('#style').hidden=$('#quality').hidden=true}
 function load(st,keepOpts){S.recipe=st.recipe||null;S.id=st.id||null;S.openedId=st.openedId||null;S.code=!S.recipe;if(!keepOpts)S.options=st.options||{};
   S.optsSig='';S.sel=-1;S.fixed=null;S.check=null;S.renderErr=null;S.res=null;S.idx=0;clearTimeout(editT);editT=null;
   const forced=S.code&&S.mode==='painted';if(forced)forcePixel();S.last=snap();afterLoad();return forced}
 const PYTOAST='Painted needs a recipe. This effect is drawn by Python, so it is shown as Pixel.';
-function restore(str){const forced=load(JSON.parse(str),true);S.dirty=true;setTitle();updHist();if(forced)toast(PYTOAST);else if(!S.code&&S.wantPainted){S.wantPainted=false;setMode('painted')}}
+function restore(str){const forced=load(JSON.parse(str),true);S.dirty=S.last!==S.saved;setTitle();updHist();if(forced)toast(PYTOAST);else if(!S.code&&S.wantPainted){S.wantPainted=false;setMode('painted')}}
 function undo(){if(!HI.stack.length)return;const e=HI.stack.pop();HI.redo.push({s:snap(),l:e.l});restore(e.s)}
 function redo(){if(!HI.redo.length)return;const e=HI.redo.pop();HI.stack.push({s:snap(),l:e.l});restore(e.s)}
 $('#bUndo').onclick=undo;$('#bRedo').onclick=redo;setIcon($('#bUndo'),'undo');setIcon($('#bRedo'),'redo');setIcon($('#bPrev'),'prev');setIcon($('#bNext'),'next');
 function replaceWith(state,msg){const wasDirty=S.dirty&&(S.recipe||S.id);if(S.recipe||S.id){HI.stack.push({s:snap(),l:'open another effect'});if(HI.stack.length>80)HI.stack.shift()}HI.redo.length=0;S.wantPainted=false;
-  const forced=load(state,false);S.dirty=false;setTitle();updHist();
+  const forced=load(state,false);S.saved=S.last;S.dirty=false;setTitle();updHist();
   if(forced)toast(PYTOAST);
   else if(wasDirty)toast((msg||'Effect replaced')+'. Your earlier edits are one undo away.',{label:'Undo',fn:undo})}
 function afterLoad(){S.renderErr=null;showErr(null);clearStage();staleStage(false);setBadge('',null);S.name=S.recipe?(S.recipe.name||S.recipe.id||''):(S.effects.find(e=>e.id===S.id)?.name||'');setTitle();$('#modeSeg [data-m=painted]').setAttribute('aria-disabled',String(S.code));$('#modeNote').hidden=!S.code;buildList();renderEditor();updFoot();updLook();touch()}
@@ -463,8 +464,9 @@ function buildTl(){const box=$('#tl');if(!box)return;box.replaceChildren();const
   box.append(h('div',{class:'ph','aria-hidden':'true'},h('b')));placePh()}
 function buildMk(){const host=$('#mkl');if(!host)return;host.replaceChildren();const r=S.recipe;if(!r||!pvOn||!S.frames.length)return;
   const pv=S.pivot||r.pivot||[S.base[0]>>1,S.base[1]>>1],bw=S.base[0],bh=S.base[1];
+  const seen={};
   r.layers.forEach((l,i)=>{const at=l.at,flat=at==null||(Array.isArray(at)&&at.length===2&&typeof at[0]==='number'&&typeof at[1]==='number'),pt=flat?(at||[0,0]):(Array.isArray(at)&&Array.isArray(at[0])?at[0]:[0,0]);
-    const m=h('div',{class:'mk'+(i===S.sel?' sel':''),'aria-hidden':'true',title:'Layer '+(i+1)+' '+l.type+(flat?': drag to move':''),style:'left:'+(pv[0]+pt[0])/bw*100+'%;top:'+(pv[1]+pt[1])/bh*100+'%'},String(i+1));
+    const m=h('div',{class:'mk'+(i===S.sel?' sel':''),'aria-hidden':'true',title:'Layer '+(i+1)+' '+l.type+(flat?': drag to move':''),style:'left:'+(pv[0]+pt[0])/bw*100+'%;top:'+(pv[1]+pt[1])/bh*100+'%;margin-left:'+(-11+14*((seen[pt.join()]=(seen[pt.join()]??-1)+1)))+'px'},String(i+1));
     m.addEventListener('pointerdown',ev=>{ev.preventDefault();selLayer(i);if(!flat)return;const box=$('#cvbox').getBoundingClientRect();let moved=false;mkDrag=true;m.setPointerCapture(ev.pointerId);
       const mv=e=>{const x=Math.round((e.clientX-box.left)/box.width*bw-pv[0]),y=Math.round((e.clientY-box.top)/box.height*bh-pv[1]);S.recipe.layers[i].at=[x,y];m.style.left=(pv[0]+x)/bw*100+'%';m.style.top=(pv[1]+y)/bh*100+'%';moved=true;edit('at'+i,'move layer '+(i+1))};
       const up=()=>{m.removeEventListener('pointermove',mv);m.removeEventListener('pointerup',up);m.removeEventListener('pointercancel',up);mkDrag=false;if(moved)renderLayers()};
@@ -486,8 +488,11 @@ function renderLayers(){
     const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' raw JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l0).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;build();edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');if(S.renderErr)showErr(null);msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
     ta.value=fmtLayer(l0);
     const commit=(k,struct,verb)=>{if(document.activeElement!==ta)ta.value=fmtLayer(cur());edit(struct?stepKey():'l'+i+'.'+k,(verb||(struct?'change':'edit'))+' layer '+(i+1)+' '+k)};
+    function applyType(nt){const l=cur(),ok=new Set([...Object.keys(S.meta.schema[nt]||{}),...Object.keys(S.meta.common),'type']),gone=Object.keys(l).filter(x=>!ok.has(x));gone.forEach(x=>delete l[x]);l.type=nt;build();commit('type',true);if(gone.length)toast('Removed '+gone.join(', ')+': not used by '+nt+'.',{label:'Undo',fn:undo})}
     function typeRow(){const l=cur(),id=uid('c');let types=[...S.meta.layers].sort();if(!types.includes(l.type))types=[l.type,...types];
-      return h('div',{class:'krow','data-k':'type'},h('label',{for:id},'type'),h('select',{id,onchange:e=>{const l=cur(),nt=e.target.value,ok=new Set([...Object.keys(S.meta.schema[nt]||{}),...Object.keys(S.meta.common),'type']),gone=Object.keys(l).filter(x=>!ok.has(x));gone.forEach(x=>delete l[x]);l.type=nt;build();commit('type',true);if(gone.length)toast('Removed '+gone.join(', ')+': not used by '+nt+'.',{label:'Undo',fn:undo})}},...types.map(t=>h('option',{value:t,selected:t===l.type},t))),h('span'))}
+      const sel=h('select',{id,onchange:()=>{btn.hidden=sel.value===l.type}},...types.map(t=>h('option',{value:t,selected:t===l.type},t)));
+      const btn=h('button',{hidden:true,title:'Switch this layer to the chosen type; settings the new type does not use are removed',onclick:()=>applyType(sel.value)},'Change type');
+      return h('div',{class:'krow','data-k':'type'},h('label',{for:id},'type'),h('span',{class:'cc'},sel,btn),h('span'))}
     function keyRow(k){const id=uid('c'),l=cur(),d=descOf(l,k);
       const del=h('button',{class:'icon ghost',title:'Remove '+k,'aria-label':'Remove '+k+' (layer '+(i+1)+')',onclick:()=>{delete cur()[k];build();commit(k,true,'remove');(rows.querySelector('.krow:not([data-k=type]) input,.krow:not([data-k=type]) select')||addBox.querySelector('select'))?.focus()}});setIcon(del,'del');
       return h('div',{class:'krow','data-k':k},h('label',{for:id,title:d},k),mkCtl(cur,k,d,id,commit,build),del)}
@@ -521,7 +526,7 @@ function download(name,blob){const a=h('a',{href:URL.createObjectURL(blob),downl
 function updFoot(){const r=S.recipe;$('#bSave').disabled=!r;const n=$('#saveName');n.disabled=!r;n.value=r?(r.id||'effect').split('/').pop():''}
 function updLook(){$('#lookNote').textContent='Exports the current look: '+S.mode+(S.mode==='painted'?' '+S.style:'')}
 $('#bSave').onclick=()=>save();$('#bExport').onclick=()=>exportFx();
-async function save(){if(!S.recipe)return;const r=await api('/api/save',{name:$('#saveName').value||(S.recipe.id||'effect').split('/').pop(),recipe:S.recipe});if(r.error){toast(r.error);return}S.dirty=false;setTitle();toast('Saved to '+r.path)}
+async function save(){if(!S.recipe)return;const r=await api('/api/save',{name:$('#saveName').value||(S.recipe.id||'effect').split('/').pop(),recipe:S.recipe});if(r.error){toast(r.error);return}S.saved=snap();S.dirty=false;setTitle();toast('Saved to '+r.path)}
 async function exportFx(){toast('Exporting...');const r=await api('/api/export',payload({name:S.recipe?($('#saveName')?.value||''):''}));if(r.error){toast(friendly(r.error).text);return}
   for(const[n,b64]of Object.entries(r.files)){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);download(n,new Blob([u]))}toast('Exported. A copy is also in '+r.folder)}
 
