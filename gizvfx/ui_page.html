@@ -21,7 +21,7 @@ button.icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-widt
 button.chip{padding:3px 10px;border-radius:99px;min-height:32px}
 input,select,textarea{background:#12141a;border:1px solid var(--edge);border-radius:6px;padding:5px 7px;min-width:0;min-height:32px}
 input::placeholder{color:var(--mut);opacity:1}
-input[type=checkbox]{accent-color:var(--accent);width:28px;height:28px;min-height:0}
+input[type=checkbox]{accent-color:var(--accent);width:32px;height:32px;min-height:0}
 input[type=range]{accent-color:var(--accent);padding:0;border:0;background:transparent}
 label{color:var(--mut)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -79,7 +79,7 @@ aside,section{min-height:0;overflow:auto}
 #foot{border-top:1px solid var(--line);background:var(--panel);padding:8px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 #foot input{flex:1;min-width:90px}
 #lookNote{font-size:12px;color:var(--mut);flex-basis:100%}
-.skip{position:absolute;left:8px;top:-60px;background:var(--accent);color:var(--ink);padding:6px 10px;border-radius:var(--r);z-index:30}
+.skip{position:absolute;left:8px;top:-60px;background:var(--accent);color:var(--ink);padding:8px 10px;border-radius:var(--r);z-index:30}
 .skip:focus{top:8px}
 .tabs{display:flex;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
 .tabs button{flex:1;border:0;border-radius:0;background:transparent;border-bottom:2px solid transparent;padding:9px 4px;color:var(--mut);min-height:38px}
@@ -93,7 +93,7 @@ aside,section{min-height:0;overflow:auto}
 h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin:16px 0 6px;font-weight:600}
 h2:first-child{margin-top:0}
 details.help{border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;margin-bottom:10px;background:var(--panel2)}
-details.help summary,.keys summary,.msg summary{cursor:pointer;color:var(--accent);padding:5px 0}
+details.help summary,.keys summary,.msg summary{cursor:pointer;color:var(--accent);padding:5px 0;min-height:32px}
 .keys summary{display:list-item;min-height:32px}
 details.help p{margin:6px 0;color:var(--mut)}
 .card{border:1px solid var(--line);border-radius:var(--r);margin:8px 0;background:var(--panel2)}
@@ -107,13 +107,13 @@ details.help p{margin:6px 0;color:var(--mut)}
 .fmsg{margin:0 8px 8px;color:#ffb4b4;font-size:12px}
 #tl{border-top:1px solid var(--line);background:var(--panel);padding:6px 12px;max-height:min(260px,34vh);overflow:auto;position:relative}
 #tl[hidden]{display:none}
-.tlrow{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center;height:24px}
-.tlrow .nm{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;border:0;background:transparent;padding:0;min-height:0;height:22px;cursor:pointer}
+.tlrow{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center;height:32px}
+.tlrow .nm{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;border:0;background:transparent;padding:0;min-height:0;height:32px;cursor:pointer}
 .tlrow.sel .nm{color:var(--accent)}
 .tlrow .tr{position:relative;height:14px;background:#12141a;border-radius:4px;touch-action:none}
 .tlrow .bar{position:absolute;top:1px;bottom:1px;background:var(--accentline);border:1px solid var(--accent);border-radius:3px;cursor:grab;min-width:4px}
 .tlrow.sel .bar{background:var(--accent2)}
-.tlrow .bar.hold{background-image:repeating-linear-gradient(45deg,transparent 0 4px,#ffffff2a 4px 8px)}
+.tlrow .bar.hold{background-image:linear-gradient(90deg,#ffffff2a 50%,transparent 0);background-size:8px 100%}
 .tlrow .bar i{position:absolute;top:-2px;bottom:-2px;width:8px;cursor:ew-resize}
 .tlrow .bar i.l{left:-4px}.tlrow .bar i.r{right:-4px}
 #tl .ph{position:absolute;top:6px;bottom:6px;left:116px;right:12px;pointer-events:none}
@@ -123,6 +123,8 @@ details.help p{margin:6px 0;color:var(--mut)}
 .mk.sel{background:var(--accent);color:var(--ink)}
 .msg .lk{margin:4px 4px 0 0}
 .rows{padding:6px 10px 0}
+.card:not(.sel) .rows,.card:not(.sel) .addrow,.card:not(.sel) details.rawjson{display:none}
+.card:not(.sel) .hd .title{opacity:.9}
 .krow{display:grid;grid-template-columns:84px minmax(0,1fr) 34px;gap:6px;align-items:center;margin:4px 0}
 .krow>label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cc{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -167,7 +169,7 @@ details.rawjson textarea{width:100%;margin:0}
   main[data-view=list] #editor,main[data-view=edit] #list{display:none}
   #json{height:50vh}
 }
-@media(pointer:coarse),(max-width:820px){button,button.chip,.keys button.key,input,select,textarea,.tabs button,.keys summary,details.help summary{min-height:44px}.keys button.key{min-width:44px}button.icon,.sw{width:44px;height:44px}input[type=checkbox]{width:32px;height:32px;min-height:0}#bar input[type=range]{min-height:44px}.card .hd .title{flex-direction:column;gap:0}.card .hd .title .s{white-space:normal;max-height:2.9em}}
+@media(pointer:coarse),(max-width:820px){button,button.chip,.keys button.key,input,select,textarea,.tabs button,.keys summary,details.help summary,details.rawjson summary,.msg summary{min-height:44px}button{min-width:44px}.seg button{min-width:44px}.keys button.key{min-width:44px}button.icon,.sw{width:44px;height:44px}input[type=checkbox]{width:44px;height:44px;min-height:0}#bar input[type=range]{min-height:44px}.card .hd .title{flex-direction:column;gap:0}.card .hd .title .s{white-space:normal;max-height:2.9em}}
 @media(prefers-reduced-motion:reduce){#busy,#toast{transition:none}}
 </style>
 </head>
@@ -288,7 +290,7 @@ function rawDetails(raw){return raw?h('details',{},h('summary',{},'original mess
 function showErr(f){const e=$('#err');e.replaceChildren();if(!f){e.style.display='none';return}e.style.display='block';
   if(f.layer!=null&&S.recipe){e.append('Layer '+(f.layer+1)+' cannot be drawn. ',h('button',{onclick:()=>goLayer(f.layer)},'Go to layer '+(f.layer+1)));return}
   e.append(f.text);const d=rawDetails(f.raw);if(d)e.append(d)}
-function markLayer(f){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const ta=c.querySelector('textarea'),m=c.querySelector('.fmsg');if(!ta)return;const mine=!!f&&f.layer===i;
+function markLayer(f){document.querySelectorAll('#p-layers .card').forEach((c,i)=>{const ta=c.querySelector('textarea'),m=c.querySelector('.fmsg');if(!ta)return;const mine=!!f&&f.layer===i;if(mine&&!c.classList.contains('sel'))selLayer(i);
   c.querySelectorAll('.krow').forEach(r=>r.classList.toggle('bad',mine&&(f.keys||[]).includes(r.dataset.k)));
   if(mine){ta.setAttribute('aria-invalid','true');m.hidden=false;m.replaceChildren(f.text);if(f.sug)m.append(' ',h('button',{onclick:()=>c._setType(f.sug)},"Use '"+f.sug+"'"));if(f.rmKey)m.append(' ',h('button',{onclick:()=>c._removeKey(f.rmKey)},"Remove '"+f.rmKey+"'"));const d=rawDetails(f.raw);if(d)m.append(d);c.classList.add('rerr');ta.dataset.rerr='1'}
   else if(ta.dataset.rerr){ta.removeAttribute('aria-invalid');m.hidden=true;m.replaceChildren();c.classList.remove('rerr');ta.dataset.rerr=''}})}
@@ -420,13 +422,13 @@ const PXKEYS=new Set(['radius','thick','width','size','length','inner','tip','de
 function parseEnum(desc){const head=String(desc).split(/:\s/)[0];if(!/ \| /.test(head))return null;const parts=head.split(' | ').map(p=>p.trim().split(/[ (=]/)[0]).filter(Boolean);return parts.length>1&&parts.every(p=>/^[a-z0-9_\-]+$/i.test(p))?parts:null}
 function labelsOf(desc,n){const m=String(desc).match(/\[\[?\s*([a-z][a-z0-9_]*)\s*,\s*([a-z][a-z0-9_]*)(?:\s*,\s*([a-z][a-z0-9_]*))?/i);if(m){const L=m.slice(1).filter(Boolean);if(L.length===n)return L}return null}
 function rangeOf(k,desc,v){const m=String(desc).match(/(-?\d+(?:\.\d+)?)\.\.(\d+(?:\.\d+)?)(\+?)/);if(m){const lo=+m[1],hi=+m[2];return[lo,m[3]?hi*2:hi]}if(PXKEYS.has(k))return[0,Math.max(64,Math.ceil(Math.abs(v)*2))];return null}
-function defaultFor(k,desc){const e=parseEnum(desc),d=String(desc);if(e)return e[0];const dd=d.match(/default (-?\d+(?:\.\d+)?)/);if(dd)return+dd[1];if(/^true\b|true =/.test(d))return true;
+function defaultFor(k,desc){const e=parseEnum(desc),d=String(desc);if(k==='color')return'#ffffff';if(k==='outline')return'auto';if(k==='palette')return'main';if(e)return e[0];const dd=d.match(/default (-?\d+(?:\.\d+)?)/);if(dd)return+dd[1];if(/^true\b|true =/.test(d))return true;
   if(/\[lo, hi\]/.test(d))return[1,2];if(/\[start, end\]/.test(d))return[2,0];if(/\[a0, a1\]/.test(d))return[0,360];if(/\[w, h\]/.test(d))return[8,8];if(/\[dx, dy\]/.test(d))return[-1,-1];if(/\[\[?x/.test(d)||/\[from, to\]/.test(d))return[0,0];
   if(/\b0\.\.1/.test(d))return 0.5;if(/\bint\b/.test(d))return 3;if(/\bpx\b/.test(d)||PXKEYS.has(k))return 8;if(/#rrggbb|ramp name|name for/.test(d))return'';return 1}
 function cut(t,n){t=String(t);return t.length<=n?t:t.slice(0,n).replace(/\s+\S*$/,'')+'\u2026'}
 const ANIMK=new Set([...PXKEYS,'squash','scale','rotate','strength','erode','v']);
 function limOf(k,desc){const m=String(desc).match(/(-?\d+(?:\.\d+)?)\.\.(\d+(?:\.\d+)?)(\+?)/);if(m)return[+m[1],m[3]?Infinity:+m[2]];if(PXKEYS.has(k))return[0,Infinity];return null}
-function animSeg(isAnim,toAnim,toFixed){return h('span',{class:'seg',role:'group','aria-label':'Value over time'},h('button',{'aria-pressed':String(!isAnim),onclick:isAnim?toFixed:null,title:'One value for the whole effect'},'fixed'),h('button',{'aria-pressed':String(isAnim),onclick:isAnim?null:toAnim,title:'Changes over the life of the effect'},'animates'))}
+function animSeg(k,isAnim,toAnim,toFixed){return h('span',{class:'seg',role:'group','aria-label':k+' over time'},h('button',{'aria-pressed':String(!isAnim),'aria-label':k+': fixed',onclick:isAnim?toFixed:null,title:'One value for the whole effect'},'fixed'),h('button',{'aria-pressed':String(isAnim),'aria-label':k+': animates',onclick:isAnim?null:toAnim,title:'Changes over the life of the effect'},'animates'))}
 function numInput(v,id,label,onNum,w,lim,cur){const el=h('input',{type:'number',id,step:'any','aria-label':label,value:v,style:'width:'+(w||78)+'px',min:lim&&isFinite(lim[0])?lim[0]:null,max:lim&&isFinite(lim[1])?lim[1]:null,oninput:e=>{const n=parseFloat(e.target.value);if(!isFinite(n))return;if(lim&&(n<lim[0]||n>lim[1])){e.target.setAttribute('aria-invalid','true');return}e.target.removeAttribute('aria-invalid');onNum(n)}});
   el.addEventListener('change',()=>{let n=parseFloat(el.value);const c=cur?cur():v;el.removeAttribute('aria-invalid');if(!isFinite(n)){el.value=c;return}if(lim){const k=Math.min(lim[1],Math.max(lim[0],n));if(k!==n){el.value=k;onNum(k)}}});return el}
 function mkCtl(cur,k,desc,id,commit,build){
@@ -434,11 +436,11 @@ function mkCtl(cur,k,desc,id,commit,build){
   if(typeof v==='boolean')return h('input',{type:'checkbox',id,checked:v,onchange:e=>set(e.target.checked)});
   if(isNum(v)){let rg=null;const n=numInput(v,id,k,x=>{set(x);if(rg)rg.value=x},undefined,lim,()=>cur()[k]),r=rangeOf(k,desc,v);
     if(r)rg=h('input',{type:'range',min:r[0],max:r[1],step:(r[1]-r[0])/100,value:v,'aria-label':k+' slider',oninput:e=>{const x=parseFloat(e.target.value);n.value=x;set(x)}});
-    return h('span',{class:'cc'},n,rg,anim?animSeg(false,()=>{cur()[k]=[v,v];build();commit(k,true,'animate')},null):null)}
+    return h('span',{class:'cc'},n,rg,anim?animSeg(k,false,()=>{cur()[k]=[v,v];build();commit(k,true,'animate')},null):null)}
   if(Array.isArray(v)&&v.length>=2&&v.length<=4&&v.every(isNum)){
     const labs=labelsOf(desc,v.length)||(v.length===2?['from','to']:v.length===3?['from','mid','to']:v.map((_,j)=>String(j+1))),cc=h('span',{class:'cc'});
     v.forEach((x,j)=>{cc.append(h('span',{class:'sub'},labs[j]),numInput(x,j?null:id,k+' '+labs[j],n=>{const a=[...cur()[k]];a[j]=n;set(a)},64,lim,()=>cur()[k][j]))});
-    if(anim&&v.length<=3)cc.append(animSeg(true,null,()=>{cur()[k]=v[0];build();commit(k,true,'fix')}));return cc}
+    if(anim&&v.length<=3)cc.append(animSeg(k,true,null,()=>{cur()[k]=v[0];build();commit(k,true,'fix')}));return cc}
   if(typeof v==='string'){let opts=null;
     if(k==='palette')opts=['main',...S.meta.palettes];else if(k==='clip')opts=['',...S.recipe.layers.map(x=>x.id).filter(x=>x&&x!==cur().id)];else opts=parseEnum(desc);
     if(opts){if(!opts.includes(v))opts=[v,...opts];return h('select',{id,onchange:e=>set(e.target.value)},...opts.map(o=>h('option',{value:o,selected:o===v},o||'(none)')))}
@@ -482,12 +484,13 @@ function renderLayers(){
   const more=h('select',{'aria-label':'Another layer type',onchange:e=>{if(e.target.value){addLayer(e.target.value);e.target.value=''}}},h('option',{value:''},'Other type...'),...S.meta.layers.filter(t=>!COMMON_TYPES.includes(t)).sort().map(t=>h('option',{value:t},t)));
   p.append(h('div',{class:'row',role:'group','aria-label':'Add a layer'},...COMMON_TYPES.map(t=>h('button',{class:'chip',onclick:()=>addLayer(t)},'+ '+t)),more),
     h('div',{class:'hint'},r.layers.length?'Layers draw in this order: the last one is on top. Each layer has typed settings; its raw JSON is under it.':'No layers yet. Add one above: a glow or a ring is a good start.'));
+  if(S.sel<0||S.sel>=r.layers.length)S.sel=0;
   r.layers.forEach((l0,i)=>{
     const cur=()=>r.layers[i],msgId=uid('lm'),msg=h('div',{class:'fmsg',id:msgId,role:'status',hidden:true}),rows=h('div',{class:'rows'}),addBox=h('div',{class:'addrow'});
     const descOf=(l,k)=>(S.meta.schema[l.type]||{})[k]||S.meta.common[k]||'';
     const ta=h('textarea',{spellcheck:'false','aria-label':'Layer '+(i+1)+' raw JSON','aria-describedby':msgId,rows:Math.min(10,Math.max(3,Object.keys(l0).length+2)),oninput:e=>{try{const v=JSON.parse(e.target.value);if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('a layer is an object: { "type": ... }');r.layers[i]=v;e.target.removeAttribute('aria-invalid');e.target.dataset.rerr='';msg.hidden=true;build();edit('l'+i,'edit layer '+(i+1))}catch(x){e.target.setAttribute('aria-invalid','true');if(S.renderErr)showErr(null);msg.hidden=false;msg.textContent='Not valid JSON yet ('+String(x.message).replace(/^JSON\.parse: /,'')+'). The preview keeps the last good version.'}}});
     ta.value=fmtLayer(l0);
-    const commit=(k,struct,verb)=>{if(document.activeElement!==ta)ta.value=fmtLayer(cur());edit(struct?stepKey():'l'+i+'.'+k,(verb||(struct?'change':'edit'))+' layer '+(i+1)+' '+k)};
+    const commit=(k,struct,verb)=>{if(struct||document.activeElement!==ta)ta.value=fmtLayer(cur());edit(struct?stepKey():'l'+i+'.'+k,(verb||(struct?'change':'edit'))+' layer '+(i+1)+' '+k)};
     function applyType(nt){const l=cur(),ok=new Set([...Object.keys(S.meta.schema[nt]||{}),...Object.keys(S.meta.common),'type']),gone=Object.keys(l).filter(x=>!ok.has(x));gone.forEach(x=>delete l[x]);l.type=nt;build();commit('type',true);if(gone.length)toast('Removed '+gone.join(', ')+': not used by '+nt+'.',{label:'Undo',fn:undo})}
     function typeRow(){const l=cur(),id=uid('c');let types=[...S.meta.layers].sort();if(!types.includes(l.type))types=[l.type,...types];
       const sel=h('select',{id,onchange:()=>{btn.hidden=sel.value===l.type}},...types.map(t=>h('option',{value:t,selected:t===l.type},t)));
@@ -500,10 +503,10 @@ function renderLayers(){
       const all={...(S.meta.schema[l.type]||{})};for(const k of Object.keys(S.meta.common))if(!(k in all))all[k]=S.meta.common[k];
       const free=Object.keys(all).filter(k=>k!=='type'&&!(k in l));
       addBox.replaceChildren(free.length?(()=>{const sel=h('select',{'aria-label':'Setting to add to layer '+(i+1)},h('option',{value:''},'Add a setting...'),...free.map(k=>h('option',{value:k,title:all[k]},k+': '+cut(all[k],44))));
-        return h('span',{class:'cc'},sel,h('button',{onclick:()=>{const k=sel.value;if(!k)return;cur()[k]=defaultFor(k,all[k]);build();commit(k,true,'add');rows.querySelector('[data-k="'+k+'"] input,[data-k="'+k+'"] select')?.focus()}},'Add'))})():'')}
+        return h('span',{class:'cc'},sel,h('button',{'aria-label':'Add the chosen setting to layer '+(i+1),onclick:()=>{const k=sel.value;if(!k)return;cur()[k]=defaultFor(k,all[k]);build();commit(k,true,'add');rows.querySelector('[data-k="'+k+'"] input,[data-k="'+k+'"] select')?.focus()}},'Add'))})():'')}
     build();
     const ib=(n,label,fn,dis)=>{const b=h('button',{class:'icon ghost',title:label,'aria-label':label+' (layer '+(i+1)+')',disabled:dis,onclick:fn});setIcon(b,n);return b};
-    const card=h('div',{class:'card'+(i===S.sel?' sel':'')},
+    const card=h('div',{class:'card'+(i===S.sel?' sel':''),role:'group','aria-label':'Layer '+(i+1)+', '+l0.type},
       h('div',{class:'hd'},h('button',{class:'title',onclick:()=>{selLayer(i);rows.querySelector('select,input')?.focus()}},h('b',{},(i+1)+' '+l0.type),h('span',{class:'s'},summary(l0))),
         ib('up','Move up',()=>{[r.layers[i-1],r.layers[i]]=[r.layers[i],r.layers[i-1]];renderLayers();edit(stepKey(),'move layer '+(i+1)+' up')},i===0),
         ib('down','Move down',()=>{[r.layers[i+1],r.layers[i]]=[r.layers[i],r.layers[i+1]];renderLayers();edit(stepKey(),'move layer '+(i+1)+' down')},i===r.layers.length-1),
